@@ -440,6 +440,9 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 .card .tags, .card .c-meta { transition: translate .22s ease-out; }
 :root[data-depth="2"] .card::before { transition: filter .35s, inset .35s, opacity .35s; }
 :root[data-depth="2"] .card:hover::before { inset: 14px 14px -10px; filter: blur(16px); }
+.c-meta .tel { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 600; text-decoration: none; padding: 1px 7px; border-radius: 99px; background: color-mix(in oklab, var(--accent) 13%, transparent); }
+.c-meta a.tel:hover { background: color-mix(in oklab, var(--accent) 26%, transparent); } .c-meta .pct { font-variant-numeric: tabular-nums; } .c-meta .pct.all { color: var(--accent); font-weight: 600; }
+.card .bar i { transition: width .4s cubic-bezier(.2,.8,.2,1); }
 /* ===== Celular ===== */
 /* ---- cartões do celular ---- */
 .c-head { display: contents; } .c-done { display: none; }
@@ -564,6 +567,7 @@ const fmtDT = ts => new Date(ts).toLocaleString("pt-BR", { day: "2-digit", month
 function fmtDur(ms) { const m = Math.round(ms / 6e4); if (m < 1) return "0min"; const h = Math.floor(m / 60); return h ? h + "h" + (m % 60 ? " " + (m % 60) + "min" : "") : m + "min"; }
 function fmtClock(ms) { const s = Math.floor(ms / 1000); return pad2(Math.floor(s / 3600)) + ":" + pad2(Math.floor(s / 60) % 60) + ":" + pad2(s % 60); }
 const ICONS = {
+  tick: '<path d="m3.5 8.5 3 3 6-7"/>', phone: '<path d="M3.2 2.2h2.4l1.1 3-1.6 1.2a8.2 8.2 0 0 0 3.8 3.8l1.2-1.6 3 1.1v2.4a1.3 1.3 0 0 1-1.4 1.3C6.5 13.1 2.9 9.5 1.9 3.6A1.3 1.3 0 0 1 3.2 2.2z"/>',
   search: '<circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/>', plus: '<path d="M8 3v10M3 8h10"/>',
   bell: '<path d="M4 11V7a4 4 0 0 1 8 0v4l1.2 1.5H2.8zM6.5 14h3"/>', gear: '<circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6 5 5M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4"/>',
   clock: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/>', check: '<rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="m5.5 8 2 2 3.2-3.8"/>',
@@ -582,7 +586,7 @@ const LS = "orbita-kanban-v1", LSN = "orbita-kanban-avisos", LSB = "orbita_kanba
 function demoState() {
   const now = Date.now(), c = ["c_in", "c_todo", "c_doing", "c_wait", "c_done"];
   const due = (days, hm) => dkey(now + days * DAY) + (hm ? "T" + hm : "");
-  const T = (o) => Object.assign({ id: uid(), desc: "", ticket: "", priority: 2, due: "", tags: [], check: [], extra: [], files: [], notes: "", custom: {}, timeMs: 0, createdAt: now, doneAt: null, archived: false, demo: true }, o);
+  const T = (o) => Object.assign({ id: uid(), desc: "", ticket: "", phone: "", priority: 2, due: "", tags: [], check: [], extra: [], files: [], notes: "", custom: {}, timeMs: 0, createdAt: now, doneAt: null, archived: false, demo: true }, o);
   const ck = (...a) => a.map(([t, d]) => ({ id: uid(), t, d: !!d }));
   return {
     v: 1, updatedAt: 0, deleted: {}, boards: [{ id: "b_main", name: "Meu quadro" }],
@@ -898,7 +902,7 @@ function parseQuick(text) {
   return o;
 }
 function addTask(colId, props) {
-  const t = Object.assign({ id: uid(), title: "Nova tarefa", desc: "", ticket: "", priority: 2, due: "", tags: [], check: [], extra: [], files: [], notes: "", custom: {}, timeMs: 0, createdAt: Date.now(), doneAt: null, archived: false }, props);
+  const t = Object.assign({ id: uid(), title: "Nova tarefa", desc: "", ticket: "", phone: "", priority: 2, due: "", tags: [], check: [], extra: [], files: [], notes: "", custom: {}, timeMs: 0, createdAt: Date.now(), doneAt: null, archived: false }, props);
   t.col = colId || cols()[0].id; if (isDone(t)) t.doneAt = Date.now();
   state.tasks.push(t); save(); return t;
 }
@@ -934,14 +938,18 @@ function renderChrome() {
     (any ? `<button class="chip" data-act="fClear">Limpar filtros</button>` : "") + `</div><span class="spacer"></span><button class="btn sm" id="reconnectBtn" data-act="fileReconnect" hidden>Reconectar arquivo</button><span id="sync" class="sync"></span>`;
   $("#strip").innerHTML = h; setSaveStatus();
 }
+function phoneChip(p) {
+  const d = String(p).replace(/\D/g, ""), txt = esc(p);
+  return d.length >= 8 ? `<a class="tel" href="tel:${p.trim().startsWith("+") ? "+" : ""}${d}" title="Ligar para ${txt}">${ic("phone")}${txt}</a>` : `<span class="tel" title="Ramal ${txt}">${ic("phone")}${txt}</span>`;
+}
 function cardHTML(t, j) {
   const di = dueInfo(t), done = isDone(t), ck = t.check.length, ckd = t.check.filter(c => c.d).length, run = state.timer && state.timer.id === t.id, sp = spent(t);
   const tags = t.tags.map(tag).filter(Boolean).map(g => `<span class="tag" style="--h:${g.hue}">${esc(g.name)}</span>`).join("");
   return `<article class="card p${t.priority}${ui.flipped.has(t.id) ? " flipped" : ""}${done ? " done" : ""}${run ? " running" : ""}${di && di.ms < 0 && !done ? " late" : ""}" data-id="${t.id}" style="--j:${j || 0};--p:${t.priority}" tabindex="0" aria-label="${esc(t.title)}">
   <div class="card-in"><div class="face front">
     <div class="c-top"><span class="tk">${t.ticket ? "#" + esc(t.ticket) : ""}</span><span class="pri">${PRI[t.priority]}</span></div>
-    <div class="c-head"><button class="c-done" data-act="toggleDone" data-id="${t.id}" aria-label="${done ? "Reabrir tarefa" : "Concluir tarefa"}">${ic("check")}</button><h3>${esc(t.title)}</h3></div>${tags ? `<div class="tags">${tags}</div>` : ""}
-    <div class="c-meta">${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span>${ic("check")}${ckd}/${ck}</span>` : ""}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
+    <div class="c-head"><button class="c-done" data-act="toggleDone" data-id="${t.id}" aria-label="${done ? "Reabrir tarefa" : "Concluir tarefa"}">${ic("tick")}</button><h3>${esc(t.title)}</h3></div>${tags ? `<div class="tags">${tags}</div>` : ""}
+    <div class="c-meta">${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${t.phone ? phoneChip(t.phone) : ""}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
       ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}
       <button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></div>
     ${ck ? `<div class="bar"><i style="width:${Math.round(ckd / ck * 100)}%"></i></div>` : ""}
@@ -1051,8 +1059,8 @@ function reportText() {
 }
 function csvText() {
   const q = s => '"' + String(s ?? "").replace(/"/g, '""') + '"';
-  const head = ["Quadro", "Chamado", "Tarefa", "Coluna", "Prioridade", "Prazo", "Tags", "Checklist", "Tempo (min)", "Criada em", "Concluída em", "Arquivada", "Observações", "Informações adicionais", ...state.fields.map(f => f.name)];
-  return "﻿" + [head.map(q).join(";"), ...state.tasks.map(t => [bname(t), t.ticket, t.title, col(t.col).name, PRI[t.priority], t.due.replace("T", " "), t.tags.map(tag).filter(Boolean).map(g => g.name).join(", "), t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : "", Math.round(spent(t) / 6e4), fmtDT(t.createdAt), t.doneAt ? fmtDT(t.doneAt) : "", t.archived ? "sim" : "", plain(t.notes), t.extra.filter(x => x.k || x.v).map(x => x.k + ": " + x.v).join(" | "), ...state.fields.map(f => t.custom[f.id] ?? "")].map(q).join(";"))].join("\r\n");
+  const head = ["Quadro", "Chamado", "Tarefa", "Coluna", "Prioridade", "Prazo", "Tags", "Checklist", "Tempo (min)", "Criada em", "Concluída em", "Arquivada", "Observações", "Informações adicionais", "Telefone/ramal", ...state.fields.map(f => f.name)];
+  return "﻿" + [head.map(q).join(";"), ...state.tasks.map(t => [bname(t), t.ticket, t.title, col(t.col).name, PRI[t.priority], t.due.replace("T", " "), t.tags.map(tag).filter(Boolean).map(g => g.name).join(", "), t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : "", Math.round(spent(t) / 6e4), fmtDT(t.createdAt), t.doneAt ? fmtDT(t.doneAt) : "", t.archived ? "sim" : "", plain(t.notes), t.extra.filter(x => x.k || x.v).map(x => x.k + ": " + x.v).join(" | "), t.phone || "", ...state.fields.map(f => t.custom[f.id] ?? "")].map(q).join(";"))].join("\r\n");
 }
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 const fxOn = () => !calm.matches && state.settings.depth > 0;
@@ -1094,6 +1102,7 @@ function renderDrawer() {
     <textarea class="inp title-inp" id="d_title" rows="2" data-in="tTitle" aria-label="Título">${esc(t.title)}</textarea>
     <div class="row"><div class="field"><label for="d_ticket">Nº do chamado</label><input class="inp mono" id="d_ticket" data-in="tTicket" value="${esc(t.ticket)}" placeholder="CH-00000"></div>
       <div class="field"><label for="d_col">Coluna</label><select class="inp" id="d_col" data-in="tCol">${cols(boardOf(t)).map(c => `<option value="${c.id}" ${c.id === t.col ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div></div>
+    <div class="field"><label for="d_phone">Telefone / ramal de quem pediu</label><input class="inp" id="d_phone" type="text" inputmode="tel" data-in="tPhone" value="${esc(t.phone || "")}" placeholder="Ex.: 4700 ou (15) 99999-0000"></div>
     ${state.boards.length > 1 ? `<div class="field"><label for="d_board">Quadro</label><select class="inp" id="d_board" data-in="tBoard">${state.boards.map(b => `<option value="${b.id}" ${b.id === boardOf(t) ? "selected" : ""}>${esc(b.name)}</option>`).join("")}</select></div>` : ""}
     <div class="field"><span class="lbl">Prioridade</span><div class="pri-seg">${PRI.map((p, i) => `<button class="p${i} ${t.priority === i ? "on" : ""}" data-act="tPri" data-v="${i}">${p}</button>`).join("")}</div></div>
     <div class="row"><div class="field"><label for="d_due">Prazo</label><input class="inp" type="date" id="d_due" data-in="tDue" value="${dd}"></div>
@@ -1145,7 +1154,7 @@ const COMMANDS = () => [
 function fuzzy(q, s) { if (!q) return 1; const i = s.indexOf(q); if (i === 0) return 100; if (i > 0) return 60 - Math.min(i, 30); let j = 0; for (const ch of s) if (ch === q[j]) j++; return j === q.length ? 10 : 0; }
 function palItems(q) {
   const k = norm(q.replace(/^#/, "")), out = [];
-  const ts = state.tasks.map(t => { const tg = t.tags.map(tag).filter(Boolean).map(g => g.name).join(" "); const s = Math.max(norm(t.ticket) === k && k ? 200 : 0, fuzzy(k, norm(t.ticket)) * 1.2, fuzzy(k, norm(t.title)), fuzzy(k, norm(tg)) * .7, k.length > 2 && norm(t.desc + " " + plain(t.notes) + " " + t.extra.map(x => x.k + " " + x.v).join(" ")).includes(k) ? 20 : 0); return { t, s: s - (t.archived ? 5 : 0) }; }).filter(x => x.s > 0).sort((a, b) => b.s - a.s || score(b.t) - score(a.t)).slice(0, k ? 8 : 5);
+  const ts = state.tasks.map(t => { const tg = t.tags.map(tag).filter(Boolean).map(g => g.name).join(" "); const s = Math.max(norm(t.ticket) === k && k ? 200 : 0, fuzzy(k, norm(t.ticket)) * 1.2, fuzzy(k, norm(t.title)), fuzzy(k, norm(tg)) * .7, k.length > 2 && norm(t.desc + " " + plain(t.notes) + " " + t.extra.map(x => x.k + " " + x.v).join(" ")).includes(k) ? 20 : 0, k.length > 1 && norm(t.phone || "").includes(k) ? 60 : 0); return { t, s: s - (t.archived ? 5 : 0) }; }).filter(x => x.s > 0).sort((a, b) => b.s - a.s || score(b.t) - score(a.t)).slice(0, k ? 8 : 5);
   ts.forEach(({ t }) => out.push({ sec: "Tarefas", t }));
   COMMANDS().map(c => ({ c, s: fuzzy(k, norm(c.n)) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, k ? 6 : 20).forEach(({ c }) => out.push({ sec: "Ações", c }));
   if (k) out.push({ sec: "Criar", c: { n: `Criar tarefa “${q}”`, run: () => { const p = parseQuick(q); if (p.title) { const t = addTask(null, p); render(); openTask(t.id); } } } });
@@ -1245,7 +1254,7 @@ addEventListener("pointerdown", () => { try { if (actx && actx.state === "suspen
 /* ---------- bloco de tempo: Outlook na web e arquivo .ics ---------- */
 function blockOf(t) { return t.block ? Object.assign({}, t.block) : { d: t.due ? t.due.slice(0, 10) : dkey(Date.now()), s: t.due.length > 10 ? t.due.slice(11) : pad2((new Date().getHours() + 1) % 24) + ":00", m: 60 }; }
 function blockTimes(b) { const a = new Date(b.d + "T" + (b.s || "09:00")); return [a, new Date(+a + (b.m || 60) * 6e4)]; }
-function blockText(t) { return [t.ticket ? "Chamado: #" + t.ticket : "", "Prioridade: " + PRI[t.priority], "Quadro: " + bname(t) + " · " + col(t.col).name, t.desc, t.check.length ? "Checklist:\n" + t.check.map(c => (c.d ? "[x] " : "[ ] ") + c.t).join("\n") : ""].filter(Boolean).join("\n\n"); }
+function blockText(t) { return [t.ticket ? "Chamado: #" + t.ticket : "", t.phone ? "Telefone/ramal: " + t.phone : "", "Prioridade: " + PRI[t.priority], "Quadro: " + bname(t) + " · " + col(t.col).name, t.desc, t.check.length ? "Checklist:\n" + t.check.map(c => (c.d ? "[x] " : "[ ] ") + c.t).join("\n") : ""].filter(Boolean).join("\n\n"); }
 function outlookUrl(t) {
   const [a, z] = blockTimes(blockOf(t)); if (isNaN(a)) return "#";
   const base = state.settings.outlook === "personal" ? "https://outlook.live.com" : "https://outlook.office.com";
@@ -1356,10 +1365,11 @@ const mdName = t => ((t.ticket ? t.ticket + " " : "") + t.title).replace(/[\\/:*
 function taskMd(t) {
   const di = dueInfo(t), c = col(t.col), done = isDone(t), tg = t.tags.map(tag).filter(Boolean), slug = x => norm(x).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), q = x => '"' + String(x).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
   const dt = x => { const [d, h] = x.split("T"); return d.split("-").reverse().join("/") + (h ? " " + h : ""); }, cell = x => String(x).replace(/\|/g, "\\|").replace(/\n/g, " ");
-  const L = ["---", "titulo: " + q(t.title), t.ticket ? "chamado: " + q(t.ticket) : "", "status: " + q(c.name), "quadro: " + q(bname(t)), "prioridade: " + PRI[t.priority], t.due ? "prazo: " + t.due : "", "criada: " + dkey(t.createdAt), t.doneAt ? "concluida: " + dkey(t.doneAt) : "", spent(t) >= 6e4 ? "tempo_registrado: " + q(fmtDur(spent(t))) : "", "tags:", "  - kanban", ...tg.map(g => "  - " + slug(g.name)), "---", ""].filter((x, i, a) => x !== "" || i === a.length - 1);
+  const L = ["---", "titulo: " + q(t.title), t.ticket ? "chamado: " + q(t.ticket) : "", t.phone ? "telefone: " + q(t.phone) : "", "status: " + q(c.name), "quadro: " + q(bname(t)), "prioridade: " + PRI[t.priority], t.due ? "prazo: " + t.due : "", "criada: " + dkey(t.createdAt), t.doneAt ? "concluida: " + dkey(t.doneAt) : "", spent(t) >= 6e4 ? "tempo_registrado: " + q(fmtDur(spent(t))) : "", "tags:", "  - kanban", ...tg.map(g => "  - " + slug(g.name)), "---", ""].filter((x, i, a) => x !== "" || i === a.length - 1);
   L.push("# " + (t.ticket ? t.ticket + " · " : "") + t.title, "");
   L.push("> [!info] Tarefa", `> **Quadro:** [[${bname(t)}]] · **Coluna:** ${c.name}`, `> **Prioridade:** ${PRI[t.priority]}`);
   if (t.ticket) L.push(`> **Chamado:** ${t.ticket}`);
+  if (t.phone) L.push(`> **Telefone/ramal:** ${t.phone}`);
   if (t.due) L.push(`> **Prazo:** ${dt(t.due)}${di && !done && di.day <= 7 ? " (" + di.label.toLowerCase() + ")" : ""}`);
   if (tg.length) L.push("> **Tags:** " + tg.map(g => "#" + slug(g.name)).join(" "));
   if (spent(t) >= 6e4) L.push("> **Tempo registrado:** " + fmtDur(spent(t)));
@@ -1495,7 +1505,7 @@ document.addEventListener("click", e => {
   const el = e.target.closest("[data-act]");
   if (el) { if (el.tagName === "TR" || !el.disabled) { e.preventDefault(); const a = el.dataset.act; acts[a](el, e); if (inCtx && a !== "cxTag") closeCtx(); } return; }
   const card = e.target.closest(".card");
-  if (card && !e.target.closest("input,label,button")) return openTask(card.dataset.id);
+  if (card && !e.target.closest("input,label,button,a")) return openTask(card.dataset.id);
   $$("details.menu[open]").forEach(d => { if (!d.contains(e.target)) d.open = false; });
 });
 /* entradas */
@@ -1503,6 +1513,7 @@ const ins = {
   boardName: (el) => { board().name = el.value; save(); },
   colName: (el) => { col(el.dataset.id).name = el.value || "Sem nome"; save(); },
   tTitle: el => { cur().title = el.value; cur().demo = false; save(); render(); },
+  tPhone: el => { cur().phone = el.value.trim(); save(); render(); },
   tTicket: el => { cur().ticket = el.value.replace(/^#/, "").trim(); save(); render(); },
   tDesc: el => { cur().desc = el.value; save(); },
   tplName: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.name = el.value; save(); } },
