@@ -151,9 +151,20 @@ main { flex: 1; min-height: 0; overflow: auto; position: relative; }
 .count.warn { color: var(--p0); font-weight: 600; }
 .col-list { padding: 4px 10px; display: flex; flex-direction: column; gap: var(--gap); min-height: 46px; flex: 1; }
 .empty { color: var(--ink3); font-size: 12px; text-align: center; padding: 14px 0; border: 1px dashed var(--line); border-radius: 10px; }
-.quick { padding: 8px 10px 10px; }
-.quick input { width: 100%; border: 1px dashed var(--line); background: none; border-radius: 8px; padding: 6px 9px; }
-.quick input:focus { background: var(--surface); border-style: solid; }
+.quick { padding: 6px 10px 10px; }
+.qa-btn { width: 100%; display: flex; align-items: center; gap: 9px; padding: 7px 9px; border: 0; border-radius: 10px; background: none; color: var(--ink2); font-weight: 500; text-align: left; transition: background .2s, color .2s; }
+.qa-ico { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: none; transition: transform .3s cubic-bezier(.2,1.6,.4,1), background .2s, color .2s; }
+.qa-ico svg { width: 13px; height: 13px; }
+.qa-btn:hover, .qa-btn:focus-visible { background: color-mix(in oklab, var(--ink) 5%, transparent); color: var(--ink); }
+.qa-btn:hover .qa-ico, .qa-btn:focus-visible .qa-ico { transform: rotate(90deg) scale(1.08); background: var(--accent); color: var(--accent-ink); }
+.qa-box { display: none; gap: 7px; padding: 8px; border-radius: 12px; background: var(--surface); border: 1px solid var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 16%, transparent), 0 8px 18px -10px rgb(var(--shadow) / .35); animation: qaIn .22s cubic-bezier(.2,.8,.2,1); }
+@keyframes qaIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
+.quick.open .qa-box { display: grid; } .quick.open .qa-btn { display: none; }
+.qa-box input { width: 100%; border: 0; outline: 0; background: none; padding: 4px 4px 2px; font-weight: 500; }
+.qa-hint { font: 400 11px var(--mono); color: var(--ink3); padding: 0 4px; overflow-wrap: anywhere; }
+.qa-hint b { font-weight: 500; color: var(--ink2); }
+.qa-row { display: flex; align-items: center; gap: 6px; }
+.qa-row .btn.main { margin-left: auto; }
 .col-add { flex: none; width: 150px; border: 1px dashed var(--line); background: none; border-radius: 14px; padding: 12px; color: var(--ink2); }
 .menu { position: relative; }
 .menu summary { list-style: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; cursor: pointer; color: var(--ink2); }
@@ -695,8 +706,6 @@ html:root[data-theme="light"] .chip { background: #fff; }
 html:root[data-theme="light"] .chip.on { background: var(--ink); }
 html:root[data-theme="light"] .col { background: var(--bg2); border: 1px solid var(--line); box-shadow: none; }
 html:root[data-theme="light"] .col-name:hover, html:root[data-theme="light"] .col-name:focus { background: #fff; }
-html:root[data-theme="light"] .quick input { background: transparent; border-color: var(--edge); }
-html:root[data-theme="light"] .quick input:focus { background: #fff; }
 html:root[data-theme="light"] .card::before { display: none !important; }
 html:root[data-theme="light"] .card .face, html:root[data-theme="light"] .card:hover .face {
   background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--pc);
@@ -731,8 +740,6 @@ html:root:not([data-theme]) .chip { background: #fff; }
 html:root:not([data-theme]) .chip.on { background: var(--ink); }
 html:root:not([data-theme]) .col { background: var(--bg2); border: 1px solid var(--line); box-shadow: none; }
 html:root:not([data-theme]) .col-name:hover, html:root:not([data-theme]) .col-name:focus { background: #fff; }
-html:root:not([data-theme]) .quick input { background: transparent; border-color: var(--edge); }
-html:root:not([data-theme]) .quick input:focus { background: #fff; }
 html:root:not([data-theme]) .card::before { display: none !important; }
 html:root:not([data-theme]) .card .face, html:root:not([data-theme]) .card:hover .face {
   background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--pc);
@@ -1424,12 +1431,12 @@ function renderBoard() {
         <button class="danger" data-act="colDel" data-id="${c.id}">${ui.armed === "col" + c.id ? "Clique de novo para apagar" : "Apagar coluna"}</button>
       </div></details></header>
     <div class="col-list">${list.map((t, j) => cardHTML(t, j)).join("") || `<div class="empty">${all.length ? "Nada com esses filtros" : "Solte uma tarefa aqui"}</div>`}</div>
-    <form class="quick" data-col="${c.id}"><input id="q_${c.id}" aria-label="Nova tarefa em ${esc(c.name)}" placeholder="+ Tarefa  #chamado !alta @amanha +tag" autocomplete="off"></form>
+    <form class="quick" data-col="${c.id}"><button type="button" class="qa-btn" data-act="qaOpen"><span class="qa-ico">${ic("plus")}</span>Adicionar tarefa</button><div class="qa-box"><input id="q_${c.id}" aria-label="Nova tarefa em ${esc(c.name)}" placeholder="Nome da tarefa…" autocomplete="off"><div class="qa-hint"><b>#</b>chamado  <b>!</b>alta  <b>@</b>amanha  <b>+</b>tag</div><div class="qa-row"><button type="button" class="btn sm ghost" data-act="qaClose">Cancelar</button><button type="submit" class="btn sm main">Adicionar</button></div></div></form>
     </section>`;
   }).join("") + `<button class="col-add" data-act="colAdd">+ Nova coluna</button></div></div>`;
   cklInit(); if (cine) bdPlay();
   if (ui.fresh) { const c = $(`.card[data-id="${ui.fresh}"]`); ui.fresh = null; if (c && fxOn()) c.animate([{ transform: "perspective(600px) rotateX(-85deg) scale(.7)", opacity: 0 }, { transform: "perspective(600px) rotateX(12deg) scale(1.03)", opacity: 1, offset: .7 }, { transform: "none" }], { duration: 480, easing: "ease-out" }); }
-  if (ui.refocus) { const el = $("#q_" + ui.refocus); if (el) el.focus(); ui.refocus = null; }
+  if (ui.refocus) { const el = $("#q_" + ui.refocus); if (el) { el.closest(".quick").classList.add("open"); el.focus(); } ui.refocus = null; }
 }
 const ORB = { sd: 0, stars: null, raf: 0, seen: false, t0: performance.now(), until: 0, lock: null };
 const RING_NAMES = ["Atrasada ou hoje", "até 3 dias", "até 7 dias", "até 30 dias", "sem prazo"];
@@ -2026,6 +2033,8 @@ const acts = {
   fieldAdd: () => { const f = { id: uid(), name: "Novo campo", type: "text" }; state.fields.push(f); save(); openSettings(); const i = $("#fd_" + f.id); if (i) { i.focus(); i.select(); } },
   fieldDel: el => { snapshotUndo("Campo apagado"); tomb(el.dataset.id); state.fields = state.fields.filter(f => f.id !== el.dataset.id); save(); openSettings(); },
   exportJson: () => exportar(),
+  qaOpen: el => { const f = el.closest(".quick"); f.classList.add("open"); const i = $("input", f); i.focus(); },
+  qaClose: el => { const f = el.closest(".quick"); $("input", f).value = ""; f.classList.remove("open"); },
   gistConnect: () => gistConnect(), gistNow: () => gistNow(), gistUp: () => gistNow("up"), gistDown: () => { if (confirm("Isto troca os dados deste aparelho pelos do GitHub. Continuar?")) gistNow("down"); }, gistOff: () => gistOff(),
   fileCreate: () => ativarArquivo(), fileOpen: () => abrirArquivo(), fileReconnect: () => reconectarArquivo(), fileSave: () => gravarArquivo(), fileDisconnect: () => desconectarArquivo(),
   importJson: () => $("#file-in").click(),
@@ -2093,6 +2102,8 @@ const chg = {
 };
 document.addEventListener("input", e => { const k = e.target.dataset && e.target.dataset.in; if (k && ins[k]) ins[k](e.target); });
 document.addEventListener("change", e => { const k = e.target.dataset && e.target.dataset.in; if (k && chg[k]) chg[k](e.target); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && e.target.matches && e.target.matches(".qa-box input")) { e.stopPropagation(); const f = e.target.closest(".quick"); e.target.value = ""; f.classList.remove("open"); } }, true);
+document.addEventListener("focusout", e => { const f = e.target.closest && e.target.closest(".quick"); if (f && f.classList.contains("open") && !f.contains(e.relatedTarget) && !$("input", f).value.trim()) setTimeout(() => f.classList.remove("open"), 120); });
 document.addEventListener("submit", e => { e.preventDefault(); const f = e.target.closest(".quick"); if (!f) return; const inp = $("input", f), p = parseQuick(inp.value.trim()); if (!p.title) return; ui.fresh = addTask(f.dataset.col, p).id; ui.refocus = f.dataset.col; render(); p.tags.forEach(g => suggestTpl(task(ui.fresh) || state.tasks[state.tasks.length - 1], g)); });
 $("#file-in").addEventListener("change", async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; importar(await f.text()); });
 document.addEventListener("keydown", e => {
