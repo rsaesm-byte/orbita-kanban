@@ -116,8 +116,10 @@ main { flex: 1; min-height: 0; overflow: auto; position: relative; }
   transform-origin: 50% 0; transition: transform .35s; }
 /* Total: profundidade de verdade. A altura do cartão é a prioridade, a sombra fica no chão da coluna e tudo responde à câmera */
 @property --z { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --cx { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --cy { syntax: "<length>"; inherits: true; initial-value: 0px; }
 :root[data-depth="2"] .col, :root[data-depth="2"] .col-list { transform-style: preserve-3d; }
-:root[data-depth="2"] .card { perspective: none; transform-style: preserve-3d; --z: calc(8px + (3 - var(--p, 2)) * 15px); translate: 0 0 var(--z); transition: transform .18s ease-out, --z .35s cubic-bezier(.2,.8,.2,1); animation: bob 6s ease-in-out infinite; animation-delay: calc(var(--j, 0) * -1.3s - var(--i, 0) * .7s); }
+:root[data-depth="2"] .card { perspective: none; transform-style: preserve-3d; --z: calc(8px + (3 - var(--p, 2)) * 15px); translate: var(--cx) var(--cy) var(--z); transition: transform .18s ease-out, --z .35s cubic-bezier(.2,.8,.2,1), --cx .35s cubic-bezier(.2,.8,.2,1), --cy .35s cubic-bezier(.2,.8,.2,1); animation: bob 6s ease-in-out infinite; animation-delay: calc(var(--j, 0) * -1.3s - var(--i, 0) * .7s); }
 :root[data-depth="2"] .card:hover { --z: 78px; }
 :root[data-depth="2"] .card::before { content: ""; position: absolute; inset: 10px 8px -2px; border-radius: 14px; background: rgb(var(--shadow) / .5); filter: blur(10px); transform: translateZ(calc(1px - var(--z))); pointer-events: none; }
 :root[data-depth="2"] .face, :root[data-depth="2"] .card:hover .face { box-shadow: 0 1px 0 var(--edge); }
@@ -1508,11 +1510,18 @@ new MutationObserver(() => { const L = $("#layer"), k = ui.overlay ? ui.overlay 
   document.body.classList.toggle("push-side", !!$(".drawer", L)); document.body.classList.toggle("push-back", !!$(".modal", L)); }).observe($("#layer"), { childList: true });
 function tilt(e) {
   const card = e.target.closest && e.target.closest(".card:not(.ghost)");
-  if (tilted && tilted !== card) { const i = $(".card-in", tilted); if (i) { i.style.removeProperty("--rx"); i.style.removeProperty("--ry"); } if (!glassOn()) tilted.style.removeProperty("--glare"); tilted = null; }
-  if (!card || calm.matches || !state.settings.depth || e.pointerType === "touch" || glassOn()) return;
-  const r = card.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height, k = state.settings.depth === 2 ? 16 : 5, inn = $(".card-in", card);
-  inn.style.setProperty("--ry", ((px - .5) * k).toFixed(2) + "deg"); inn.style.setProperty("--rx", ((.5 - py) * k).toFixed(2) + "deg");
-  card.style.setProperty("--gx", px * 100 + "%"); card.style.setProperty("--gy", py * 100 + "%"); card.style.setProperty("--glare", "1"); tilted = card;
+  if (tilted && tilted !== card) { const i = $(".card-in", tilted); if (i) { i.style.removeProperty("--rx"); i.style.removeProperty("--ry"); } tilted.style.removeProperty("--cx"); tilted.style.removeProperty("--cy"); if (!glassOn()) tilted.style.removeProperty("--glare"); tilted = null; }
+  if (!card || calm.matches || !state.settings.depth || e.pointerType === "touch") return;
+  const r = card.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height, d3 = state.settings.depth === 2, inn = $(".card-in", card);
+  /* o cartão se vira para quem está diante da tela: o lado de dentro (rumo ao centro) avança, e um pouco acompanha o mouse */
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2, kf = d3 ? 15 : 7, kc = d3 ? 5 : 2.5;
+  const nx = clamp((innerWidth / 2 - cx) / (innerWidth / 2), -1, 1), ny = clamp((innerHeight * .45 - cy) / (innerHeight / 2), -1, 1);
+  inn.style.setProperty("--ry", (nx * kf + (px - .5) * kc).toFixed(2) + "deg"); inn.style.setProperty("--rx", (ny * kf * .6 + (.5 - py) * kc).toFixed(2) + "deg");
+  if (tilted !== card && d3) { /* a perspectiva afasta do centro o que avança: compensa para o cartão crescer no lugar, sem escorregar para a esquerda */
+    const b = $(".board"), br = b ? b.getBoundingClientRect() : { left: 0, top: 0 }, ox = br.left + innerWidth / 2, oy = br.top + innerHeight * .2, dz = 78 - (8 + (3 - (+card.style.getPropertyValue("--p") || 2)) * 15);
+    card.style.setProperty("--cx", (-(cx - ox) * dz / 1500).toFixed(1) + "px"); card.style.setProperty("--cy", (-(cy - oy) * dz / 1500).toFixed(1) + "px"); }
+  if (!glassOn()) { card.style.setProperty("--gx", px * 100 + "%"); card.style.setProperty("--gy", py * 100 + "%"); card.style.setProperty("--glare", "1"); }
+  tilted = card;
 }
 /* dicas dos gráficos e da órbita */
 document.addEventListener("mousemove", e => { const el = e.target.closest && e.target.closest("[data-tip]"), tip = $("#tip"); if (!el || drag) { tip.hidden = true; return; } tip.textContent = el.dataset.tip; tip.hidden = false; tip.style.left = clamp(e.clientX + 12, 4, innerWidth - tip.offsetWidth - 4) + "px"; tip.style.top = (e.clientY - 34 < 4 ? e.clientY + 16 : e.clientY - 34) + "px"; });
