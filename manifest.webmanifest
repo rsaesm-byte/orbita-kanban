@@ -4,8 +4,8 @@
  "start_url": "./orbita-kanban.html",
  "scope": "./",
  "display": "standalone",
- "background_color": "#0a1230",
- "theme_color": "#0a1230",
+ "background_color": "#000000",
+ "theme_color": "#000000",
  "icons": [
   {
    "src": "icons/icon-192.png",

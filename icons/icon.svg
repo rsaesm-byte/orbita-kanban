@@ -1,21 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
 <defs>
-<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14306b"/><stop offset="1" stop-color="#050b1f"/></linearGradient>
-<radialGradient id="pl" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#ffe9a6"/><stop offset=".5" stop-color="#e0a93a"/><stop offset="1" stop-color="#8a5a12"/></radialGradient>
-<clipPath id="c"><circle cx="256" cy="256" r="150"/></clipPath>
-<radialGradient id="sh" cx=".3" cy=".25" r=".9"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#020617" stop-opacity=".6"/></radialGradient>
+<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#d4961f"/></linearGradient>
+<linearGradient id="b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f7bff"/><stop offset="1" stop-color="#7cc4ff"/></linearGradient>
+<clipPath id="c"><circle cx="256" cy="256" r="146"/></clipPath>
 </defs>
-<rect width="512" height="512" rx="112" fill="url(#bg)"/>
-<g fill="#fff"><circle cx="70" cy="90" r="3"/><circle cx="440" cy="70" r="2.5"/><circle cx="460" cy="400" r="3"/><circle cx="90" cy="430" r="2.5"/><circle cx="400" cy="150" r="2"/></g>
-<circle cx="256" cy="256" r="150" fill="url(#pl)"/>
-<g clip-path="url(#c)">
-<path d="M90 160H430V190Q340 204 256 190T90 190Z" fill="#1f4fae" opacity=".85"/>
-<path d="M90 228H430V252Q340 266 256 252T90 252Z" fill="#2f6fe0" opacity=".8"/>
-<path d="M90 296H430V326Q340 312 256 326T90 326Z" fill="#1f4fae" opacity=".85"/>
-<path d="M90 350H430V372Q340 384 256 372T90 372Z" fill="#2f6fe0" opacity=".7"/>
-<ellipse cx="318" cy="288" rx="30" ry="17" fill="#b8541f" opacity=".9"/>
-<circle cx="256" cy="256" r="150" fill="url(#sh)"/>
+<rect width="512" height="512" rx="112" fill="#000"/>
+<g fill="#fff">
+<circle cx="64" cy="84" r="3"/><circle cx="150" cy="46" r="2"/><circle cx="446" cy="78" r="3"/><circle cx="478" cy="210" r="2"/><circle cx="458" cy="440" r="3"/><circle cx="360" cy="468" r="2"/><circle cx="84" cy="436" r="3"/><circle cx="36" cy="290" r="2"/><circle cx="410" cy="132" r="2"/><circle cx="118" cy="388" r="2"/><circle cx="226" cy="470" r="2"/>
 </g>
-<path d="M70 330Q256 420 446 190" fill="none" stroke="#f2c75c" stroke-width="5" stroke-linecap="round" opacity=".9"/>
-<circle cx="446" cy="190" r="14" fill="#7db3ff"/>
+<g fill="#ffe08a"><path d="M96 150l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><path d="M420 380l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/><path d="M400 66l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/></g>
+<g clip-path="url(#c)" fill="none" stroke="url(#b)" stroke-width="7" stroke-linecap="round">
+<path d="M100 188Q180 176 256 188T412 188"/>
+<path d="M100 232Q180 244 256 232T412 232"/>
+<path d="M100 284Q180 272 256 284T412 284"/>
+<path d="M100 330Q180 342 256 330T412 330"/>
+</g>
+<ellipse cx="322" cy="258" rx="26" ry="14" fill="none" stroke="url(#g)" stroke-width="6"/>
+<circle cx="256" cy="256" r="146" fill="none" stroke="url(#g)" stroke-width="10"/>
+<path d="M62 330Q256 430 452 196" fill="none" stroke="url(#g)" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12"/>
+<circle cx="452" cy="196" r="12" fill="none" stroke="url(#b)" stroke-width="6"/>
 </svg>
