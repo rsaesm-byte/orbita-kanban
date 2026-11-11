@@ -37,3 +37,10 @@ O mesmo arquivo já é responsivo: abra `https://rsaesm-byte.github.io/orbita-ka
 **Configurações → Aplicativo → Instalar app** (ou ⋮ → Instalar app). Ele vira um ícone na tela inicial, abre em tela cheia
 e funciona sem internet (`sw.js`). No celular: abas viram a barra de baixo, botão **+ Nova tarefa** flutuante, gaveta em tela cheia
 e **toque longo no cartão** abre o menu (prioridade, prazo, mover para outra coluna…).
+
+### Gestos no celular
+- **Deslizar para os lados**: troca de coluna (a barra de colunas no topo acompanha e também é tocável).
+- **Círculo no cartão**: conclui / reabre a tarefa.
+- **Segurar o cartão e arrastar**: move entre colunas (rola sozinho ao chegar na borda). **Segurar e soltar parado** abre o menu rápido.
+- **Deslizar a gaveta da tarefa para a direita** (pelo topo ou pela borda esquerda) ou **janelas/menu para baixo**: fecha.
+- **Deslizar sobre a barra de baixo**: troca entre Quadro, Órbita, Lista e Relatórios.

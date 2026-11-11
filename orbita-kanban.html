@@ -430,6 +430,48 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 }
 
 /* ===== Celular ===== */
+/* ---- cartões do celular ---- */
+.c-head { display: contents; } .c-done { display: none; }
+.colnav { display: none; }
+@media (max-width: 720px), (pointer: coarse) and (max-width: 1000px) {
+  .colnav { display: flex; gap: 6px; overflow-x: auto; padding: 2px 12px 8px; scrollbar-width: none; flex: none; scroll-snap-type: x proximity; }
+  .colnav:empty, body[data-view]:not([data-view="quadro"]) .colnav { display: none; }
+  .colnav button { flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--ink2); font-weight: 600; font-size: 13px; transition: background .2s, color .2s, border-color .2s, transform .2s; }
+  .colnav button::before { content: ""; width: 8px; height: 8px; border-radius: 3px; background: oklch(0.62 0.13 var(--ch)); }
+  .colnav button b { font: 500 11px var(--mono); opacity: .7; }
+  .colnav button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); transform: scale(1.03); }
+  main { scroll-snap-type: x mandatory; } .col { scroll-snap-align: center; scroll-snap-stop: always; }
+  body.dragging main { scroll-snap-type: none !important; }
+  .col { border-radius: 20px; }
+  .col-h { padding: 12px 14px 8px; } .col-name { font-size: 16px; }
+  .col-list { padding: 4px 10px 8px; gap: 10px; }
+  .card { border-radius: 18px; }
+  .face { border-radius: 18px; padding: 14px 14px 12px 18px; gap: 10px; border: 1px solid var(--line); border-left-width: 1px;
+    box-shadow: 0 1px 2px rgb(var(--shadow) / .12), 0 12px 22px -14px rgb(var(--shadow) / .5); }
+  .face.front::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 5px; border-radius: 0 6px 6px 0; background: var(--pc); }
+  .c-top { order: 0; } .tk { font-size: 11px; color: var(--ink3); }
+  .pri { padding: 3px 9px 3px 8px; border-radius: 99px; background: color-mix(in oklab, var(--pc) 15%, transparent); font-size: 10.5px; }
+  .c-head { display: flex; gap: 11px; align-items: flex-start; }
+  .card h3 { font: 600 16.5px/1.32 var(--body); letter-spacing: -.005em; flex: 1; padding-top: 2px; }
+  .c-done { display: grid; place-items: center; flex: none; width: 28px; height: 28px; margin-top: 0; border-radius: 50%; border: 2px solid color-mix(in oklab, var(--ink3) 70%, transparent); background: transparent; color: transparent; padding: 0; transition: background .2s, border-color .2s, color .2s, transform .15s; -webkit-tap-highlight-color: transparent; }
+  .c-done svg { width: 15px; height: 15px; stroke-width: 2.4; }
+  .c-done:active { transform: scale(.88); }
+  .card.done .c-done { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .tags { gap: 6px; } .tags .tag, .face .tag { padding: 3px 10px; font-size: 12px; border-radius: 99px; }
+  .c-meta { gap: 7px; font-size: 12.5px; }
+  .c-meta > span:not([data-timer]) { padding: 4px 9px; border-radius: 9px; background: var(--bg2); }
+  .c-meta .due.over { background: color-mix(in oklab, var(--p0) 16%, transparent); } .c-meta .due.today { background: color-mix(in oklab, var(--p1) 16%, transparent); } .c-meta .due.soon { background: color-mix(in oklab, var(--p2) 15%, transparent); }
+  .c-meta svg { width: 14px; height: 14px; }
+  .c-meta .icon-btn[data-act="flip"], .face.back { display: none; }
+  .bar { height: 6px; border-radius: 4px; }
+  .card.holding .face { transform: scale(.975); box-shadow: 0 0 0 2px var(--accent), 0 20px 34px -12px rgb(var(--shadow) / .7); transition: transform .15s, box-shadow .15s; }
+  .ghost { opacity: .97; } .ghost .face { transform: scale(1.04) rotate(-1.6deg); box-shadow: 0 0 0 2px var(--accent), 0 34px 44px -14px rgb(var(--shadow) / .7); }
+  .ph { border-radius: 18px; border: 2px dashed var(--accent); background: color-mix(in oklab, var(--accent) 8%, transparent); }
+  .tabs { touch-action: pan-y; } .d-head, .ctx-t { touch-action: none; } .drawer { touch-action: pan-y; }
+  .d-head::before { content: ""; position: absolute; left: 50%; top: 6px; width: 38px; height: 4px; margin-left: -19px; border-radius: 3px; background: var(--line); }
+  .d-head { position: relative; padding-top: 18px; }
+}
+
 @media (max-width: 720px), (pointer: coarse) and (max-width: 1000px) {
   html, body { overscroll-behavior: none; }
   body { padding-top: env(safe-area-inset-top); }
@@ -446,7 +488,7 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
   .board { padding: 4px 12px 20px; perspective: none; } .stage { transform: none !important; transition: none; gap: 10px; }
   .col { width: 86vw; max-width: 380px; scroll-snap-align: center; }
   .col-add { width: 40vw; }
-  .card, .card-in { transform: none !important; translate: none !important; animation: none !important; }
+  .card:not(.ghost), .card:not(.ghost) .card-in { transform: none !important; translate: none !important; animation: none !important; }
   .card::before { display: none !important; }
   .card { -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
   .motes, .floor, .spot { display: none !important; }
@@ -483,6 +525,7 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 <div class="floor" aria-hidden="true"></div>
 <div class="spot" id="spot" aria-hidden="true"></div>
 <div class="strip" id="strip"></div>
+<nav class="colnav" id="colnav" aria-label="Colunas"></nav>
 <main id="view"></main>
 <div id="layer"></div>
 <div class="lb" id="lb" hidden data-act="lbClose"><img alt="Anexo ampliado"></div>
@@ -886,7 +929,7 @@ function cardHTML(t, j) {
   return `<article class="card p${t.priority}${ui.flipped.has(t.id) ? " flipped" : ""}${done ? " done" : ""}${run ? " running" : ""}${di && di.ms < 0 && !done ? " late" : ""}" data-id="${t.id}" style="--j:${j || 0};--p:${t.priority}" tabindex="0" aria-label="${esc(t.title)}">
   <div class="card-in"><div class="face front">
     <div class="c-top"><span class="tk">${t.ticket ? "#" + esc(t.ticket) : ""}</span><span class="pri">${PRI[t.priority]}</span></div>
-    <h3>${esc(t.title)}</h3>${tags ? `<div class="tags">${tags}</div>` : ""}
+    <div class="c-head"><button class="c-done" data-act="toggleDone" data-id="${t.id}" aria-label="${done ? "Reabrir tarefa" : "Concluir tarefa"}">${ic("check")}</button><h3>${esc(t.title)}</h3></div>${tags ? `<div class="tags">${tags}</div>` : ""}
     <div class="c-meta">${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span>${ic("check")}${ckd}/${ck}</span>` : ""}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
       ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}
       <button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></div>
@@ -1319,7 +1362,7 @@ function openCtx(id, x, y) {
   <button data-act="cxBlock">${ic("cal")}Outlook</button><button data-act="mdExport">${ic("note")}Exportar .md</button><button data-act="cxDup">${ic("copy")}Duplicar</button><button data-act="cxArchive">${ic("check")}Arquivar</button><button class="danger" data-act="cxDel">${ic("trash")}Apagar</button></div>`;
   m.hidden = false; m.style.left = clamp(x, 6, innerWidth - m.offsetWidth - 6) + "px"; m.style.top = clamp(y, 6, Math.max(6, innerHeight - m.offsetHeight - 6)) + "px";
 }
-document.addEventListener("contextmenu", e => { const el = e.target.closest && e.target.closest(".card, tr[data-id], .planet"); if (!el || el.classList.contains("ghost") || e.target.closest("input,textarea")) return; e.preventDefault(); if (ui.overlay) closeLayer(); openCtx(el.dataset.id, e.clientX, e.clientY); });
+document.addEventListener("contextmenu", e => { if (hold || Date.now() < holdGuard) return void e.preventDefault(); const el = e.target.closest && e.target.closest(".card, tr[data-id], .planet"); if (!el || el.classList.contains("ghost") || e.target.closest("input,textarea")) return; e.preventDefault(); if (ui.overlay) closeLayer(); openCtx(el.dataset.id, e.clientX, e.clientY); });
 $("#view").addEventListener("scroll", () => { const v = $("#view"); if (ctxId && Math.hypot(v.scrollLeft - ctxScroll[0], v.scrollTop - ctxScroll[1]) > 40) closeCtx(); });
 
 /* ================= ações ================= */
@@ -1335,6 +1378,9 @@ const acts = {
   mdCopy: async () => { const t = cur() || task(ctxId); if (!t) return; try { await navigator.clipboard.writeText(taskMd(t)); toast("Markdown copiado"); } catch { toast("Não foi possível copiar aqui"); } },
   tplForm: () => { ui.tplForm = !ui.tplForm; renderDrawer(); const i = $("#d_tplname"); if (i) { i.focus(); i.select(); } },
   tplSave: () => { const t = cur(), name = ($("#d_tplname").value || "").trim(), tg = $("#d_tpltag").value; if (!name) return toast("Dê um nome ao modelo"); const items = t.check.map(c => c.t).filter(x => x.trim()); let tp = state.templates.find(x => norm(x.name) === norm(name)); if (tp) { tp.items = items; tp.tag = tg; } else state.templates.push({ id: uid(), name, tag: tg, items }); ui.tplForm = false; save(); renderDrawer(); toast(tp ? `Modelo “${name}” atualizado` : `Modelo “${name}” salvo com ${items.length} itens`); },
+  toggleDone: el => { const id = el.dataset.id, t = task(id); if (!t) return; const cs = cols(boardOf(t)), was = isDone(t), tgt = was ? cs.find(c => !c.done) : cs.find(c => c.done);
+    if (!tgt) return toast("Marque uma coluna como “concluídas” em Configurações"); haptic(was ? 10 : [12, 40, 18]); moveTask(id, tgt.id); render(); fxLand(id, !was); },
+  goCol: el => { const c = $(`.col[data-col="${el.dataset.v}"]`); if (c) c.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }); },
   appInstall: async () => {
     const msg = t => { const m = $("#install-msg"); if (m) m.textContent = t; toast(t); };
     if (matchMedia("(display-mode: standalone)").matches || navigator.standalone) return msg("O app já está instalado neste aparelho.");
@@ -1477,30 +1523,49 @@ document.addEventListener("keydown", e => {
 
 /* ---------- arrastar e soltar com profundidade ---------- */
 let drag = null, suppressClick = false;
+const haptic = p => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
+let hold = null, holdGuard = 0, touchDrag = false, dragTimer = 0, upOk = false;
 $("#view").addEventListener("pointerdown", e => {
-  if (e.button !== 0 || e.pointerType === "touch" || ui.view !== "quadro") return;
+  if (e.button !== 0 || ui.view !== "quadro") return;
   const card = e.target.closest(".card"); if (!card || e.target.closest("button,input,label,a")) return;
+  if (e.pointerType === "touch") {   /* toque longo: o cartão "levanta" e pode ser arrastado; se soltar parado, abre o menu */
+    clearTimeout(hold && hold.t); hold = { id: card.dataset.id, card, x: e.clientX, y: e.clientY, pid: e.pointerId, fired: false };
+    hold.t = setTimeout(() => { if (!hold) return; hold.fired = true; card.classList.add("holding"); haptic(16); touchDrag = true;
+      try { $("#view").setPointerCapture(hold.pid); } catch {}
+      drag = { id: hold.id, card, sx: hold.x, sy: hold.y, lx: hold.x, started: false, touch: true }; }, 380);
+    return;
+  }
   drag = { id: card.dataset.id, card, sx: e.clientX, sy: e.clientY, lx: e.clientX, started: false };
 });
+$("#view").addEventListener("touchmove", e => { if (touchDrag) e.preventDefault(); }, { passive: false });
+function dragPlace(x, y, touch) {
+  const d = drag; if (!d || !d.started) return; d.px = x; d.py = y;
+  const c = document.elementFromPoint(x, y), colEl = c && c.closest(".col");
+  if (colEl) { const list = $(".col-list", colEl), em = $(".empty", list); if (em) em.remove(); const before = $$(".card:not(.lifted)", list).find(k => { const r = k.getBoundingClientRect(); return y < r.top + r.height / 2; }); before ? list.insertBefore(d.ph, before) : list.append(d.ph); }
+  const m = $("#view"), mr = m.getBoundingClientRect(), z = touch ? 64 : 70, v = touch ? 18 : 16;
+  if (x > mr.right - z) m.scrollLeft += v; else if (x < mr.left + z) m.scrollLeft -= v;
+}
 window.addEventListener("pointermove", e => {
   scene(e); lens(e); if (orb) return orbDrag(e);
+  if (hold && !hold.fired && e.pointerType === "touch" && Math.hypot(e.clientX - hold.x, e.clientY - hold.y) > 9) { clearTimeout(hold.t); hold = null; }
   if (!drag) return tilt(e);
   const d = drag;
   if (!d.started) {
     if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 6) return;
-    const r = d.card.getBoundingClientRect(); d.started = true; d.ox = d.sx - r.left; d.oy = d.sy - r.top;
+    const r = d.card.getBoundingClientRect(); d.started = true; d.ox = d.sx - r.left; d.oy = d.sy - r.top; if (d.touch) { clearInterval(dragTimer); dragTimer = setInterval(() => { if (drag && drag.started && drag.px != null) dragPlace(drag.px, drag.py, true); }, 40); haptic(8); }
     d.ghost = d.card.cloneNode(true); d.ghost.classList.add("ghost"); d.ghost.classList.remove("flipped"); d.ghost.style.width = r.width + "px"; document.body.append(d.ghost);
     d.ph = document.createElement("div"); d.ph.className = "ph"; d.ph.style.height = r.height + "px"; d.card.after(d.ph); d.card.classList.add("lifted"); document.body.classList.add("dragging");
   }
   const vx = clamp((e.clientX - d.lx) * 1.4, -14, 14); d.lx = e.clientX;
   d.ghost.style.transform = `translate(${e.clientX - d.ox}px,${e.clientY - d.oy}px)`;
   const inn = $(".card-in", d.ghost); inn.style.setProperty("--ry", vx + "deg"); inn.style.setProperty("--rx", "8deg");
-  const c = document.elementFromPoint(e.clientX, e.clientY), colEl = c && c.closest(".col");
-  if (colEl) { const list = $(".col-list", colEl), em = $(".empty", list); if (em) em.remove(); const before = $$(".card:not(.lifted)", list).find(k => { const r = k.getBoundingClientRect(); return e.clientY < r.top + r.height / 2; }); before ? list.insertBefore(d.ph, before) : list.append(d.ph); }
-  const m = $("#view"), mr = m.getBoundingClientRect(); if (e.clientX > mr.right - 70) m.scrollLeft += 16; else if (e.clientX < mr.left + 70) m.scrollLeft -= 16;
+  dragPlace(e.clientX, e.clientY, d.touch);
 });
 function endDrag() {
-  const d = drag; drag = null; if (!d || !d.started) return;
+  const d = drag; drag = null; touchDrag = false; clearInterval(dragTimer);
+  if (hold) { const hd = hold; clearTimeout(hd.t); hold = null; hd.card.classList.remove("holding"); holdGuard = Date.now() + 700; if (hd.fired) { suppressClick = true; setTimeout(() => suppressClick = false, 450); } if (hd.fired && upOk && d && !d.started) openCtx(hd.id, hd.x, hd.y); }
+  if (!d || !d.started) return;
+  if (d.touch) haptic(10);
   suppressClick = true; setTimeout(() => suppressClick = false, 50);
   const colEl = d.ph.closest(".col"); let n = d.ph.nextElementSibling; while (n && (!n.classList.contains("card") || n.classList.contains("lifted"))) n = n.nextElementSibling;
   d.ghost.remove(); document.body.classList.remove("dragging");
@@ -1508,7 +1573,7 @@ function endDrag() {
   if (colEl) moveTask(d.id, colEl.dataset.col, n && n.dataset.id);
   render(); fxLand(d.id, t && !was && isDone(t));
 }
-window.addEventListener("pointerup", endDrag); window.addEventListener("pointercancel", endDrag);
+window.addEventListener("pointerup", () => { upOk = true; endDrag(); upOk = false; }); window.addEventListener("pointercancel", endDrag);
 /* inclinação dos cartões sob o cursor */
 let tilted = null, orb = null;
 function scene(e) {   // a bancada inteira acompanha o cursor
@@ -1555,6 +1620,50 @@ let installEv = null;
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEv = e; });
 addEventListener("appinstalled", () => { installEv = null; toast("App instalado"); });
 if ("serviceWorker" in navigator && /^https?:/.test(location.protocol) && !EMBED) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+
+/* colunas: barra de navegação e coluna ativa (celular) */
+function colnav() {
+  const n = $("#colnav"); if (!n) return; document.body.dataset.view = ui.view;
+  if (ui.view !== "quadro") { n.innerHTML = ""; return; }
+  const tasks = live().filter(passes), key = cols().map(c => c.id + c.name + tasks.filter(t => t.col === c.id).length).join("|");
+  if (n.dataset.key !== key) { n.dataset.key = key; n.innerHTML = cols().map(c => `<button data-act="goCol" data-v="${c.id}" style="--ch:${c.hue}" data-c="${c.id}">${esc(c.name)} <b>${tasks.filter(t => t.col === c.id).length}</b></button>`).join(""); }
+  colActive();
+}
+let navRaf = 0;
+function colActive() {
+  const v = $("#view"), n = $("#colnav"); if (!v || !n || ui.view !== "quadro") return; const mid = v.getBoundingClientRect().left + v.clientWidth / 2; let best = null, bd = 1e9;
+  $$(".col", v).forEach(c => { const r = c.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - mid); if (d < bd) { bd = d; best = c; } });
+  if (!best) return; let on = null; $$("button", n).forEach(b => { const a = b.dataset.c === best.dataset.col; b.classList.toggle("on", a); if (a) on = b; });
+  if (on && n.dataset.act !== best.dataset.col) { n.dataset.act = best.dataset.col; n.scrollTo({ left: on.offsetLeft - (n.clientWidth - on.offsetWidth) / 2, behavior: "smooth" }); }
+}
+$("#view").addEventListener("scroll", () => { cancelAnimationFrame(navRaf); navRaf = requestAnimationFrame(colActive); }, { passive: true });
+new MutationObserver(() => requestAnimationFrame(colnav)).observe($("#view"), { childList: true });
+
+/* gestos: deslizar para fechar gaveta, janelas e menu; deslizar nas abas troca de visão */
+(function swipes() {
+  let s = null;
+  document.addEventListener("pointerdown", e => {
+    if (e.pointerType !== "touch" || e.button !== 0) return;
+    const el = e.target.closest(".drawer, .modal, .ctx, .tabs"); if (!el) return;
+    const r = el.getBoundingClientRect(), inHead = !!e.target.closest(".d-head, .ctx-t"), edge = el.classList.contains("drawer") && e.clientX - r.left < 26;
+    if (el.classList.contains("tabs")) { s = { el, kind: "tabs", x: e.clientX, y: e.clientY }; return; }
+    if (!inHead && !edge) return;
+    s = { el, kind: el.classList.contains("drawer") ? "x" : "y", x: e.clientX, y: e.clientY, d: 0, on: false };
+  });
+  document.addEventListener("pointermove", e => {
+    if (!s || s.kind === "tabs") return; const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (!s.on) { if (s.kind === "x" ? (dx > 12 && dx > Math.abs(dy) * 1.4) : (dy > 12 && dy > Math.abs(dx) * 1.4)) { s.on = true; s.el.style.transition = "none"; s.el.style.animation = "none"; try { s.el.setPointerCapture(e.pointerId); } catch {} } else return; }
+    s.d = Math.max(0, s.kind === "x" ? dx : dy); s.el.style.transform = s.kind === "x" ? `translateX(${s.d}px)` : `${s.el.classList.contains("modal") ? "" : ""}translateY(${s.d}px)`; s.el.style.opacity = String(1 - Math.min(.6, s.d / 500));
+  });
+  const end = e => {
+    if (!s) return; const t = s; s = null;
+    if (t.kind === "tabs") { const dx = e.clientX - t.x, dy = e.clientY - t.y; if (Math.abs(dx) > 46 && Math.abs(dx) > Math.abs(dy) * 1.5) { const i = VIEWS.findIndex(v => v[0] === ui.view), j = clamp(i + (dx < 0 ? 1 : -1), 0, VIEWS.length - 1); if (j !== i) { haptic(8); location.hash = VIEWS[j][0]; } } return; }
+    if (!t.on) return; const lim = (t.kind === "x" ? t.el.offsetWidth : t.el.offsetHeight) * .3;
+    if (t.d > lim) { haptic(8); t.el.classList.contains("ctx") ? closeCtx() : closeLayer(); }
+    else { t.el.style.transition = "transform .25s cubic-bezier(.2,.8,.2,1), opacity .25s"; t.el.style.transform = ""; t.el.style.opacity = ""; setTimeout(() => { t.el.style.transition = ""; t.el.style.animation = ""; }, 280); }
+  };
+  document.addEventListener("pointerup", end); document.addEventListener("pointercancel", () => { s = null; });
+})();
 /* camadas: a cena recua quando algo abre na frente dela */
 let layerKind = "";
 new MutationObserver(() => { const L = $("#layer"), k = ui.overlay ? ui.overlay + (ui.drawer || "") : "", el = $(".drawer,.modal,.pop", L);
