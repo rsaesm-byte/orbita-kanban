@@ -622,6 +622,48 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+/* ===== cartões: ciclo do checklist ===== */
+.ckl { display: flex; align-items: center; gap: 9px; min-height: 22px; padding: 3px 8px 3px 7px; border-radius: 8px; background: color-mix(in oklab, var(--ink) 4.5%, transparent); font-size: 12px; }
+.ckl-dots { display: flex; gap: 3px; flex: none; }
+.ckl-dots i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--ink3); transition: transform .35s cubic-bezier(.2,1.6,.4,1), box-shadow .35s, background .3s; }
+.ckl-dots i.d { background: var(--accent); border-color: var(--accent); }
+.ckl-dots i.on { transform: scale(1.45); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 24%, transparent); }
+.ckl-view { position: relative; flex: 1; min-width: 0; height: 18px; overflow: hidden; }
+.ckl-i { position: absolute; inset: 0; display: flex; align-items: center; gap: 7px; white-space: nowrap; color: var(--ink2); opacity: 0; transform: translateY(110%); transition: opacity .3s, transform .5s cubic-bezier(.2,.8,.2,1); }
+.ckl-i.on { opacity: 1; transform: none; }
+.ckl-i.out { transform: translateY(-110%); }
+.ckl-i b { width: 14px; height: 14px; border-radius: 50%; flex: none; display: grid; place-items: center; border: 1.5px solid var(--ink3); box-sizing: border-box; }
+.ckl-i b svg { width: 9px; height: 9px; }
+.ckl-i.d b { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ckl-i.d.on b { animation: ckPop .55s cubic-bezier(.2,1.7,.4,1); }
+.ckl-i:not(.d).on b { animation: ckWait 1.6s ease-in-out infinite; }
+.ckl-i span { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ckl-i.d span { color: var(--ink3); text-decoration: line-through; }
+.ckl-i em { margin-left: auto; padding-left: 6px; flex: none; font-style: normal; font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink3); }
+.ckl-i.d em { color: var(--accent); }
+@keyframes ckPop { 0% { transform: scale(0) rotate(-90deg); } 100% { transform: none; } }
+@keyframes ckWait { 50% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--p1) 28%, transparent); border-color: var(--p1); } }
+/* ===== abertura do Quadro ===== */
+.bd-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+.bd-sweep { position: absolute; top: -20%; bottom: -20%; left: 0; width: 30%; transform: translateX(-130%) skewX(-18deg); background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--accent) 20%, transparent) 42%, rgb(255 255 255 / .4) 50%, color-mix(in oklab, var(--accent) 20%, transparent) 58%, transparent); animation: bdSweep 1.6s cubic-bezier(.45,.1,.2,1) .1s forwards; }
+@keyframes bdSweep { to { transform: translateX(470%) skewX(-18deg); } }
+.bd-wave { position: absolute; left: 30%; top: 34%; width: 36vmin; height: 36vmin; margin: -18vmin 0 0 -18vmin; border-radius: 50%; border: 2px solid color-mix(in oklab, var(--accent) 65%, transparent); box-shadow: 0 0 36px color-mix(in oklab, var(--accent) 35%, transparent); opacity: 0; animation: bdWave 1.8s cubic-bezier(.2,.7,.3,1) .15s forwards; }
+@keyframes bdWave { 0% { transform: scale(.1); opacity: .9; } 100% { transform: scale(5); opacity: 0; } }
+.bd-sp i { position: absolute; left: var(--x); top: var(--y); width: var(--s); height: var(--s); border-radius: 50%; background: var(--c); box-shadow: 0 0 9px var(--c); opacity: 0; animation: bdSp 1.7s ease-out var(--d) both; }
+@keyframes bdSp { 0% { transform: translateY(26px) scale(0); opacity: 0; } 30% { opacity: .95; transform: scale(1); } 100% { transform: translateY(-100px) scale(.3); opacity: 0; } }
+html:root .board.cine.enter .stage { animation: bdStage 1.9s cubic-bezier(.16,.8,.2,1) backwards; }
+@keyframes bdStage { from { scale: .9; translate: 0 36px; } }
+html:root .board.cine.enter .col { animation: bdCol .9s cubic-bezier(.2,.9,.2,1) calc(.2s + var(--i) * .1s) backwards; }
+@keyframes bdCol { from { opacity: 0; transform: translateY(100px) rotateX(-40deg) scale(.93); } 65% { opacity: 1; } }
+html:root .board.cine.enter .card { animation: bdDeal .72s cubic-bezier(.2,1.1,.3,1) calc(.55s + var(--i) * .1s + var(--j) * .08s) backwards; }
+html:root[data-depth="2"] .board.cine.enter .card { animation: bdDeal .72s cubic-bezier(.2,1.1,.3,1) calc(.55s + var(--i) * .1s + var(--j) * .08s) backwards, bob 6s ease-in-out infinite; animation-delay: calc(.55s + var(--i) * .1s + var(--j) * .08s), calc(var(--j, 0) * -1.3s - var(--i, 0) * .7s); }
+@keyframes bdDeal { 0% { opacity: 0; transform: translate3d(-130px, -90px, 0) rotate(-11deg) scale(.7); } 55% { opacity: 1; } 80% { transform: translate3d(0, 5px, 0) rotate(1deg) scale(1.03); } 100% { transform: none; } }
+.board.cine .col-dot { animation: bdDot .8s cubic-bezier(.2,1.6,.4,1) calc(.5s + var(--i) * .1s) backwards; }
+@keyframes bdDot { from { transform: scale(0); } 60% { transform: scale(1.8); box-shadow: 0 0 0 6px color-mix(in oklab, oklch(0.62 0.13 var(--ch)) 30%, transparent); } }
+.board.cine .card .bar i { animation: bdBar .9s cubic-bezier(.2,.8,.2,1) calc(1.3s + var(--i) * .1s + var(--j) * .08s) backwards; }
+@keyframes bdBar { from { width: 0; } }
+.board.cine .quick, .board.cine .col-add { animation: bdFade .6s ease calc(1.5s + var(--i, 0) * .1s) backwards; }
+@keyframes bdFade { from { opacity: 0; transform: translateY(8px); } }
 /* ===== tema claro: limpo e nítido (superfícies sólidas, bordas finas, sombras curtas) ===== */
 html:root[data-theme="light"]{
   --bg: #f5f6f8; --bg2: #eceef2; --surface: #ffffff; --surface2: #f6f7f9;
@@ -692,6 +734,50 @@ html:root:not([data-theme]) .card.done .face > * { opacity: .72; }
 html:root:not([data-theme]) .card.late .face { animation: none; box-shadow: 0 0 0 1px color-mix(in oklab, var(--p0) 45%, transparent), 0 1px 2px rgb(var(--shadow) / .06); }
 html:root:not([data-theme]) .card.running .face { animation: none; box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 55%, transparent), 0 1px 2px rgb(var(--shadow) / .06); }
 html:root:not([data-theme]) .menu-body, html:root:not([data-theme]) .d-body, html:root:not([data-theme]) .m-body { box-shadow: 0 12px 32px -10px rgb(var(--shadow) / .28); }
+
+}
+/* ===== tema claro: vida (cor por coluna, brilho suave, microinterações) ===== */
+html:root[data-theme="light"] body { background: linear-gradient(180deg, #f7f8fb 0%, #f1f3f8 100%); }
+html:root[data-theme="light"] body::before { content: ""; position: fixed; inset: -20%; z-index: -1; pointer-events: none; background: radial-gradient(36% 40% at 14% 12%, oklch(0.9 0.07 var(--ah) / .55), transparent 70%), radial-gradient(32% 38% at 88% 8%, oklch(0.91 0.06 calc(var(--ah) + 90) / .45), transparent 70%), radial-gradient(40% 40% at 70% 100%, oklch(0.92 0.05 calc(var(--ah) - 70) / .4), transparent 70%); animation: lifeDrift 38s ease-in-out infinite alternate; }
+@keyframes lifeDrift { to { transform: translate3d(3%, 2%, 0) scale(1.06); } }
+html:root[data-theme="light"] .top { background: rgb(255 255 255 / .82); backdrop-filter: blur(10px); }
+html:root[data-theme="light"] .col { background: oklch(0.962 0.012 var(--ch)); border-color: oklch(0.91 0.03 var(--ch)); border-top: 3px solid oklch(0.72 0.13 var(--ch)); }
+html:root[data-theme="light"] .col-h { background: linear-gradient(180deg, oklch(0.94 0.035 var(--ch)), transparent); border-radius: 12px 12px 0 0; }
+html:root[data-theme="light"] .col-dot { box-shadow: 0 0 0 3px oklch(0.62 0.13 var(--ch) / .18); }
+html:root[data-theme="light"] .count { background: oklch(0.62 0.13 var(--ch) / .12); color: oklch(0.4 0.1 var(--ch)); border-radius: 99px; padding: 0 8px; }
+html:root[data-theme="light"] .pri { background: color-mix(in oklab, var(--pc) 12%, transparent); padding: 2px 8px; border-radius: 99px; }
+html:root[data-theme="light"] .card .face { transition: box-shadow .25s, border-color .25s; }
+html:root[data-theme="light"] .card:hover .face { box-shadow: 0 2px 4px rgb(var(--shadow) / .08), 0 14px 26px -10px color-mix(in oklab, var(--pc) 38%, rgb(var(--shadow) / .3)); }
+html:root[data-theme="light"] .bar { height: 5px; background: color-mix(in oklab, var(--ink) 7%, transparent); }
+html:root[data-theme="light"] .bar i { background: linear-gradient(90deg, var(--accent), oklch(0.68 0.14 calc(var(--ah) + 40))); }
+html:root[data-theme="light"] .ckl { background: oklch(0.965 0.012 var(--ah)); }
+html:root[data-theme="light"] .btn.main { background: linear-gradient(135deg, var(--accent), oklch(0.5 0.13 calc(var(--ah) + 30))); box-shadow: 0 4px 12px -3px oklch(0.5 0.12 var(--ah) / .5); }
+html:root[data-theme="light"] .btn.main:hover { filter: brightness(1.08); transform: translateY(-1px); }
+html:root[data-theme="light"] .next { box-shadow: 0 1px 3px rgb(var(--shadow) / .08); }
+html:root[data-theme="light"] .chip:hover { background: var(--surface2); border-color: var(--ink3); }
+html:root[data-theme="light"] .col-add { background: transparent; border: 1.5px dashed var(--edge); }
+
+@media (prefers-color-scheme: light) {
+/* ===== tema claro: vida (cor por coluna, brilho suave, microinterações) ===== */
+html:root:not([data-theme]) body { background: linear-gradient(180deg, #f7f8fb 0%, #f1f3f8 100%); }
+html:root:not([data-theme]) body::before { content: ""; position: fixed; inset: -20%; z-index: -1; pointer-events: none; background: radial-gradient(36% 40% at 14% 12%, oklch(0.9 0.07 var(--ah) / .55), transparent 70%), radial-gradient(32% 38% at 88% 8%, oklch(0.91 0.06 calc(var(--ah) + 90) / .45), transparent 70%), radial-gradient(40% 40% at 70% 100%, oklch(0.92 0.05 calc(var(--ah) - 70) / .4), transparent 70%); animation: lifeDrift 38s ease-in-out infinite alternate; }
+@keyframes lifeDrift { to { transform: translate3d(3%, 2%, 0) scale(1.06); } }
+html:root:not([data-theme]) .top { background: rgb(255 255 255 / .82); backdrop-filter: blur(10px); }
+html:root:not([data-theme]) .col { background: oklch(0.962 0.012 var(--ch)); border-color: oklch(0.91 0.03 var(--ch)); border-top: 3px solid oklch(0.72 0.13 var(--ch)); }
+html:root:not([data-theme]) .col-h { background: linear-gradient(180deg, oklch(0.94 0.035 var(--ch)), transparent); border-radius: 12px 12px 0 0; }
+html:root:not([data-theme]) .col-dot { box-shadow: 0 0 0 3px oklch(0.62 0.13 var(--ch) / .18); }
+html:root:not([data-theme]) .count { background: oklch(0.62 0.13 var(--ch) / .12); color: oklch(0.4 0.1 var(--ch)); border-radius: 99px; padding: 0 8px; }
+html:root:not([data-theme]) .pri { background: color-mix(in oklab, var(--pc) 12%, transparent); padding: 2px 8px; border-radius: 99px; }
+html:root:not([data-theme]) .card .face { transition: box-shadow .25s, border-color .25s; }
+html:root:not([data-theme]) .card:hover .face { box-shadow: 0 2px 4px rgb(var(--shadow) / .08), 0 14px 26px -10px color-mix(in oklab, var(--pc) 38%, rgb(var(--shadow) / .3)); }
+html:root:not([data-theme]) .bar { height: 5px; background: color-mix(in oklab, var(--ink) 7%, transparent); }
+html:root:not([data-theme]) .bar i { background: linear-gradient(90deg, var(--accent), oklch(0.68 0.14 calc(var(--ah) + 40))); }
+html:root:not([data-theme]) .ckl { background: oklch(0.965 0.012 var(--ah)); }
+html:root:not([data-theme]) .btn.main { background: linear-gradient(135deg, var(--accent), oklch(0.5 0.13 calc(var(--ah) + 30))); box-shadow: 0 4px 12px -3px oklch(0.5 0.12 var(--ah) / .5); }
+html:root:not([data-theme]) .btn.main:hover { filter: brightness(1.08); transform: translateY(-1px); }
+html:root:not([data-theme]) .next { box-shadow: 0 1px 3px rgb(var(--shadow) / .08); }
+html:root:not([data-theme]) .chip:hover { background: var(--surface2); border-color: var(--ink3); }
+html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px dashed var(--edge); }
 
 }
 </style>
@@ -772,7 +858,7 @@ function demoState() {
     tags: [{ id: "t_sup", name: "Suporte", hue: 190 }, { id: "t_rede", name: "Rede", hue: 240 }, { id: "t_hw", name: "Hardware", hue: 60 }, { id: "t_fac", name: "Faculdade", hue: 290 }, { id: "t_pes", name: "Pessoal", hue: 340 }],
     fields: [{ id: "f_sol", name: "Solicitante", type: "text" }],
     templates: [{ id: "tpl_fmt", name: "Exemplo: formatação de máquina", tag: "t_hw", items: ["Fazer backup dos arquivos do usuário", "Anotar patrimônio e nome da máquina", "Formatar e instalar o sistema", "Instalar drivers e atualizações", "Ingressar no domínio", "Instalar os programas padrão", "Restaurar os arquivos", "Validar com o usuário"] }],
-    settings: { theme: "auto", accent: 190, density: "normal", depth: 2, glass: "on", orbIntro: "always", obsidian: "", sound: "on", volume: 60, outlook: "work", notifyHours: 24 },
+    settings: { theme: "auto", accent: 190, density: "normal", depth: 2, glass: "on", orbIntro: "always", boardIntro: "always", obsidian: "", sound: "on", volume: 60, outlook: "work", notifyHours: 24 },
     timer: null,
     tasks: [
       T({ title: "Exemplo: instalar certificado digital no financeiro", ticket: "CH-48213", priority: 0, due: due(0, "17:00"), tags: ["t_sup"], col: c[2], createdAt: now - 2 * DAY, timeMs: 25 * 6e4, check: ck(["Acessar a máquina remotamente", 1], ["Instalar o certificado"], ["Validar com o usuário"]), custom: { f_sol: "Financeiro" }, desc: "Cartão de exemplo. Clique para editar ou use o botão de virar para ver o verso." }),
@@ -1199,6 +1285,25 @@ function infoLine(t) {
   if (has("maqAntiga") && (i.maqAntiga || i.maqNova)) a.push(`<span title="Máquina antiga → nova">${esc(i.maqAntiga || "?")} → ${esc(i.maqNova || "?")}</span>`);
   return a.length ? `<div class="c-info">${a.join("<i>·</i>")}</div>` : "";
 }
+/* ---- cartões: ciclo do checklist (feitas e não feitas) ---- */
+const CKL = { n: 0, t: null };
+function cklShow(el, k) { const its = [...el.querySelectorAll(".ckl-i")], dots = [...el.querySelectorAll(".ckl-dots i")], prev = its.findIndex(x => x.classList.contains("on")); its.forEach((x, i) => { x.classList.toggle("on", i === k); x.classList.toggle("out", i === prev && prev !== k); }); dots.forEach((d, i) => d.classList.toggle("on", i === k)); el._k = k; }
+function cklInit() {
+  $$(".ckl").forEach(el => { const its = el.querySelectorAll(".ckl-i"), p = [...its].findIndex(x => !x.classList.contains("d")); cklShow(el, p < 0 ? 0 : p); });
+  if (CKL.t || !fxOn()) return;
+  CKL.t = setInterval(() => { if (document.hidden || !fxOn()) return; CKL.n++; $$(".ckl").forEach((el, ci) => { const n = el.querySelectorAll(".ckl-i").length; if (n > 1 && (CKL.n + ci) % 3 === 0) cklShow(el, ((el._k || 0) + 1) % n); }); }, 750);
+}
+/* ---- abertura do Quadro ---- */
+const BD = { seen: false, until: 0, endT: 0, live: false };
+function bdEnd() { BD.live = false; BD.until = 0; clearTimeout(BD.endT); const b = $(".board.cine"); if (b) b.classList.remove("cine"); $$(".bd-fx").forEach(e => e.remove()); $$(".count[data-fin]").forEach(e => { e.textContent = e.dataset.fin; delete e.dataset.fin; }); }
+function bdPlay() {
+  const v = $("#view"); BD.seen = true; BD.live = true; BD.until = Date.now() + 3300; clearTimeout(BD.endT);
+  const cols = ["var(--accent)", "var(--p1)", "var(--s2)", "var(--s1)"];
+  const sp = Array.from({ length: 22 }, (_, i) => `<i style="--x:${(8 + Math.random() * 84).toFixed(1)}%;--y:${(20 + Math.random() * 66).toFixed(1)}%;--s:${(3 + Math.random() * 4).toFixed(1)}px;--d:${(.5 + Math.random() * 1.6).toFixed(2)}s;--c:${cols[i % 4]}"></i>`).join("");
+  v.insertAdjacentHTML("beforeend", `<div class="bd-fx" aria-hidden="true"><div class="bd-sweep"></div><div class="bd-wave"></div><div class="bd-sp">${sp}</div></div>`);
+  $$(".board .count", v).forEach((el, i) => { const m = /^(\d+)(.*)$/.exec(el.textContent.trim()); if (!m || !+m[1]) return; el.dataset.fin = el.textContent; const to = +m[1], tail = m[2], t0 = performance.now() + 900 + i * 100, dur = 800; el.textContent = "0" + tail; const step = now => { if (!BD.live || !el.isConnected) return; const u = Math.min(1, Math.max(0, (now - t0) / dur)); el.textContent = Math.round(to * (1 - Math.pow(1 - u, 3))) + tail; if (u < 1) requestAnimationFrame(step); else delete el.dataset.fin; }; requestAnimationFrame(step); });
+  BD.endT = setTimeout(bdEnd, 3300);
+}
 function cardHTML(t, j) {
   const di = dueInfo(t), done = isDone(t), ck = t.check.length, ckd = t.check.filter(c => c.d).length, run = state.timer && state.timer.id === t.id, sp = spent(t);
   const tags = t.tags.map(tag).filter(Boolean).map(g => `<span class="tag" style="--h:${g.hue}">${esc(g.name)}</span>`).join("");
@@ -1209,6 +1314,7 @@ function cardHTML(t, j) {
     <div class="c-meta">${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${pinChips(t)}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || (t.diary || []).length || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
       ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}
       <button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></div>
+    ${ck ? `<div class="ckl" aria-hidden="true"><div class="ckl-dots">${t.check.map(c => `<i class="${c.d ? "d" : ""}"></i>`).join("")}</div><div class="ckl-view">${t.check.map(c => `<div class="ckl-i ${c.d ? "d" : ""}"><b>${c.d ? ic("tick") : ""}</b><span>${esc(c.t)}</span><em>${c.d ? "feito" : "falta"}</em></div>`).join("")}</div></div>` : ""}
     ${ck ? `<div class="bar"><i style="width:${Math.round(ckd / ck * 100)}%"></i></div>` : ""}
   </div><div class="face back">
     <div class="c-top"><span class="lbl">${ck ? "Checklist" : "Detalhes"}</span><button class="icon-btn" data-act="flip" data-id="${t.id}" title="Desvirar" aria-label="Desvirar">${ic("flip")}</button></div>
@@ -1219,7 +1325,9 @@ function cardHTML(t, j) {
 }
 function renderBoard() {
   const tasks = live(), cs = cols();
-  $("#view").innerHTML = `<div class="board${ui.en}"><div class="stage" style="--bx:${ui.bx || 0}deg;--by:${ui.by || 0}deg">` + cs.map((c, i) => {
+  const bmode = state.settings.boardIntro || "always"; let cine = !!ui.en && fxOn() && bmode !== "off";
+  if (ui.bdReplay) { cine = fxOn(); ui.bdReplay = false; } else if (cine && bmode === "first" && BD.seen) cine = false;
+  $("#view").innerHTML = `<div class="board${ui.en}${cine && !ui.en ? " enter" : ""}${cine ? " cine" : ""}"><div class="stage" style="--bx:${ui.bx || 0}deg;--by:${ui.by || 0}deg">` + cs.map((c, i) => {
     const all = tasks.filter(t => t.col === c.id), list = all.filter(passes);
     return `<section class="col" data-col="${c.id}" style="--ch:${c.hue};--i:${i}">
     <header class="col-h"><span class="col-dot"></span><input class="col-name" value="${esc(c.name)}" data-in="colName" data-id="${c.id}" aria-label="Nome da coluna">
@@ -1237,6 +1345,7 @@ function renderBoard() {
     <form class="quick" data-col="${c.id}"><input id="q_${c.id}" aria-label="Nova tarefa em ${esc(c.name)}" placeholder="+ Tarefa  #chamado !alta @amanha +tag" autocomplete="off"></form>
     </section>`;
   }).join("") + `<button class="col-add" data-act="colAdd">+ Nova coluna</button></div></div>`;
+  cklInit(); if (cine) bdPlay();
   if (ui.fresh) { const c = $(`.card[data-id="${ui.fresh}"]`); ui.fresh = null; if (c && fxOn()) c.animate([{ transform: "perspective(600px) rotateX(-85deg) scale(.7)", opacity: 0 }, { transform: "perspective(600px) rotateX(12deg) scale(1.03)", opacity: 1, offset: .7 }, { transform: "none" }], { duration: 480, easing: "ease-out" }); }
   if (ui.refocus) { const el = $("#q_" + ui.refocus); if (el) el.focus(); ui.refocus = null; }
 }
@@ -1496,6 +1605,7 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Efeito 3D</span>${seg("depth", [[0, "Desligado"], [1, "Suave"], [2, "Total"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Vidro e luz</span>${seg("glass", [["on", "Ligado"], ["off", "Desligado"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Abertura da Órbita</span>${seg("orbIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}</div>
+    <div class="set-row"><span class="lbl" style="width:110px">Abertura do Quadro</span>${seg("boardIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}<button class="btn sm" data-act="bdReplay">Rever</button></div>
     <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div></section>
   <section><h3>Avisos de prazo</h3>
     <div class="set-row"><label for="s_hours">Avisar quando faltar até</label><input class="inp" style="flex:none;width:80px" id="s_hours" type="number" min="1" max="168" value="${s.notifyHours}" data-in="setHours"><span>horas</span></div>
@@ -1818,6 +1928,7 @@ const acts = {
   infoDel: el => { const t = cur(), id = el.dataset.v, m = modelOf(t); snapshotUndo("Campo apagado"); m.fields = m.fields.filter(f => f.id !== id); if (!state.models.some(x => x.fields.some(f => f.id === id))) state.tasks.forEach(k => { if (k.info) delete k.info[id]; }); save(); render(); renderDrawer(); },
   orbReplay: () => { if (!fxOn()) return toast("As animações estão desligadas (efeito 3D ou movimento reduzido)."); ui.orbReplay = true; ui.enter = true; renderView(); },
   orbSkip: () => orbSkip(),
+  bdReplay: () => { if (!fxOn()) return toast("As animações estão desligadas (efeito 3D ou movimento reduzido)."); closeLayer(); ui.bdReplay = true; ui.enter = true; if (ui.view !== "quadro") location.hash = "#quadro"; else renderView(); },
   fieldAdd: () => { const f = { id: uid(), name: "Novo campo", type: "text" }; state.fields.push(f); save(); openSettings(); const i = $("#fd_" + f.id); if (i) { i.focus(); i.select(); } },
   fieldDel: el => { snapshotUndo("Campo apagado"); tomb(el.dataset.id); state.fields = state.fields.filter(f => f.id !== el.dataset.id); save(); openSettings(); },
   exportJson: () => exportar(),
@@ -1978,7 +2089,8 @@ addEventListener("pointerup", () => { if (orb && Math.abs(ORB.v || 0) > .003) or
   v.addEventListener("click", e => { const it = e.target.closest(".obs-item"); if (!it) return; const k = it.dataset.ring != null ? "hr" : "hp", val = it.dataset.ring ?? it.dataset.pri;
     put("hr", null); put("hp", null); if (ORB.lock && ORB.lock.k === k && ORB.lock.v === val) ORB.lock = null; else { ORB.lock = { k, v: val }; put(k, val); } paint(); });
   v.addEventListener("pointerdown", e => { const o = e.target.closest && e.target.closest(".obs.cine"); if (o && Date.now() < ORB.until && !e.target.closest("button")) orbSkip(); });
-  addEventListener("keydown", e => { if (e.key === "Escape" && Date.now() < ORB.until && $(".obs.cine")) orbSkip(); });
+  addEventListener("keydown", e => { if (e.key === "Escape" && Date.now() < ORB.until && $(".obs.cine")) orbSkip(); if (e.key === "Escape" && BD.live) bdEnd(); });
+  v.addEventListener("pointerdown", () => { if (BD.live) bdEnd(); });
   v.addEventListener("toggle", e => { if (e.target.classList && e.target.classList.contains("obs-more")) ORB.more = e.target.open; }, true);
   window.orbPaint = paint;
 })();
