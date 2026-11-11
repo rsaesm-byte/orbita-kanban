@@ -667,6 +667,15 @@ html:root[data-depth="2"] .board.cine.enter .card { animation: bdDeal .72s cubic
 @keyframes bdBar { from { width: 0; } }
 .board.cine .quick, .board.cine .col-add { animation: bdFade .6s ease calc(1.5s + var(--i, 0) * .1s) backwards; }
 @keyframes bdFade { from { opacity: 0; transform: translateY(8px); } }
+/* ===== menu da coluna: fica na frente dos cartões (que são levantados em 3D) ===== */
+.col:has(.col-h details.menu[open]) { z-index: 30; }
+.col:has(.col-h details.menu[open]) .col-h { position: relative; z-index: 5; }
+.col:has(.col-h details.menu[open]) .col-list, .col:has(.col-h details.menu[open]) .card-in { transform-style: flat; }
+.col:has(.col-h details.menu[open]) .card, .col:has(.col-h details.menu[open]) .card:hover { --z: 0px; animation: none; translate: none; z-index: 0; }
+.col:has(.col-h details.menu[open]) .card::before { display: none; }
+.menu-body button.hue { background: oklch(0.62 0.13 var(--h)); padding: 0; width: 18px; height: 18px; border: 2px solid var(--surface); border-radius: 50%; flex: none; }
+.menu-body button.hue:hover { background: oklch(0.62 0.13 var(--h)); transform: scale(1.15); }
+.menu-body button.hue.on { background: oklch(0.62 0.13 var(--h)); box-shadow: 0 0 0 2px var(--ink); }
 /* ===== tema claro: limpo e nítido (superfícies sólidas, bordas finas, sombras curtas) ===== */
 html:root[data-theme="light"]{
   --bg: #f5f6f8; --bg2: #eceef2; --surface: #ffffff; --surface2: #f6f7f9;
