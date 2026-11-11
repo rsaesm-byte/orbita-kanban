@@ -127,7 +127,7 @@ main { flex: 1; min-height: 0; overflow: auto; position: relative; }
 :root[data-depth="2"] .card::before { content: ""; position: absolute; inset: 10px 8px -2px; border-radius: 14px; background: rgb(var(--shadow) / .5); filter: blur(10px); transform: translateZ(calc(1px - var(--z))); pointer-events: none; }
 :root[data-depth="2"] .face, :root[data-depth="2"] .card:hover .face { box-shadow: 0 1px 0 var(--edge); }
 :root[data-depth="2"] .board.enter .card { animation: cardIn .5s cubic-bezier(.2,.8,.2,1) backwards, bob 6s ease-in-out infinite; animation-delay: calc(var(--i) * 80ms + var(--j) * 55ms + 240ms), calc(var(--j, 0) * -1.3s - var(--i, 0) * .7s); }
-@keyframes bob { 50% { translate: 0 0 calc(var(--z) + 8px); } }
+@keyframes bob { 50% { translate: var(--cx) var(--cy) calc(var(--z) + 8px); } }
 .ghost { animation: none !important; translate: none !important; perspective: 900px !important; }
 .ghost::before { display: none !important; }
 /* vida: quem está atrasado pulsa, quem está com o cronômetro ligado respira */
