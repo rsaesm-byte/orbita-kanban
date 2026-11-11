@@ -112,7 +112,7 @@ kbd { font: 500 11px var(--mono); border: 1px solid var(--line); border-bottom-w
 main { flex: 1; min-height: 0; overflow: auto; position: relative; }
 
 /* ---------- quadro ---------- */
-.board { padding: 6px 16px 28px; min-height: 100%; width: max-content; perspective: 1500px; perspective-origin: 50vw 20vh; }
+.board { padding: 6px 16px 28px; min-height: 100%; width: max-content; perspective: 1500px; perspective-origin: 50% 20vh; }
 .stage { display: flex; gap: 14px; align-items: flex-start; transform-style: preserve-3d; transform-origin: 50vw 30vh; transform: rotateX(var(--bx, 0deg)) rotateY(var(--by, 0deg)); transition: transform .3s ease-out; }
 .col { width: 292px; flex: none; background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column;
   box-shadow: 0 1px 0 var(--edge), 0 2px 0 var(--edge), 0 3px 0 var(--edge), 0 4px 0 var(--edge), 0 5px 0 var(--edge), 0 16px 26px -10px rgb(var(--shadow) / .35);
@@ -1562,19 +1562,30 @@ new MutationObserver(() => { const L = $("#layer"), k = ui.overlay ? ui.overlay 
   document.body.classList.toggle("push-side", !!$(".drawer", L)); document.body.classList.toggle("push-back", !!$(".modal", L)); }).observe($("#layer"), { childList: true });
 function tilt(e) {
   const card = e.target.closest && e.target.closest(".card:not(.ghost)");
-  if (tilted && tilted !== card) { const i = $(".card-in", tilted); if (i) { i.style.removeProperty("--rx"); i.style.removeProperty("--ry"); } tilted.style.removeProperty("--cx"); tilted.style.removeProperty("--cy"); if (!glassOn()) tilted.style.removeProperty("--glare"); tilted = null; }
+  if (tilted && tilted !== card) { const i = $(".card-in", tilted); if (i) { i.style.removeProperty("--rx"); i.style.removeProperty("--ry"); } setPersp(tilted, false); if (!glassOn()) tilted.style.removeProperty("--glare"); tilted = null; }
   if (!card || calm.matches || !state.settings.depth || e.pointerType === "touch") return;
   const r = card.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height, d3 = state.settings.depth === 2, inn = $(".card-in", card);
   /* o cartão se vira para quem está diante da tela: o lado de dentro (rumo ao centro) avança, e um pouco acompanha o mouse */
-  const cx = r.left + r.width / 2, cy = r.top + r.height / 2, kf = d3 ? 15 : 7, kc = d3 ? 5 : 2.5;
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2, kf = d3 ? 8 : 6, kc = d3 ? 4 : 2.5;
   const nx = clamp((innerWidth / 2 - cx) / (innerWidth / 2), -1, 1), ny = clamp((innerHeight * .45 - cy) / (innerHeight / 2), -1, 1);
   inn.style.setProperty("--ry", (nx * kf + (px - .5) * kc).toFixed(2) + "deg"); inn.style.setProperty("--rx", (ny * kf * .6 + (.5 - py) * kc).toFixed(2) + "deg");
-  if (tilted !== card && d3) { /* a perspectiva afasta do centro o que avança: compensa para o cartão crescer no lugar, sem escorregar para a esquerda */
-    const b = $(".board"), br = b ? b.getBoundingClientRect() : { left: 0, top: 0 }, ox = br.left + innerWidth / 2, oy = br.top + innerHeight * .2, dz = 78 - (8 + (3 - (+card.style.getPropertyValue("--p") || 2)) * 15);
-    card.style.setProperty("--cx", (-(cx - ox) * dz / 1500).toFixed(1) + "px"); card.style.setProperty("--cy", (-(cy - oy) * dz / 1500).toFixed(1) + "px"); }
+  if (tilted !== card && d3) { setPersp(card, true);   /* depois de assentar, mede o cartão de verdade e recentra na coluna */
+    setTimeout(() => { if (tilted !== card) return; const col = card.closest(".col"); if (!col) return; const a = card.getBoundingClientRect(), c = col.getBoundingClientRect();
+      card.style.setProperty("--cx", ((parseFloat(card.style.getPropertyValue("--cx")) || 0) + (c.left + c.width / 2) - (a.left + a.width / 2)).toFixed(1) + "px"); }, 460); }
   if (!glassOn()) { card.style.setProperty("--gx", px * 100 + "%"); card.style.setProperty("--gy", py * 100 + "%"); card.style.setProperty("--glare", "1"); }
   tilted = card;
 }
+/* perspectiva sem "escorregar": a perspectiva afasta do centro tudo o que sobe no eixo Z (cartões da esquerda iam para a esquerda, da direita para a direita).
+   Cada cartão recebe o deslocamento inverso, então fica no lugar certo da coluna e só ganha o leve aumento de tamanho. */
+function setPersp(card, hover) {
+  const col = card.closest(".col"), b = $(".board"); if (!col || !b) return;
+  const br = b.getBoundingClientRect(), cr = col.getBoundingClientRect(), p = +card.style.getPropertyValue("--p") || (card.className.match(/\bp(\d)\b/) || [0, 2])[1] * 1;
+  const z = hover ? 78 + 26 : 8 + (3 - p) * 15, dx = (cr.left - br.left + cr.width / 2) - br.width / 2;
+  card.style.setProperty("--cx", (-dx * z / 1500).toFixed(1) + "px");
+}
+function fitPersp() { if (state.settings.depth !== 2 || ui.view !== "quadro") return; $$(".stage .card").forEach(c => { if (c !== tilted) setPersp(c, false); }); }
+let fitRaf = 0; const fitSoon = () => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fitPersp); };
+addEventListener("resize", fitSoon); new MutationObserver(fitSoon).observe($("#view"), { childList: true });
 /* dicas dos gráficos e da órbita */
 document.addEventListener("mousemove", e => { const el = e.target.closest && e.target.closest("[data-tip]"), tip = $("#tip"); if (!el || drag) { tip.hidden = true; return; } tip.textContent = el.dataset.tip; tip.hidden = false; tip.style.left = clamp(e.clientX + 12, 4, innerWidth - tip.offsetWidth - 4) + "px"; tip.style.top = (e.clientY - 34 < 4 ? e.clientY + 16 : e.clientY - 34) + "px"; });
 
