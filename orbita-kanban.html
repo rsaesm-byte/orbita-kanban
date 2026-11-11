@@ -206,6 +206,7 @@ button.tag { opacity: .45; } button.tag.on { opacity: 1; box-shadow: 0 0 0 1.5px
 .running .face { border-color: var(--accent); }
 .ph { border: 2px dashed var(--accent); border-radius: 10px; background: var(--accent-soft); opacity: .7; flex: none; }
 .ghost { transition: none; filter: none !important; position: fixed; left: 0; top: 0; z-index: 1000; pointer-events: none; cursor: grabbing; }
+.btn.ghost { position: static; z-index: auto; pointer-events: auto; cursor: pointer; filter: none !important; }
 .ghost .card-in { --lift: 40px; transition: transform .12s; }
 .ghost .face { box-shadow: 0 30px 40px -14px rgb(var(--shadow) / .6); }
 body.dragging { cursor: grabbing; }
@@ -429,6 +430,9 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
   .col { width: 82vw; } .row { grid-template-columns: 1fr; }
 }
 
+.tpl-sync { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; margin-bottom: 6px; border-radius: 10px; background: color-mix(in oklab, var(--accent) 12%, transparent); border: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); font-size: 12.5px; }
+.tpl-sync > span { flex: 1 1 100%; } .tpl-sync i { font-style: normal; font-weight: 700; } .plus { color: var(--ok, #2a9d5c); } .minus { color: var(--p0); }
+.tpl-diff { list-style: none; margin: 0; padding: 8px 10px; border-radius: 10px; background: var(--bg2); display: grid; gap: 3px; font-size: 13px; } .tpl-diff li.plus { color: var(--ok, #2a9d5c); } .tpl-diff li.minus { color: var(--p0); }
 /* ===== Celular ===== */
 /* ---- cartões do celular ---- */
 .c-head { display: contents; } .c-done { display: none; }
@@ -1072,7 +1076,7 @@ function render() { renderChrome(); renderView(); }
 
 /* ---------- gaveta da tarefa ---------- */
 function openTask(id) { const t0 = task(id); if (t0 && boardOf(t0) !== board().id) { setBoard(boardOf(t0)); render(); } ui.drawer = id; ui.overlay = "drawer"; renderDrawer(); }
-function closeLayer() { ui.tplForm = false; ui.drawer = null; ui.overlay = null; ui.armed = null; $("#layer").innerHTML = ""; }
+function closeLayer() { const was = ui.overlay === "drawer" ? ui.drawer : null; ui.tplForm = false; ui.drawer = null; ui.overlay = null; ui.armed = null; $("#layer").innerHTML = ""; if (was) setTimeout(() => askTplSync(was), 220); }
 function renderDrawer() {
   const t = task(ui.drawer); if (!t) return closeLayer();
   const run = state.timer && state.timer.id === t.id, [dd, dt] = [t.due.slice(0, 10), t.due.slice(11)], bk = blockOf(t);
@@ -1268,12 +1272,33 @@ document.addEventListener("paste", e => { const fs = e.clipboardData ? [...e.cli
 
 /* ---------- modelos de checklist (por tag) ---------- */
 const tplFor = t => state.templates.slice().sort((a, b) => (t.tags.includes(b.tag) ? 1 : 0) - (t.tags.includes(a.tag) ? 1 : 0) || a.name.localeCompare(b.name));
+/* o checklist da tarefa mudou depois de aplicado um modelo? Compara com o modelo e oferece sobrescrevê-lo */
+const ckList = t => t.check.map(c => c.t.trim()).filter(Boolean), ckSig = a => a.map(norm).sort().join("\u0001");
+function tplDiff(t) {
+  const tp = t && t.tplId && state.templates.find(x => x.id === t.tplId); if (!tp || !t.tplBase) return null;
+  const cur = ckList(t), sig = ckSig(cur); if (sig === ckSig(t.tplBase)) return null;
+  const tn = new Set(tp.items.map(x => norm(x.trim()))), cn = new Set(cur.map(x => norm(x))), add = cur.filter(x => !tn.has(norm(x))), rem = tp.items.filter(x => x.trim() && !cn.has(norm(x.trim())));
+  return add.length || rem.length ? { tp, add, rem, sig, cur } : null;
+}
+function askTplSync(id) {
+  const t = task(id), d = tplDiff(t); if (!d || t.tplAsked === d.sig || ui.overlay) return; t.tplAsked = d.sig; save();
+  const li = (a, s) => a.slice(0, 6).map(x => `<li class="${s}">${s === "plus" ? "+" : "−"} ${esc(x)}</li>`).join("") + (a.length > 6 ? `<li class="meta">… e mais ${a.length - 6}</li>` : "");
+  ui.overlay = "tplsync";
+  $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal enter" role="dialog" aria-label="Atualizar modelo"><div class="d-head" style="border-top:0"><h2>Atualizar o modelo?</h2></div><div class="m-body">
+    <p style="margin:0 0 8px">Você mudou o checklist de <b>${esc(t.title)}</b>, que veio do modelo <b>“${esc(d.tp.name)}”</b>. Quer guardar essas mudanças no modelo para as próximas tarefas?</p>
+    <ul class="tpl-diff">${li(d.add, "plus")}${li(d.rem, "minus")}</ul>
+    <div class="set-row" style="margin-top:12px;flex-wrap:wrap"><button class="btn main" data-act="tplSyncOver" data-id="${t.id}">Sobrescrever modelo</button><button class="btn" data-act="tplSyncNew" data-id="${t.id}">Salvar como novo</button><button class="btn ghost" data-act="close">Agora não</button></div></div></div>`;
+}
+function tplSyncBanner(t) {
+  const d = tplDiff(t); if (!d) return "";
+  return `<div class="tpl-sync"><span>Checklist diferente do modelo <b>“${esc(d.tp.name)}”</b>${d.add.length ? ` · <i class="plus">+${d.add.length}</i>` : ""}${d.rem.length ? ` · <i class="minus">−${d.rem.length}</i>` : ""}</span><button class="btn sm main" data-act="tplSyncOver" data-id="${t.id}">Sobrescrever modelo</button><button class="btn sm" data-act="tplSyncNew" data-id="${t.id}">Salvar como novo</button></div>`;
+}
 function tplRow(t) {
   const list = tplFor(t), f = ui.tplForm;
-  return `<div class="set-row">${list.length ? `<select class="inp" id="d_tpl" data-in="tplApply" aria-label="Aplicar modelo de checklist"><option value="">Aplicar modelo…</option>${list.map(tp => `<option value="${tp.id}">${t.tags.includes(tp.tag) ? "★ " : ""}${esc(tp.name)} (${tp.items.length})</option>`).join("")}</select>` : ""}${t.check.length && !f ? `<button class="btn sm" data-act="tplForm">Salvar como modelo</button>` : ""}</div>` +
+  return tplSyncBanner(t) + `<div class="set-row">${list.length ? `<select class="inp" id="d_tpl" data-in="tplApply" aria-label="Aplicar modelo de checklist"><option value="">Aplicar modelo…</option>${list.map(tp => `<option value="${tp.id}">${t.tags.includes(tp.tag) ? "★ " : ""}${esc(tp.name)} (${tp.items.length})</option>`).join("")}</select>` : ""}${t.check.length && !f ? `<button class="btn sm" data-act="tplForm">Salvar como modelo</button>` : ""}</div>` +
     (f ? `<div class="set-row"><input class="inp" id="d_tplname" placeholder="Nome do modelo" aria-label="Nome do modelo" value="${esc(t.tags.map(tag).filter(Boolean).map(g => g.name)[0] || "")}"><select class="inp" id="d_tpltag" aria-label="Tag do modelo" style="flex:none;width:130px"><option value="">Sem tag</option>${state.tags.map(g => `<option value="${g.id}" ${t.tags[0] === g.id ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</select><button class="btn sm main" data-act="tplSave">Salvar</button><button class="btn sm ghost" data-act="tplForm">Cancelar</button></div><span class="meta">Um modelo com o mesmo nome é atualizado. Com tag, ele é sugerido quando a tarefa recebe essa tag.</span>` : "");
 }
-function applyTpl(t, tp) { if (!t || !tp) return; const have = new Set(t.check.map(c => norm(c.t))); let n = 0; tp.items.forEach(x => { if (x.trim() && !have.has(norm(x))) { t.check.push({ id: uid(), t: x.trim(), d: false }); n++; } }); save(); render(); if (ui.drawer === t.id) renderDrawer(); toast(n ? `${n} itens do modelo “${tp.name}” adicionados` : "Esta tarefa já tem todos os itens desse modelo"); }
+function applyTpl(t, tp) { if (!t || !tp) return; const have = new Set(t.check.map(c => norm(c.t))); let n = 0; tp.items.forEach(x => { if (x.trim() && !have.has(norm(x))) { t.check.push({ id: uid(), t: x.trim(), d: false }); n++; } }); t.tplId = tp.id; t.tplBase = ckList(t); save(); render(); if (ui.drawer === t.id) renderDrawer(); toast(n ? `${n} itens do modelo “${tp.name}” adicionados` : "Esta tarefa já tem todos os itens desse modelo"); }
 function suggestTpl(t, tagId) { const have = new Set(t.check.map(c => norm(c.t))); state.templates.filter(tp => tp.tag === tagId && tp.items.some(x => !have.has(norm(x)))).slice(0, 2).forEach(tp => toast(`Modelo de checklist “${tp.name}” para a tag ${(tag(tagId) || {}).name || ""}`, "Aplicar", () => applyTpl(task(t.id), tp))); }
 
 /* ---------- anexos: os arquivos ficam no IndexedDB deste navegador; a tarefa guarda só nome, tipo e tamanho ---------- */
@@ -1377,10 +1402,12 @@ const acts = {
   mdExport: async el => { const t = task((el && el.dataset.id) || ctxId); if (!t) return; await saveFile(mdName(t) + ".md", taskMd(t)); if (t.files.length) toast(`A nota cita ${t.files.length} anexo${t.files.length > 1 ? "s" : ""}. Coloque-os no cofre para aparecerem`, "Baixar anexos", async () => { for (const f of t.files) { let b = null; try { b = await kvGet("att_" + f.id); } catch {} if (b) await saveFile(f.name, b); } }); },
   mdCopy: async () => { const t = cur() || task(ctxId); if (!t) return; try { await navigator.clipboard.writeText(taskMd(t)); toast("Markdown copiado"); } catch { toast("Não foi possível copiar aqui"); } },
   tplForm: () => { ui.tplForm = !ui.tplForm; renderDrawer(); const i = $("#d_tplname"); if (i) { i.focus(); i.select(); } },
-  tplSave: () => { const t = cur(), name = ($("#d_tplname").value || "").trim(), tg = $("#d_tpltag").value; if (!name) return toast("Dê um nome ao modelo"); const items = t.check.map(c => c.t).filter(x => x.trim()); let tp = state.templates.find(x => norm(x.name) === norm(name)); if (tp) { tp.items = items; tp.tag = tg; } else state.templates.push({ id: uid(), name, tag: tg, items }); ui.tplForm = false; save(); renderDrawer(); toast(tp ? `Modelo “${name}” atualizado` : `Modelo “${name}” salvo com ${items.length} itens`); },
+  tplSave: () => { const t = cur(), name = ($("#d_tplname").value || "").trim(), tg = $("#d_tpltag").value; if (!name) return toast("Dê um nome ao modelo"); const items = t.check.map(c => c.t).filter(x => x.trim()); let tp = state.templates.find(x => norm(x.name) === norm(name)); const existed = !!tp; if (tp) { tp.items = items; tp.tag = tg; } else { tp = { id: uid(), name, tag: tg, items }; state.templates.push(tp); t.tplId = tp.id; t.tplBase = ckList(t); } if (tp.id) { t.tplId = tp.id; t.tplBase = ckList(t); } ui.tplForm = false; save(); renderDrawer(); toast(existed ? `Modelo “${name}” atualizado` : `Modelo “${name}” salvo com ${items.length} itens`); },
   toggleDone: el => { const id = el.dataset.id, t = task(id); if (!t) return; const cs = cols(boardOf(t)), was = isDone(t), tgt = was ? cs.find(c => !c.done) : cs.find(c => c.done);
     if (!tgt) return toast("Marque uma coluna como “concluídas” em Configurações"); haptic(was ? 10 : [12, 40, 18]); moveTask(id, tgt.id); render(); fxLand(id, !was); },
   goCol: el => { const c = $(`.col[data-col="${el.dataset.v}"]`); if (c) c.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }); },
+  tplSyncOver: el => { const t = task(el.dataset.id), d = tplDiff(t); if (!d) return closeLayer(); d.tp.items = d.cur.slice(); t.tplBase = d.cur.slice(); t.tplAsked = ""; save(); const was = ui.overlay === "tplsync"; if (was) closeLayer(); else renderDrawer(); toast(`Modelo “${d.tp.name}” atualizado`); },
+  tplSyncNew: el => { const t = task(el.dataset.id), d = tplDiff(t); if (!d) return closeLayer(); let nm = d.tp.name + " (novo)", i = 2; while (state.templates.some(x => norm(x.name) === norm(nm))) nm = d.tp.name + " (novo " + i++ + ")"; const np = { id: uid(), name: nm, tag: d.tp.tag, items: d.cur.slice() }; state.templates.push(np); t.tplId = np.id; t.tplBase = d.cur.slice(); t.tplAsked = ""; save(); if (ui.overlay === "tplsync") closeLayer(); else renderDrawer(); toast(`Novo modelo “${nm}” salvo. Você pode renomeá-lo em Configurações`); },
   appInstall: async () => {
     const msg = t => { const m = $("#install-msg"); if (m) m.textContent = t; toast(t); };
     if (matchMedia("(display-mode: standalone)").matches || navigator.standalone) return msg("O app já está instalado neste aparelho.");
