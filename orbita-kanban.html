@@ -68,10 +68,13 @@ svg.ic { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-wid
 /* ---------- topo ---------- */
 .top { display: flex; align-items: center; gap: 12px; padding: 10px 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); background: var(--bg); }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.logo { width: 30px; height: 30px; position: relative; flex: none; }
-.logo i { position: absolute; inset: 0; border: 2px solid var(--accent); border-radius: 50%; transform: rotateX(62deg) rotateZ(20deg); }
-.logo b { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px; border-radius: 50%; background: var(--accent); }
-.logo u { position: absolute; right: 0; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--p1); }
+.logo { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: radial-gradient(circle at 30% 20%, #0b1636, #000 75%); box-shadow: 0 0 0 1px rgb(240 190 80 / .35), 0 4px 14px -4px rgb(47 123 255 / .55), inset 0 0 12px rgb(47 123 255 / .18); transition: box-shadow .3s, transform .3s; }
+.logo svg { width: 30px; height: 30px; overflow: visible; }
+.logo:hover { box-shadow: 0 0 0 1px rgb(240 190 80 / .7), 0 6px 20px -4px rgb(240 190 80 / .55), inset 0 0 14px rgb(47 123 255 / .3); transform: translateY(-1px) rotate(-4deg); }
+.lg-moon, .lg-orb { transform-origin: 50px 50px; }
+.lg-moon { animation: lgSpin 14s linear infinite; }
+@keyframes lgSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .lg-moon { animation: none; } }
 .board-name { font: 700 20px/1.1 var(--display); letter-spacing: -0.01em; background: none; border: 1px solid transparent; border-radius: 6px; padding: 3px 6px; width: 14ch; min-width: 0; }
 .board-name:hover, .board-name:focus { border-color: var(--line); background: var(--surface); }
 .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: 10px; }
@@ -432,7 +435,7 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 </head>
 <body>
 <header class="top">
-  <div class="brand"><span class="logo" aria-hidden="true"><i></i><b></b><u></u></span>
+  <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#d4961f"/></linearGradient><linearGradient id="lgB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f7bff"/><stop offset="1" stop-color="#7cc4ff"/></linearGradient><clipPath id="lgC"><circle cx="50" cy="50" r="28"/></clipPath></defs><circle class="lg-orb" cx="50" cy="50" r="44" fill="none" stroke="url(#lgG)" stroke-width="1.2" stroke-dasharray="1 5" stroke-linecap="round" opacity=".7"/><g clip-path="url(#lgC)" fill="none" stroke="url(#lgB)" stroke-width="3.2" stroke-linecap="round"><path d="M20 36q15-4 30 0t30 0"/><path d="M20 46q15 4 30 0t30 0"/><path d="M20 57q15-4 30 0t30 0"/><path d="M20 67q15 4 30 0t30 0"/></g><circle cx="50" cy="50" r="28" fill="none" stroke="url(#lgG)" stroke-width="4"/><ellipse cx="62" cy="52" rx="5" ry="2.8" fill="none" stroke="url(#lgG)" stroke-width="2"/><g class="lg-moon"><circle cx="50" cy="6" r="4.2" fill="#050a18" stroke="url(#lgB)" stroke-width="2.4"/></g></svg></span>
     <input class="board-name" id="board-name" aria-label="Nome do quadro" data-in="boardName">
     <details class="menu" id="board-menu"><summary aria-label="Trocar de quadro" title="Trocar de quadro" id="board-sum"></summary><div class="menu-body" id="board-list"></div></details></div>
   <nav class="tabs" id="tabs" aria-label="Visões"></nav>
