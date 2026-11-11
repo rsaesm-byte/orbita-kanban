@@ -47,19 +47,22 @@ state = {
   tasks:   [{ id, title, desc, ticket, priority (0 crítica … 3 baixa), due ('AAAA-MM-DD' ou 'AAAA-MM-DDTHH:mm'),
               tags: [id], check: [{ id, t, d }], custom: { campoId: valor }, col, timeMs,
               notes (HTML limpo: observações em texto rico), extra: [{ id, k, v }] (informações adicionais da tarefa),
+              files: [{ id, name, type, size, at }] (anexos: o arquivo em si fica no IndexedDB, chave 'att_' + id),
               createdAt, doneAt, archived, block: { d, s, m } }],
   tags:    [{ id, name, hue }],
   fields:  [{ id, name, type }],
+  templates: [{ id, name, tag, items: [texto] }],   // modelos de checklist por tag
   settings: { theme, accent, density, depth, lens, sound, volume, outlook, notifyHours },
   timer:   { id, start } | null
 }
 ```
 
-- Listas para o `mergeStates`: `['boards', 'tasks', 'columns', 'tags', 'fields']`.
+- Listas para o `mergeStates`: `['boards', 'tasks', 'columns', 'tags', 'fields', 'templates']`.
+- **Anexos não viajam no backup `.json`**: ficam no IndexedDB de cada aparelho. No celular, anexar pela câmera ou galeria (`<input type="file" accept="image/*,application/pdf" capture>`).
 - Formato do backup: `{ app: 'orbita-kanban', formato: 1, salvoEm, rev, sha256, dados: state }`.
 - O quadro aberto no momento fica **fora** do `state` (chave própria no localStorage), para trocar de quadro não gerar gravação.
 
-**Funções para copiar do `orbita-kanban.html` como estão:** `normalize`, `defaultState`/`demoState`, `mergeStates`, `mergeById`, `tomb`, `dueInfo`, `score`, `nextUp`, `passes`, `parseQuick`, `addTask`, `moveTask`, `setCol`, `pending`, `reportData`, `csvText`, `SOUNDS` + `playSound`, `cleanHTML`, `plain`, `blockOf`, `outlookUrl`, `icsText`.
+**Funções para copiar do `orbita-kanban.html` como estão:** `normalize`, `defaultState`/`demoState`, `mergeStates`, `mergeById`, `tomb`, `dueInfo`, `score`, `nextUp`, `passes`, `parseQuick`, `addTask`, `moveTask`, `setCol`, `pending`, `reportData`, `csvText`, `SOUNDS` + `playSound`, `cleanHTML`, `plain`, `htmlToMd`, `taskMd`, `applyTpl`, `suggestTpl`, `addFiles`, `attURL`, `blockOf`, `outlookUrl`, `icsText`.
 
 ---
 
@@ -78,6 +81,7 @@ state = {
 | Transições 3D de quadro e de visão | Manter, mais curtas (≤ 300 ms). Respeitar `prefers-reduced-motion` |
 | Órbita (arrastar para girar) | Manter: **um dedo gira**, toque no planeta abre a tarefa |
 | Observações em texto rico (barra de formatação) | Mesma área editável, com a barra de formatação **fixa acima do teclado** e botões de 44 px |
+| Exportar .md (download) | **Compartilhar .md** pelo menu do Android, para mandar direto ao Obsidian |
 | Lista em tabela | Lista de **cartões compactos** (tabela não cabe em 412 px) |
 | Relatórios | Manter, com os gráficos empilhados em uma coluna |
 | Arquivo `.json` conectado (File System Access) | **Não existe no Android.** Usar "Compartilhar backup" (Web Share) e lembrete de 7 dias |

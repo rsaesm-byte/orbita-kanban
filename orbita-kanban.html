@@ -20,7 +20,7 @@
   --p0: #cf2f36; --p1: #c9650a; --p2: #8f7400; --p3: #557585;
   --s1: #6b5fd3; --s2: #0b8f87;
   --tl: 0.93; --tc: 0.045; --tt: 0.36;
-  --shadow: 15 40 42; --glow: .3; --dim: 15 31 32 / .22;
+  --shadow: 15 40 42; --glow: .3; --glow2: .55; --dim: 15 31 32 / .22;
   --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
   --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -35,7 +35,7 @@
     --p0: #ff6b6f; --p1: #ffa04d; --p2: #e6c84a; --p3: #8fb0c0;
     --s1: #9085e9; --s2: #24a89e;
     --tl: 0.34; --tc: 0.06; --tt: 0.9;
-    --shadow: 0 0 0; --glow: .1; --dim: 0 0 0 / .5;
+    --shadow: 0 0 0; --glow: .1; --glow2: .14; --dim: 0 0 0 / .5;
     color-scheme: dark;
   }
 }
@@ -46,7 +46,7 @@
   --p0: #ff6b6f; --p1: #ffa04d; --p2: #e6c84a; --p3: #8fb0c0;
   --s1: #9085e9; --s2: #24a89e;
   --tl: 0.34; --tc: 0.06; --tt: 0.9;
-  --shadow: 0 0 0; --glow: .1; --dim: 0 0 0 / .5;
+  --shadow: 0 0 0; --glow: .1; --glow2: .14; --dim: 0 0 0 / .5;
   color-scheme: dark;
 }
 :root[data-density="compact"] { --pad: 8px; --gap: 6px; }
@@ -304,6 +304,17 @@ textarea.inp { resize: vertical; min-height: 70px; }
 .rt:empty::before { content: attr(data-ph); color: var(--ink3); }
 .rt ul, .rt ol { margin: 4px 0; padding-left: 22px; }
 .rt a { color: var(--accent); }
+.att-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.att { border: 1px solid var(--line); border-radius: 10px; background: var(--surface2); overflow: hidden; display: grid; min-width: 0; }
+.att-thumb { height: 78px; border: 0; padding: 0; background: var(--bg2); display: grid; place-items: center; cursor: zoom-in; }
+.att-thumb img { width: 100%; height: 78px; object-fit: cover; display: block; }
+.att-thumb.doc { cursor: pointer; } .att-thumb.doc span { font: 600 13px var(--mono); color: var(--ink2); border: 1.5px solid var(--ink3); border-radius: 6px; padding: 6px 8px; text-transform: uppercase; }
+.att-n { font-size: 11.5px; padding: 4px 7px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.att-a { display: flex; align-items: center; padding: 0 3px 3px 7px; color: var(--ink3); font-size: 11px; } .att-a small { flex: 1; } .att-a .icon-btn { margin: 0; }
+.drawer.dropping { outline: 3px dashed var(--accent); outline-offset: -6px; }
+.lb { position: fixed; inset: 0; z-index: 4000; background: rgb(6 12 13 / .86); display: grid; place-items: center; padding: 24px; cursor: zoom-out; }
+.lb img { max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 30px 60px -20px #000; }
+.tpl-box { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: grid; gap: 6px; margin-bottom: 8px; }
 .xrow { display: grid; grid-template-columns: 36% 1fr 26px; gap: 6px; align-items: center; }
 .row3 { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
 a.btn { text-decoration: none; }
@@ -374,8 +385,19 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 .enter tbody tr { animation: rowIn .45s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--n, 0) * 28ms); }
 @keyframes rowIn { from { transform: perspective(900px) rotateX(-50deg) translateY(-8px); opacity: 0; } }
 /* lupa (como o Dock do Mac) e holofote que segue o cursor */
+/* vidro e luz: superfícies translúcidas sobre um fundo de cor, com uma luz que segue o cursor e acende a borda dos cartões */
+.aurora { position: fixed; inset: -15%; z-index: -2; pointer-events: none; opacity: 0; transition: opacity .6s; animation: aurora 46s ease-in-out infinite alternate;
+  background: radial-gradient(38% 46% at 18% 28%, oklch(0.74 0.13 var(--ah) / .42), transparent 70%), radial-gradient(34% 42% at 82% 18%, oklch(0.72 0.14 calc(var(--ah) + 95) / .32), transparent 70%), radial-gradient(44% 48% at 62% 92%, oklch(0.78 0.12 calc(var(--ah) - 75) / .3), transparent 70%); }
+@keyframes aurora { to { transform: translate3d(4%, -3%, 0) rotate(8deg) scale(1.08); } }
+:root[data-glass="on"]:not([data-depth="0"]) .aurora { opacity: 1; }
+:root[data-glass="on"] .col { background: color-mix(in oklab, var(--bg2) 56%, transparent); border-color: color-mix(in oklab, var(--ink) 13%, transparent); }
+:root[data-glass="on"] .card .face, :root[data-glass="on"] .card:hover .face { background: linear-gradient(145deg, color-mix(in oklab, var(--surface) 92%, transparent), color-mix(in oklab, var(--surface) 58%, transparent)); border-top-color: color-mix(in oklab, var(--ink) 14%, transparent); border-right-color: color-mix(in oklab, var(--ink) 14%, transparent); border-bottom-color: color-mix(in oklab, var(--ink) 14%, transparent); box-shadow: inset 0 1px 0 rgb(255 255 255 / .32), 0 10px 22px -14px rgb(var(--shadow) / .55); }
+:root[data-glass="on"] .face.front::after { background: radial-gradient(320px circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / var(--glow2, .5)), transparent 62%); }
+:root[data-glass="on"] .face::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none; opacity: var(--glare, 0); transition: opacity .2s;
+  background: radial-gradient(260px circle at var(--gx, 50%) var(--gy, 0%), color-mix(in oklab, var(--accent) 65%, white), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
 .spot { position: fixed; inset: 0; z-index: 40; pointer-events: none; opacity: 0; transition: opacity .4s; background: radial-gradient(circle 360px at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / var(--glow)) 0, transparent 65%); }
-.board.focus .card .face { filter: brightness(calc(.5 + .5 * var(--k, 0))) saturate(calc(.55 + .45 * var(--k, 0))); transition: filter .25s; }
+.board.focus .card .face { filter: brightness(.86) saturate(.8); transition: filter .25s; }
 .board.focus .card:hover .face { filter: none; }
 .board.focus .card:hover .face { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 0 50px -4px var(--accent), 0 30px 44px -14px rgb(var(--shadow) / .65); }
 .board.focus .col:not(:hover) > header, .board.focus .col:not(:hover) > form { opacity: .55; transition: opacity .25s; }
@@ -415,11 +437,14 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
   <button class="btn" data-act="settings" id="btn-set" aria-label="Configurações"></button>
 </header>
 <canvas class="motes" id="motes" aria-hidden="true"></canvas>
+<div class="aurora" aria-hidden="true"></div>
 <div class="floor" aria-hidden="true"></div>
 <div class="spot" id="spot" aria-hidden="true"></div>
 <div class="strip" id="strip"></div>
 <main id="view"></main>
 <div id="layer"></div>
+<div class="lb" id="lb" hidden data-act="lbClose"><img alt="Anexo ampliado"></div>
+<input type="file" id="att-in" multiple hidden>
 <div class="ctx" id="ctx" hidden role="menu" aria-label="Ações da tarefa"></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div id="tip" hidden></div>
@@ -448,7 +473,7 @@ const ICONS = {
   clock: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/>', check: '<rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="m5.5 8 2 2 3.2-3.8"/>',
   flip: '<path d="M3 6a5 5 0 0 1 9.5-1.5M13 3v2.5h-2.5M13 10a5 5 0 0 1-9.5 1.5M3 13v-2.5h2.5"/>', play: '<path d="M5 3.5v9l7-4.5z"/>', pause: '<path d="M5 3.5v9M11 3.5v9"/>',
   trash: '<path d="M3 4.5h10M6 4.5V3h4v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/>', copy: '<rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M3 10.5V3h7.5"/>',
-  x: '<path d="m4 4 8 8M12 4l-8 8"/>', chev: '<path d="m4 6 4 4 4-4"/>', note: '<path d="M4 2.5h8v11H4zM6 5.5h4M6 8h4M6 10.5h2.5"/>', cal: '<rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/>', dots: '<circle cx="3.5" cy="8" r=".9"/><circle cx="8" cy="8" r=".9"/><circle cx="12.5" cy="8" r=".9"/>', timer: '<circle cx="8" cy="9" r="4.8"/><path d="M8 6.5V9M6.5 2h3"/>'
+  x: '<path d="m4 4 8 8M12 4l-8 8"/>', chev: '<path d="m4 6 4 4 4-4"/>', clip: '<path d="M10.5 5 6 9.5a1.4 1.4 0 0 0 2 2l4.6-4.6a2.6 2.6 0 0 0-3.7-3.7L4.2 7.9a3.8 3.8 0 0 0 5.4 5.4l3.4-3.4"/>', note: '<path d="M4 2.5h8v11H4zM6 5.5h4M6 8h4M6 10.5h2.5"/>', cal: '<rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/>', dots: '<circle cx="3.5" cy="8" r=".9"/><circle cx="8" cy="8" r=".9"/><circle cx="12.5" cy="8" r=".9"/>', timer: '<circle cx="8" cy="9" r="4.8"/><path d="M8 6.5V9M6.5 2h3"/>'
 };
 const ic = n => `<svg class="ic" viewBox="0 0 16 16" aria-hidden="true">${ICONS[n]}</svg>`;
 const PRI = ["Crítica", "Alta", "Média", "Baixa"];
@@ -461,7 +486,7 @@ const LS = "orbita-kanban-v1", LSN = "orbita-kanban-avisos", LSB = "orbita_kanba
 function demoState() {
   const now = Date.now(), c = ["c_in", "c_todo", "c_doing", "c_wait", "c_done"];
   const due = (days, hm) => dkey(now + days * DAY) + (hm ? "T" + hm : "");
-  const T = (o) => Object.assign({ id: uid(), desc: "", ticket: "", priority: 2, due: "", tags: [], check: [], extra: [], notes: "", custom: {}, timeMs: 0, createdAt: now, doneAt: null, archived: false, demo: true }, o);
+  const T = (o) => Object.assign({ id: uid(), desc: "", ticket: "", priority: 2, due: "", tags: [], check: [], extra: [], files: [], notes: "", custom: {}, timeMs: 0, createdAt: now, doneAt: null, archived: false, demo: true }, o);
   const ck = (...a) => a.map(([t, d]) => ({ id: uid(), t, d: !!d }));
   return {
     v: 1, updatedAt: 0, deleted: {}, boards: [{ id: "b_main", name: "Meu quadro" }],
@@ -472,7 +497,8 @@ function demoState() {
     ].map(x => Object.assign(x, { board: "b_main" })),
     tags: [{ id: "t_sup", name: "Suporte", hue: 190 }, { id: "t_rede", name: "Rede", hue: 240 }, { id: "t_hw", name: "Hardware", hue: 60 }, { id: "t_fac", name: "Faculdade", hue: 290 }, { id: "t_pes", name: "Pessoal", hue: 340 }],
     fields: [{ id: "f_sol", name: "Solicitante", type: "text" }],
-    settings: { theme: "auto", accent: 190, density: "normal", depth: 2, lens: "on", sound: "on", volume: 60, outlook: "work", notifyHours: 24 },
+    templates: [{ id: "tpl_fmt", name: "Exemplo: formatação de máquina", tag: "t_hw", items: ["Fazer backup dos arquivos do usuário", "Anotar patrimônio e nome da máquina", "Formatar e instalar o sistema", "Instalar drivers e atualizações", "Ingressar no domínio", "Instalar os programas padrão", "Restaurar os arquivos", "Validar com o usuário"] }],
+    settings: { theme: "auto", accent: 190, density: "normal", depth: 2, glass: "on", obsidian: "", sound: "on", volume: 60, outlook: "work", notifyHours: 24 },
     timer: null,
     tasks: [
       T({ title: "Exemplo: instalar certificado digital no financeiro", ticket: "CH-48213", priority: 0, due: due(0, "17:00"), tags: ["t_sup"], col: c[2], createdAt: now - 2 * DAY, timeMs: 25 * 6e4, check: ck(["Acessar a máquina remotamente", 1], ["Instalar o certificado"], ["Validar com o usuário"]), custom: { f_sol: "Financeiro" }, desc: "Cartão de exemplo. Clique para editar ou use o botão de virar para ver o verso." }),
@@ -493,12 +519,12 @@ function normalize(s) {
   const d = defaultState();
   if (!s || !Array.isArray(s.columns) || !Array.isArray(s.tasks)) return d;
   if (!Array.isArray(s.boards) || !s.boards.length) s.boards = [{ id: "b_main", name: (s.board && s.board.name) || "Meu quadro" }];
-  s.deleted = s.deleted || {}; s.tags = s.tags || []; s.fields = s.fields || [];
+  s.deleted = s.deleted || {}; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
   s.settings = Object.assign({}, d.settings, s.settings); if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
   if (!s.columns.length) s.columns = d.columns;
   s.columns.forEach(c => { if (!s.boards.some(b => b.id === c.board)) c.board = s.boards[0].id; });
   s.boards.forEach(b => { if (!s.columns.some(c => c.board === b.id)) s.columns.push(...newCols(b.id)); });
-  s.tasks.forEach(t => { t.tags = t.tags || []; t.extra = t.extra || []; t.notes = t.notes || ""; t.check = t.check || []; t.custom = t.custom || {}; t.timeMs = t.timeMs || 0; if (!s.columns.some(c => c.id === t.col)) t.col = s.columns[0].id; });
+  s.tasks.forEach(t => { t.tags = t.tags || []; t.extra = t.extra || []; t.files = t.files || []; t.notes = t.notes || ""; t.check = t.check || []; t.custom = t.custom || {}; t.timeMs = t.timeMs || 0; if (!s.columns.some(c => c.id === t.col)) t.col = s.columns[0].id; });
   return s;
 }
 let state = defaultState();
@@ -509,7 +535,7 @@ const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { r
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
-  listas: ["boards", "tasks", "columns", "tags", "fields"], debounceMs: 1500, conferirArquivoMs: 20000,
+  listas: ["boards", "tasks", "columns", "tags", "fields", "templates"], debounceMs: 1500, conferirArquivoMs: 20000,
   AUTO_DOWNLOAD_SEM_API: !EMBED && !matchMedia("(pointer: coarse)").matches };
 const FS_OK = !EMBED && !!(window.showSaveFilePicker && window.showOpenFilePicker);
 let rev = 0, revAoAbrir = 0, localSalvoEm = "", lastBrowserSave = null;
@@ -523,6 +549,7 @@ const esperar = (p, ms) => Promise.race([p, new Promise(r => setTimeout(r, ms))]
 let _idb;
 function idb() { return _idb || (_idb = new Promise((res, rej) => { try { const r = indexedDB.open(SAVE_CFG.dbName, 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } })); }
 async function kvGet(k) { const d = await idb(); return new Promise((res, rej) => { const q = d.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
+async function kvKeys() { const d = await idb(); return new Promise((res, rej) => { const q = d.transaction("kv").objectStore("kv").getAllKeys(); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
 async function kvSet(k, v) { const d = await idb(); return new Promise((res, rej) => { const t = d.transaction("kv", "readwrite"); v === undefined ? t.objectStore("kv").delete(k) : t.objectStore("kv").put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
 async function sha256(t) { try { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""); } catch { return null; } }
 function tomb(...ids) { state.deleted = state.deleted || {}; const t = new Date().toISOString(); ids.forEach(id => id && (state.deleted[id] = t)); }
@@ -709,7 +736,7 @@ async function iniciarSalvamento() {
   if (!temDados) { try { const old = JSON.parse(localStorage.getItem(LS)); if (valido(old) && old.updatedAt) { state = normalize(old); rev = 1; persistir(); temDados = true; } } catch {} }
   if (!temDados) state = normalize(demoState());
   revAoAbrir = rev; applySettings(); route(); checkDue(true);
-  await iniciarArquivo(); initRemote();
+  await iniciarArquivo(); initRemote(); setTimeout(gcAnexos, 4000);
   if (!EMBED && !handle && !pendingHandle && !localStorage.getItem(SAVE_CFG.lsKey + "_wizard")) {   // primeiro acesso: já salva e baixa o arquivo de dados sozinho
     try { localStorage.setItem(SAVE_CFG.lsKey + "_wizard", "1"); } catch {}
     if (!rev) { rev = 1; persistir(); }
@@ -775,7 +802,7 @@ function parseQuick(text) {
   return o;
 }
 function addTask(colId, props) {
-  const t = Object.assign({ id: uid(), title: "Nova tarefa", desc: "", ticket: "", priority: 2, due: "", tags: [], check: [], extra: [], notes: "", custom: {}, timeMs: 0, createdAt: Date.now(), doneAt: null, archived: false }, props);
+  const t = Object.assign({ id: uid(), title: "Nova tarefa", desc: "", ticket: "", priority: 2, due: "", tags: [], check: [], extra: [], files: [], notes: "", custom: {}, timeMs: 0, createdAt: Date.now(), doneAt: null, archived: false }, props);
   t.col = colId || cols()[0].id; if (isDone(t)) t.doneAt = Date.now();
   state.tasks.push(t); save(); return t;
 }
@@ -785,7 +812,7 @@ function applySettings() {
   const r = document.documentElement, s = state.settings;
   if (applySettings.host === undefined) applySettings.host = r.getAttribute("data-theme") || "";
   if (s.theme === "auto") { if (applySettings.host) r.setAttribute("data-theme", applySettings.host); else r.removeAttribute("data-theme"); } else r.setAttribute("data-theme", s.theme);
-  r.style.setProperty("--ah", s.accent); r.dataset.density = s.density; r.dataset.depth = s.depth;
+  r.style.setProperty("--ah", s.accent); r.dataset.density = s.density; r.dataset.depth = s.depth; r.dataset.glass = s.glass === "off" ? "off" : "on";
 }
 function pending() {
   const h = (state.settings.notifyHours || 24) * 36e5, out = [];
@@ -818,7 +845,7 @@ function cardHTML(t, j) {
   <div class="card-in"><div class="face front">
     <div class="c-top"><span class="tk">${t.ticket ? "#" + esc(t.ticket) : ""}</span><span class="pri">${PRI[t.priority]}</span></div>
     <h3>${esc(t.title)}</h3>${tags ? `<div class="tags">${tags}</div>` : ""}
-    <div class="c-meta">${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span>${ic("check")}${ckd}/${ck}</span>` : ""}${t.notes || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
+    <div class="c-meta">${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span>${ic("check")}${ckd}/${ck}</span>` : ""}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
       ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}
       <button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></div>
     ${ck ? `<div class="bar"><i style="width:${Math.round(ckd / ck * 100)}%"></i></div>` : ""}
@@ -960,13 +987,13 @@ function render() { renderChrome(); renderView(); }
 
 /* ---------- gaveta da tarefa ---------- */
 function openTask(id) { const t0 = task(id); if (t0 && boardOf(t0) !== board().id) { setBoard(boardOf(t0)); render(); } ui.drawer = id; ui.overlay = "drawer"; renderDrawer(); }
-function closeLayer() { ui.drawer = null; ui.overlay = null; ui.armed = null; $("#layer").innerHTML = ""; }
+function closeLayer() { ui.tplForm = false; ui.drawer = null; ui.overlay = null; ui.armed = null; $("#layer").innerHTML = ""; }
 function renderDrawer() {
   const t = task(ui.drawer); if (!t) return closeLayer();
   const run = state.timer && state.timer.id === t.id, [dd, dt] = [t.due.slice(0, 10), t.due.slice(11)], bk = blockOf(t);
   const keep = document.activeElement && document.activeElement.id;
   $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><aside class="drawer p${t.priority}" role="dialog" aria-label="Editar tarefa">
-  <div class="d-head p${t.priority}"><span class="lbl">Tarefa</span><span class="spacer"></span><button class="btn sm" data-act="dup" data-id="${t.id}">${ic("copy")}Duplicar</button><button class="btn sm danger" data-act="del" data-id="${t.id}">${ic("trash")}Apagar</button><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div>
+  <div class="d-head p${t.priority}"><span class="lbl">Tarefa</span><span class="spacer"></span><button class="btn sm" data-act="mdExport" data-id="${t.id}" title="Baixar a tarefa como nota Markdown para o Obsidian">${ic("note")}Exportar .md</button><button class="btn sm" data-act="dup" data-id="${t.id}">${ic("copy")}Duplicar</button><button class="btn sm danger" data-act="del" data-id="${t.id}">${ic("trash")}Apagar</button><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div>
   <div class="d-body">
     <textarea class="inp title-inp" id="d_title" rows="2" data-in="tTitle" aria-label="Título">${esc(t.title)}</textarea>
     <div class="row"><div class="field"><label for="d_ticket">Nº do chamado</label><input class="inp mono" id="d_ticket" data-in="tTicket" value="${esc(t.ticket)}" placeholder="CH-00000"></div>
@@ -988,8 +1015,9 @@ function renderDrawer() {
       <div class="rt" id="d_notes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Observações" data-in="tNotes" data-ph="Anote o andamento, o que foi tentado, com quem falou… Use Agora para carimbar data e hora.">${cleanHTML(t.notes)}</div></div>
     <div class="field"><span class="lbl">Checklist ${t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : ""}</span>
       ${t.check.map(c => `<div class="chk-row ${c.d ? "dn" : ""}"><input type="checkbox" data-in="ck" data-id="${t.id}" data-ck="${c.id}" ${c.d ? "checked" : ""} aria-label="Concluir item"><input type="text" id="ck_${c.id}" value="${esc(c.t)}" data-in="ckText" data-ck="${c.id}" aria-label="Item"><button class="icon-btn" data-act="ckDel" data-v="${c.id}" aria-label="Apagar item">${ic("x")}</button></div>`).join("")}
-      <input class="inp" id="d_newck" placeholder="+ Adicionar item e pressionar Enter" data-in="ckNew"></div>
+      <input class="inp" id="d_newck" placeholder="+ Adicionar item e pressionar Enter" data-in="ckNew">${tplRow(t)}</div>
     ${state.fields.map(f => `<div class="field"><label for="cf_${f.id}">${esc(f.name)}</label><input class="inp" id="cf_${f.id}" type="${f.type}" data-in="tCustom" data-v="${f.id}" value="${esc(t.custom[f.id] ?? "")}"></div>`).join("")}
+    ${filesBlock(t)}
     <div class="field"><span class="lbl">Informações adicionais</span>
       ${t.extra.map(x => `<div class="xrow"><input class="inp" id="xk_${x.id}" data-in="xKey" data-x="${x.id}" placeholder="Nome do campo" value="${esc(x.k)}" aria-label="Nome do campo"><input class="inp" id="xv_${x.id}" data-in="xVal" data-x="${x.id}" placeholder="Informação" value="${esc(x.v)}" aria-label="Informação"><button class="icon-btn" data-act="xDel" data-v="${x.id}" aria-label="Apagar campo">${ic("x")}</button></div>`).join("")}
       <div><button class="btn sm" data-act="xAdd">${ic("plus")}Adicionar campo</button></div></div>
@@ -1000,6 +1028,7 @@ function renderDrawer() {
     <div class="meta">Criada em ${fmtDT(t.createdAt)}${t.doneAt ? " · Concluída em " + fmtDT(t.doneAt) : ""}</div>
   </div></aside>`;
   if (keep) { const el = document.getElementById(keep); if (el) el.focus(); }
+  fillThumbs();
 }
 
 /* ---------- paleta de comandos ---------- */
@@ -1046,7 +1075,7 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Tema</span>${seg("theme", [["auto", "Automático"], ["light", "Claro"], ["dark", "Escuro"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Cor de destaque</span><div class="hues">${ACCENTS.map(([h, n]) => `<button class="hue ${s.accent === h ? "on" : ""}" style="--h:${h}" data-act="setOpt" data-k="accent" data-v="${h}" title="${n}" aria-label="${n}"></button>`).join("")}</div></div>
     <div class="set-row"><span class="lbl" style="width:110px">Efeito 3D</span>${seg("depth", [[0, "Desligado"], [1, "Suave"], [2, "Total"]])}</div>
-    <div class="set-row"><span class="lbl" style="width:110px">Lupa e holofote</span>${seg("lens", [["on", "Ligado"], ["off", "Desligado"]])}</div>
+    <div class="set-row"><span class="lbl" style="width:110px">Vidro e luz</span>${seg("glass", [["on", "Ligado"], ["off", "Desligado"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div></section>
   <section><h3>Avisos de prazo</h3>
     <div class="set-row"><label for="s_hours">Avisar quando faltar até</label><input class="inp" style="flex:none;width:80px" id="s_hours" type="number" min="1" max="168" value="${s.notifyHours}" data-in="setHours"><span>horas</span></div>
@@ -1055,6 +1084,9 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Som</span>${seg("sound", [["on", "Ligado"], ["off", "Desligado"]])}<label for="s_vol" class="lbl">Volume</label><input id="s_vol" type="range" min="5" max="100" step="5" value="${s.volume ?? 60}" data-in="setVol" style="flex:1;min-width:100px"></div>
     <div class="set-row">${Object.entries(SOUNDS).map(([k, v]) => `<button class="btn sm" data-act="soundTest" data-v="${k}">${ic("play")}${v.n}</button>`).join("")}</div></section>
   <section><h3>Calendário</h3><div class="set-row"><span class="lbl" style="width:110px">Conta do Outlook</span>${seg("outlook", [["work", "Trabalho ou escola"], ["personal", "Pessoal (outlook.com)"]])}</div></section>
+  <section><h3>Modelos de checklist</h3><p class="meta" style="margin:0 0 6px">Um item por linha. Com uma tag, o modelo é sugerido quando a tarefa recebe essa tag. Dentro da tarefa, "Salvar como modelo" cria um a partir do checklist dela.</p>
+    ${state.templates.map(tp => `<div class="tpl-box"><div class="set-row"><input class="inp" id="tp_${tp.id}" value="${esc(tp.name)}" data-in="tplName" data-id="${tp.id}" aria-label="Nome do modelo"><select class="inp" style="flex:none;width:140px" id="tpt_${tp.id}" data-in="tplTag" data-id="${tp.id}" aria-label="Tag do modelo"><option value="">Sem tag</option>${state.tags.map(g => `<option value="${g.id}" ${tp.tag === g.id ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</select><button class="icon-btn" data-act="tplDel" data-id="${tp.id}" aria-label="Apagar modelo">${ic("trash")}</button></div><textarea class="inp" id="tpi_${tp.id}" rows="${Math.min(8, Math.max(3, tp.items.length))}" data-in="tplItems" data-id="${tp.id}" aria-label="Itens do modelo" placeholder="Um item por linha">${esc(tp.items.join("\n"))}</textarea></div>`).join("")}
+    <button class="btn sm" data-act="tplAdd">${ic("plus")}Novo modelo</button></section>
   <section><h3>Tags</h3>${state.tags.map(g => `<div class="set-row"><span class="tag" style="--h:${g.hue}">●</span><input class="inp" value="${esc(g.name)}" data-in="tagName" data-id="${g.id}" id="tg_${g.id}" aria-label="Nome da tag"><div class="hues">${HUES.map(h => `<button class="hue ${g.hue === h ? "on" : ""}" style="--h:${h}" data-act="tagHue" data-id="${g.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><button class="icon-btn" data-act="tagDel" data-id="${g.id}" aria-label="Apagar tag">${ic("trash")}</button></div>`).join("")}<button class="btn sm" data-act="tagAdd">${ic("plus")}Nova tag</button></section>
   <section><h3>Campos personalizados</h3><p class="meta" style="margin:0 0 6px">Aparecem em todas as tarefas e no CSV.</p>${state.fields.map(f => `<div class="set-row"><input class="inp" value="${esc(f.name)}" data-in="fieldName" data-id="${f.id}" id="fd_${f.id}" aria-label="Nome do campo"><select class="inp" style="flex:none;width:110px" data-in="fieldType" data-id="${f.id}" id="ft_${f.id}" aria-label="Tipo">${[["text", "Texto"], ["number", "Número"], ["date", "Data"], ["url", "Link"]].map(([v, l]) => `<option value="${v}" ${f.type === v ? "selected" : ""}>${l}</option>`).join("")}</select><button class="icon-btn" data-act="fieldDel" data-id="${f.id}" aria-label="Apagar campo">${ic("trash")}</button></div>`).join("")}<button class="btn sm" data-act="fieldAdd">${ic("plus")}Novo campo</button></section>
   <section><h3>Dados</h3><p class="meta" style="margin:0 0 6px">${esc(saveInfo()[1])}. ${FS_OK ? "Com um arquivo de dados conectado, cada alteração é gravada nele sozinha (Ctrl+S grava na hora)." : EMBED ? "Aberto pelo Claude, os dados ficam na sua conta. Para gravar em um arquivo .json no computador, abra o arquivo .html no Chrome ou Edge." : "Este navegador não grava direto em arquivo. Use Chrome ou Edge, ou baixe backups."}</p>${FS_OK ? `<div class="set-row">${handle ? `<button class="btn main" data-act="fileSave">Salvar agora</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : pendingHandle ? `<button class="btn main" data-act="fileReconnect">Reconectar arquivo</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : `<button class="btn main" data-act="fileCreate">Criar arquivo de dados</button><button class="btn" data-act="fileOpen">Abrir arquivo existente</button>`}</div>` : ""}<div class="set-row"><button class="btn" data-act="exportJson">Baixar backup (JSON)</button><button class="btn" data-act="importJson">Restaurar backup</button><button class="btn" data-act="csv">Baixar CSV</button></div>
@@ -1146,7 +1178,86 @@ function cleanHTML(html) {   // só deixa passar formatação simples: nada de s
 }
 const plain = html => { if (!html) return ""; const d = document.createElement("template"); d.innerHTML = cleanHTML(html).replace(/<(br|\/div|\/p|\/li)>/gi, "$&\n"); return d.content.textContent.trim(); };
 document.addEventListener("mousedown", e => { if (e.target.closest(".rt-bar")) e.preventDefault(); });   // a barra não rouba a seleção do texto
-document.addEventListener("paste", e => { if (!e.target.closest || !e.target.closest(".rt")) return; e.preventDefault(); try { document.execCommand("insertText", false, (e.clipboardData || window.clipboardData).getData("text/plain")); } catch {} });
+document.addEventListener("paste", e => { const fs = e.clipboardData ? [...e.clipboardData.files] : []; if (fs.length && cur()) { e.preventDefault(); return void addFiles(cur(), fs); } if (!e.target.closest || !e.target.closest(".rt")) return; e.preventDefault(); try { document.execCommand("insertText", false, (e.clipboardData || window.clipboardData).getData("text/plain")); } catch {} });
+
+/* ---------- modelos de checklist (por tag) ---------- */
+const tplFor = t => state.templates.slice().sort((a, b) => (t.tags.includes(b.tag) ? 1 : 0) - (t.tags.includes(a.tag) ? 1 : 0) || a.name.localeCompare(b.name));
+function tplRow(t) {
+  const list = tplFor(t), f = ui.tplForm;
+  return `<div class="set-row">${list.length ? `<select class="inp" id="d_tpl" data-in="tplApply" aria-label="Aplicar modelo de checklist"><option value="">Aplicar modelo…</option>${list.map(tp => `<option value="${tp.id}">${t.tags.includes(tp.tag) ? "★ " : ""}${esc(tp.name)} (${tp.items.length})</option>`).join("")}</select>` : ""}${t.check.length && !f ? `<button class="btn sm" data-act="tplForm">Salvar como modelo</button>` : ""}</div>` +
+    (f ? `<div class="set-row"><input class="inp" id="d_tplname" placeholder="Nome do modelo" aria-label="Nome do modelo" value="${esc(t.tags.map(tag).filter(Boolean).map(g => g.name)[0] || "")}"><select class="inp" id="d_tpltag" aria-label="Tag do modelo" style="flex:none;width:130px"><option value="">Sem tag</option>${state.tags.map(g => `<option value="${g.id}" ${t.tags[0] === g.id ? "selected" : ""}>${esc(g.name)}</option>`).join("")}</select><button class="btn sm main" data-act="tplSave">Salvar</button><button class="btn sm ghost" data-act="tplForm">Cancelar</button></div><span class="meta">Um modelo com o mesmo nome é atualizado. Com tag, ele é sugerido quando a tarefa recebe essa tag.</span>` : "");
+}
+function applyTpl(t, tp) { if (!t || !tp) return; const have = new Set(t.check.map(c => norm(c.t))); let n = 0; tp.items.forEach(x => { if (x.trim() && !have.has(norm(x))) { t.check.push({ id: uid(), t: x.trim(), d: false }); n++; } }); save(); render(); if (ui.drawer === t.id) renderDrawer(); toast(n ? `${n} itens do modelo “${tp.name}” adicionados` : "Esta tarefa já tem todos os itens desse modelo"); }
+function suggestTpl(t, tagId) { const have = new Set(t.check.map(c => norm(c.t))); state.templates.filter(tp => tp.tag === tagId && tp.items.some(x => !have.has(norm(x)))).slice(0, 2).forEach(tp => toast(`Modelo de checklist “${tp.name}” para a tag ${(tag(tagId) || {}).name || ""}`, "Aplicar", () => applyTpl(task(t.id), tp))); }
+
+/* ---------- anexos: os arquivos ficam no IndexedDB deste navegador; a tarefa guarda só nome, tipo e tamanho ---------- */
+const attUrls = new Map(), fmtSize = n => n < 1024 ? n + " B" : n < 1048576 ? Math.round(n / 1024) + " KB" : (n / 1048576).toFixed(1).replace(".", ",") + " MB", isImg = f => /^image\//.test(f.type);
+async function attURL(id) { if (attUrls.has(id)) return attUrls.get(id); let b = null; try { b = await kvGet("att_" + id); } catch {} if (!b) return null; const u = URL.createObjectURL(b); attUrls.set(id, u); return u; }
+async function addFiles(t, files) {
+  let n = 0;
+  for (const f of files) { if (f.size > 30 * 1048576) { toast(`“${f.name}” passa de 30 MB e não foi anexado`); continue; } const id = uid();
+    try { await kvSet("att_" + id, f); } catch { toast("Não foi possível guardar o arquivo neste navegador"); continue; }
+    t.files.push({ id, name: f.name || "imagem-colada.png", type: f.type || "", size: f.size, at: Date.now() }); n++; }
+  if (!n) return; save(); render(); if (ui.drawer === t.id) renderDrawer();
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch {}
+}
+function filesBlock(t) {
+  return `<div class="field" id="d_files"><span class="lbl">Anexos ${t.files.length || ""}</span>${t.files.length ? `<div class="att-grid">${t.files.map(f => `<div class="att">${isImg(f) ? `<button class="att-thumb" data-act="attOpen" data-v="${f.id}" aria-label="Ampliar ${esc(f.name)}"><img data-att="${f.id}" alt=""></button>` : `<button class="att-thumb doc" data-act="attOpen" data-v="${f.id}" aria-label="Abrir ${esc(f.name)}"><span>${esc((f.name.split(".").pop() || "arq").slice(0, 5))}</span></button>`}<div class="att-n" title="${esc(f.name)}">${esc(f.name)}</div><div class="att-a"><small>${fmtSize(f.size)}</small><button class="icon-btn" data-act="attSave" data-v="${f.id}" title="Baixar" aria-label="Baixar ${esc(f.name)}">${ic("chev")}</button><button class="icon-btn" data-act="attDel" data-v="${f.id}" title="Remover" aria-label="Remover ${esc(f.name)}">${ic("x")}</button></div></div>`).join("")}</div>` : ""}
+      <div class="set-row"><button class="btn sm" data-act="attPick">${ic("clip")}Adicionar imagem ou arquivo</button><span class="meta">Arraste para cá ou cole com Ctrl+V.</span></div>
+      <span class="meta">Os anexos ficam guardados neste navegador (até 30 MB cada). Eles não vão dentro do arquivo .json nem para outro computador.</span></div>`;
+}
+function fillThumbs() { $$("img[data-att]").forEach(img => attURL(img.dataset.att).then(u => { if (u) img.src = u; else { img.replaceWith(Object.assign(document.createElement("small"), { textContent: "indisponível aqui" })); } })); }
+$("#att-in").addEventListener("change", e => { const fs = [...e.target.files]; e.target.value = ""; if (cur() && fs.length) addFiles(cur(), fs); });
+document.addEventListener("dragover", e => { if (!ui.drawer || !e.dataTransfer || ![...e.dataTransfer.types].includes("Files")) return; e.preventDefault(); const d = $(".drawer"); if (d) d.classList.add("dropping"); });
+document.addEventListener("dragleave", e => { if (!e.relatedTarget) { const d = $(".drawer"); if (d) d.classList.remove("dropping"); } });
+document.addEventListener("drop", e => { const d = $(".drawer"); if (d) d.classList.remove("dropping"); if (!ui.drawer || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); addFiles(cur(), [...e.dataTransfer.files]); });
+async function gcAnexos() { try { const used = new Set(state.tasks.flatMap(t => t.files.map(f => "att_" + f.id))); (await kvKeys()).filter(k => String(k).startsWith("att_") && !used.has(k)).forEach(k => kvSet(k, undefined)); } catch {} }
+
+/* ---------- exportar a tarefa como nota Markdown (frontmatter, callouts e wikilinks do Obsidian) ---------- */
+function htmlToMd(html) {
+  const tpl = document.createElement("template"); tpl.innerHTML = cleanHTML(html);
+  const wrap = (x, a, b = a) => { const m = x.match(/^(\s*)([\s\S]*?)(\s*)$/); return m[2] ? m[1] + a + m[2] + b + m[3] : x; };
+  function walk(n) { let out = ""; n.childNodes.forEach(c => {
+    if (c.nodeType === 3) { out += c.textContent.replace(/\u00a0/g, " "); return; } if (c.nodeType !== 1) return;
+    const tg = c.tagName, st = c.style || {};
+    if (tg === "BR") { out += "\n"; return; }
+    if (tg === "UL" || tg === "OL") { let i = 0; out += "\n" + [...c.children].map(li => (tg === "OL" ? (++i) + ". " : "- ") + walk(li).trim().replace(/\n+/g, " ")).join("\n") + "\n"; return; }
+    let x = walk(c);
+    if (tg === "B" || tg === "STRONG" || st.fontWeight === "bold") x = wrap(x, "**");
+    if (tg === "I" || tg === "EM" || st.fontStyle === "italic") x = wrap(x, "*");
+    if (tg === "S" || tg === "STRIKE" || /line-through/.test(st.textDecoration || "")) x = wrap(x, "~~");
+    if (tg === "U" || /underline/.test(st.textDecoration || "")) x = wrap(x, "<u>", "</u>");
+    if (st.backgroundColor) x = wrap(x, "==");
+    const col = st.color || c.getAttribute("color"); if (col) x = wrap(x, `<span style="color:${col}">`, "</span>");
+    if (tg === "A" && c.getAttribute("href")) x = `[${x.trim()}](${c.getAttribute("href")})`;
+    if (tg === "DIV" || tg === "P" || tg === "LI") x = "\n" + x + "\n";
+    out += x; }); return out; }
+  return walk(tpl.content).replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+const mdName = t => ((t.ticket ? t.ticket + " " : "") + t.title).replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().slice(0, 110) || "tarefa";
+function taskMd(t) {
+  const di = dueInfo(t), c = col(t.col), done = isDone(t), tg = t.tags.map(tag).filter(Boolean), slug = x => norm(x).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), q = x => '"' + String(x).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+  const dt = x => { const [d, h] = x.split("T"); return d.split("-").reverse().join("/") + (h ? " " + h : ""); }, cell = x => String(x).replace(/\|/g, "\\|").replace(/\n/g, " ");
+  const L = ["---", "titulo: " + q(t.title), t.ticket ? "chamado: " + q(t.ticket) : "", "status: " + q(c.name), "quadro: " + q(bname(t)), "prioridade: " + PRI[t.priority], t.due ? "prazo: " + t.due : "", "criada: " + dkey(t.createdAt), t.doneAt ? "concluida: " + dkey(t.doneAt) : "", spent(t) >= 6e4 ? "tempo_registrado: " + q(fmtDur(spent(t))) : "", "tags:", "  - kanban", ...tg.map(g => "  - " + slug(g.name)), "---", ""].filter((x, i, a) => x !== "" || i === a.length - 1);
+  L.push("# " + (t.ticket ? t.ticket + " · " : "") + t.title, "");
+  L.push("> [!info] Tarefa", `> **Quadro:** [[${bname(t)}]] · **Coluna:** ${c.name}`, `> **Prioridade:** ${PRI[t.priority]}`);
+  if (t.ticket) L.push(`> **Chamado:** ${t.ticket}`);
+  if (t.due) L.push(`> **Prazo:** ${dt(t.due)}${di && !done && di.day <= 7 ? " (" + di.label.toLowerCase() + ")" : ""}`);
+  if (tg.length) L.push("> **Tags:** " + tg.map(g => "#" + slug(g.name)).join(" "));
+  if (spent(t) >= 6e4) L.push("> **Tempo registrado:** " + fmtDur(spent(t)));
+  L.push("");
+  if (done) L.push("> [!success] Concluída" + (t.doneAt ? " em " + fmtDT(t.doneAt) : ""), "");
+  else if (di && di.ms < 0) L.push("> [!danger] " + di.label, "> O prazo era " + dt(t.due) + ".", "");
+  if (t.desc.trim()) L.push("## Descrição", "", t.desc.trim(), "");
+  if (t.check.length) L.push(`## Checklist (${t.check.filter(x => x.d).length}/${t.check.length})`, "", ...t.check.map(x => `- [${x.d ? "x" : " "}] ${x.t}`), "");
+  if (t.notes) L.push("## Observações", "", htmlToMd(t.notes), "");
+  const rows = [...state.fields.filter(f => t.custom[f.id]).map(f => [f.name, t.custom[f.id]]), ...t.extra.filter(x => x.k || x.v).map(x => [x.k, x.v])];
+  if (rows.length) L.push("## Informações adicionais", "", "| Campo | Informação |", "| --- | --- |", ...rows.map(r => `| ${cell(r[0])} | ${cell(r[1])} |`), "");
+  if (t.block && t.block.d) L.push("## Bloco no calendário", "", `- ${dt(t.block.d + "T" + t.block.s)}, duração ${fmtDur(t.block.m * 6e4)}`, "");
+  if (t.files.length) L.push("## Anexos", "", ...t.files.map(f => (isImg(f) || /\.pdf$/i.test(f.name) ? "!" : "") + `[[${f.name}]]`), "");
+  L.push("---", `*Exportado do Órbita Kanban em ${fmtDT(Date.now())}. Criada em ${fmtDT(t.createdAt)}.*`, "");
+  return L.join("\n");
+}
 
 /* ---------- menu do botão direito no cartão ---------- */
 let ctxId = null, ctxPos = [0, 0], ctxScroll = [0, 0];
@@ -1162,7 +1273,7 @@ function openCtx(id, x, y) {
   <span class="lbl">Mover para</span><div class="chips">${cols(boardOf(t)).map(c => chip("cxCol", c.id, esc(c.name), c.id === t.col)).join("")}</div>
   ${state.tags.length ? `<span class="lbl">Tags</span><div class="tags">${state.tags.map(g => `<button class="tag ${t.tags.includes(g.id) ? "on" : ""}" style="--h:${g.hue}" data-act="cxTag" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>` : ""}
   <hr><div class="ctx-g"><button data-act="cxTimer">${ic(run ? "pause" : "play")}${run ? "Pausar" : "Cronometrar"}</button>
-  <button data-act="cxBlock">${ic("cal")}Outlook</button><button data-act="cxDup">${ic("copy")}Duplicar</button><button data-act="cxArchive">${ic("check")}Arquivar</button><button class="danger" data-act="cxDel">${ic("trash")}Apagar</button></div>`;
+  <button data-act="cxBlock">${ic("cal")}Outlook</button><button data-act="mdExport">${ic("note")}Exportar .md</button><button data-act="cxDup">${ic("copy")}Duplicar</button><button data-act="cxArchive">${ic("check")}Arquivar</button><button class="danger" data-act="cxDel">${ic("trash")}Apagar</button></div>`;
   m.hidden = false; m.style.left = clamp(x, 6, innerWidth - m.offsetWidth - 6) + "px"; m.style.top = clamp(y, 6, Math.max(6, innerHeight - m.offsetHeight - 6)) + "px";
 }
 document.addEventListener("contextmenu", e => { const el = e.target.closest && e.target.closest(".card, tr[data-id], .planet"); if (!el || el.classList.contains("ghost") || e.target.closest("input,textarea")) return; e.preventDefault(); if (ui.overlay) closeLayer(); openCtx(el.dataset.id, e.clientX, e.clientY); });
@@ -1177,12 +1288,23 @@ const acts = {
   rt: el => { const ed = $("#d_notes"); if (!ed) return; ed.focus(); try { document.execCommand("styleWithCSS", false, /Color$/.test(el.dataset.v)); el.dataset.v === "stamp" ? document.execCommand("insertHTML", false, "<b>" + fmtDT(Date.now()) + "</b>&nbsp;") : document.execCommand(el.dataset.v, false, el.dataset.c || null); } catch {} ins.tNotes(ed); },
   xAdd: () => { const x = { id: uid(), k: "", v: "" }; cur().extra.push(x); save(); renderDrawer(); const i = $("#xk_" + x.id); if (i) i.focus(); },
   xDel: el => { const t = cur(); t.extra = t.extra.filter(x => x.id !== el.dataset.v); save(); render(); renderDrawer(); },
+  mdExport: async el => { const t = task((el && el.dataset.id) || ctxId); if (!t) return; await saveFile(mdName(t) + ".md", taskMd(t)); if (t.files.length) toast(`A nota cita ${t.files.length} anexo${t.files.length > 1 ? "s" : ""}. Coloque-os no cofre para aparecerem`, "Baixar anexos", async () => { for (const f of t.files) { let b = null; try { b = await kvGet("att_" + f.id); } catch {} if (b) await saveFile(f.name, b); } }); },
+  mdCopy: async () => { const t = cur() || task(ctxId); if (!t) return; try { await navigator.clipboard.writeText(taskMd(t)); toast("Markdown copiado"); } catch { toast("Não foi possível copiar aqui"); } },
+  tplForm: () => { ui.tplForm = !ui.tplForm; renderDrawer(); const i = $("#d_tplname"); if (i) { i.focus(); i.select(); } },
+  tplSave: () => { const t = cur(), name = ($("#d_tplname").value || "").trim(), tg = $("#d_tpltag").value; if (!name) return toast("Dê um nome ao modelo"); const items = t.check.map(c => c.t).filter(x => x.trim()); let tp = state.templates.find(x => norm(x.name) === norm(name)); if (tp) { tp.items = items; tp.tag = tg; } else state.templates.push({ id: uid(), name, tag: tg, items }); ui.tplForm = false; save(); renderDrawer(); toast(tp ? `Modelo “${name}” atualizado` : `Modelo “${name}” salvo com ${items.length} itens`); },
+  tplAdd: () => { const tp = { id: uid(), name: "Novo modelo", tag: "", items: [] }; state.templates.push(tp); save(); openSettings(); const i = $("#tp_" + tp.id); if (i) { i.focus(); i.select(); } },
+  tplDel: el => { snapshotUndo("Modelo apagado"); tomb(el.dataset.id); state.templates = state.templates.filter(x => x.id !== el.dataset.id); save(); openSettings(); },
+  attPick: () => $("#att-in").click(),
+  attOpen: async el => { const t = cur(), f = t && t.files.find(x => x.id === el.dataset.v); if (!f) return; const u = await attURL(f.id); if (!u) return toast("Este anexo não está guardado neste navegador"); if (isImg(f)) { const lb = $("#lb"); $("img", lb).src = u; lb.hidden = false; } else if (EMBED) acts.attSave(el); else { const a = document.createElement("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); } },
+  attSave: async el => { const t = cur(), f = t && t.files.find(x => x.id === el.dataset.v); if (!f) return; let b = null; try { b = await kvGet("att_" + f.id); } catch {} if (!b) return toast("Este anexo não está guardado neste navegador"); saveFile(f.name, b); },
+  attDel: el => { const t = cur(); snapshotUndo("Anexo removido"); t.files = t.files.filter(x => x.id !== el.dataset.v); save(); render(); renderDrawer(); },
+  lbClose: () => { $("#lb").hidden = true; },
   cxOpen: () => openTask(ctxId),
   cxBlock: () => { openTask(ctxId); setTimeout(() => { const b = $("#d_outlook"); if (b) b.scrollIntoView({ block: "center" }); }, 80); },
   cxPri: el => { task(ctxId).priority = +el.dataset.v; save(); render(); },
   cxDue: el => { const t = task(ctxId), tm = t.due.slice(11); t.due = el.dataset.v === "x" ? "" : dkey(Date.now() + (+el.dataset.v) * DAY) + (tm ? "T" + tm : ""); save(); render(); },
   cxCol: el => { const t = task(ctxId), id = ctxId, was = isDone(t); if (t.col === el.dataset.v) return; moveTask(id, el.dataset.v); render(); fxLand(id, !was && isDone(t)); },
-  cxTag: el => { const t = task(ctxId), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); openCtx(ctxId, ...ctxPos); },
+  cxTag: el => { const t = task(ctxId), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); openCtx(ctxId, ...ctxPos); if (i < 0) suggestTpl(t, v); },
   cxTimer: () => toggleTimer(ctxId),
   cxDup: () => acts.dup({ dataset: { id: ctxId } }),
   cxArchive: () => { const t = task(ctxId); snapshotUndo("Tarefa arquivada. Ela continua nos relatórios e na busca"); if (state.timer && state.timer.id === t.id) stopTimer(); t.archived = true; save(); render(); },
@@ -1196,7 +1318,7 @@ const acts = {
   del: el => { const t = task(el.dataset.id); snapshotUndo("Tarefa apagada"); tomb(t.id); if (state.timer && state.timer.id === t.id) state.timer = null; state.tasks.splice(state.tasks.indexOf(t), 1); save(); closeLayer(); render(); },
   dup: el => { const t = task(el.dataset.id), c = JSON.parse(JSON.stringify(t)); c.id = uid(); c.title += " (cópia)"; c.createdAt = Date.now(); c.timeMs = 0; c.demo = false; c.check.forEach(k => k.id = uid()); state.tasks.splice(state.tasks.indexOf(t) + 1, 0, c); save(); render(); openTask(c.id); },
   tPri: el => { cur().priority = +el.dataset.v; save(); render(); renderDrawer(); },
-  tTag: el => { const t = cur(), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); renderDrawer(); },
+  tTag: el => { const t = cur(), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); renderDrawer(); if (i < 0) suggestTpl(t, v); },
   ckDel: el => { const t = cur(); t.check = t.check.filter(c => c.id !== el.dataset.v); save(); render(); renderDrawer(); },
   fPri: el => { const v = +el.dataset.v, s = ui.f.pri; s.has(v) ? s.delete(v) : s.add(v); render(); },
   fTag: el => { const v = el.dataset.v, s = ui.f.tags; s.has(v) ? s.delete(v) : s.add(v); render(); },
@@ -1251,6 +1373,7 @@ const ins = {
   tTitle: el => { cur().title = el.value; cur().demo = false; save(); render(); },
   tTicket: el => { cur().ticket = el.value.replace(/^#/, "").trim(); save(); render(); },
   tDesc: el => { cur().desc = el.value; save(); },
+  tplName: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.name = el.value; save(); } },
   tNotes: el => { const t = cur(); if (!t) return; const h = cleanHTML(el.innerHTML); t.notes = plain(h) ? h : ""; save(); },
   xKey: el => { const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.k = el.value; save(); } },
   xVal: el => { const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.v = el.value; save(); } },
@@ -1265,6 +1388,9 @@ const ins = {
 const chg = {
   cxDate: el => { const t = task(ctxId); if (!t) return; const tm = t.due.slice(11); t.due = el.value ? el.value + (tm ? "T" + tm : "") : ""; save(); render(); closeCtx(); },
   tBlock: el => { const t = cur(), b = blockOf(t); b[el.dataset.k] = el.dataset.k === "m" ? +el.value : el.value; if (!b.d || !b.s) return; t.block = b; save(); render(); renderDrawer(); },
+  tplApply: el => { const tp = state.templates.find(x => x.id === el.value); el.value = ""; if (tp) applyTpl(cur(), tp); },
+  tplTag: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.tag = el.value; save(); } },
+  tplItems: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.items = el.value.split("\n").map(x => x.trim()).filter(Boolean); save(); } },
   tBoard: el => { const t = cur(), c = cols(el.value)[0]; state.tasks.splice(state.tasks.indexOf(t), 1); setCol(t, c.id); state.tasks.push(t); setBoard(el.value); save(); render(); renderDrawer(); },
   tCol: el => { const t = cur(); state.tasks.splice(state.tasks.indexOf(t), 1); setCol(t, el.value); state.tasks.push(t); save(); render(); renderDrawer(); },
   tDue: el => { const t = cur(), tm = t.due.slice(11); t.due = el.value ? el.value + (tm ? "T" + tm : "") : ""; save(); render(); renderDrawer(); },
@@ -1276,12 +1402,12 @@ const chg = {
 };
 document.addEventListener("input", e => { const k = e.target.dataset && e.target.dataset.in; if (k && ins[k]) ins[k](e.target); });
 document.addEventListener("change", e => { const k = e.target.dataset && e.target.dataset.in; if (k && chg[k]) chg[k](e.target); });
-document.addEventListener("submit", e => { e.preventDefault(); const f = e.target.closest(".quick"); if (!f) return; const inp = $("input", f), p = parseQuick(inp.value.trim()); if (!p.title) return; ui.fresh = addTask(f.dataset.col, p).id; ui.refocus = f.dataset.col; render(); });
+document.addEventListener("submit", e => { e.preventDefault(); const f = e.target.closest(".quick"); if (!f) return; const inp = $("input", f), p = parseQuick(inp.value.trim()); if (!p.title) return; ui.fresh = addTask(f.dataset.col, p).id; ui.refocus = f.dataset.col; render(); p.tags.forEach(g => suggestTpl(task(ui.fresh) || state.tasks[state.tasks.length - 1], g)); });
 $("#file-in").addEventListener("change", async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; importar(await f.text()); });
 document.addEventListener("keydown", e => {
   const tg = e.target, typing = /INPUT|TEXTAREA|SELECT/.test(tg.tagName) || tg.isContentEditable;
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); return ui.overlay === "pal" ? closeLayer() : openPalette(); }
-  if (e.key === "Escape") { if (ctxId) return closeCtx(); if (ui.overlay) { closeLayer(); return; } if (typing) tg.blur(); return; }
+  if (e.key === "Escape") { if (!$("#lb").hidden) return acts.lbClose(); if (ctxId) return closeCtx(); if (ui.overlay) { closeLayer(); return; } if (typing) tg.blur(); return; }
   if (ui.overlay === "pal") { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const n = ui.pal.items.length; ui.pal.i = (ui.pal.i + (e.key === "ArrowDown" ? 1 : n - 1)) % Math.max(n, 1); renderPal(); } else if (e.key === "Enter") { e.preventDefault(); palRun(ui.pal.i); } return; }
   if (e.key === "Enter" && tg.dataset) {
     if (tg.dataset.in === "ckNew" && tg.value.trim()) { cur().check.push({ id: uid(), t: tg.value.trim(), d: false }); save(); render(); renderDrawer(); $("#d_newck").focus(); return; }
@@ -1341,28 +1467,21 @@ function scene(e) {   // a bancada inteira acompanha o cursor
 $("#view").addEventListener("pointerdown", e => { if (ui.view !== "orbita" || !e.target.closest(".orbit") || e.target.closest(".planet")) return; orb = { x: e.clientX, y: e.clientY, so: ui.so || 0, tilt: ui.tilt || 62 }; });
 function orbDrag(e) { const o = $(".orbit"); if (!o) return; ui.so = orb.so - (e.clientX - orb.x) * .35; ui.tilt = clamp(orb.tilt - (e.clientY - orb.y) * .25, 15, 82); o.style.setProperty("--so", ui.so + "deg"); o.style.setProperty("--tilt", ui.tilt + "deg"); }
 addEventListener("pointerup", () => { orb = null; }); addEventListener("pointercancel", () => { orb = null; });
-/* lupa: os cartões perto do cursor crescem em onda, como os ícones do Dock; o holofote acompanha */
-let lensRaf = 0, lensE = null, magged = [];
-const unmag = c => { ["--mag", "--mz", "--ty", "--k"].forEach(p => c.style.removeProperty(p)); };
+/* vidro e luz: a luz acompanha o cursor e bate em todos os cartões por perto, acendendo a borda de cada um */
+let lensRaf = 0, lensE = null, lit = [];
+const glassOn = () => state.settings.glass !== "off" && fxOn();
 function lens(e) { lensE = e; if (!lensRaf) lensRaf = requestAnimationFrame(lensFrame); }
 function lensFrame() {
   lensRaf = 0; const e = lensE, sp = $("#spot"), next = [], bd = $(".board");
-  const on = fxOn() && state.settings.lens !== "off" && !ui.overlay && !ctxId && e.pointerType !== "touch" && !!(e.target.closest && e.target.closest("main"));
-  const act = on && ui.view === "quadro" && !drag;
+  const on = glassOn() && !ui.overlay && !ctxId && e.pointerType !== "touch" && !!(e.target.closest && e.target.closest("main"));
   sp.classList.toggle("on", on);
   if (on) { sp.style.setProperty("--mx", e.clientX + "px"); sp.style.setProperty("--my", e.clientY + "px"); }
-  if (bd) bd.classList.toggle("focus", !!(act && e.target.closest(".card")));   // o cartão sob o cursor fica em evidência; os outros escurecem
-  if (act) { const R = 300, A = state.settings.depth === 2 ? .32 : .18;
-    $$(".stage .col-list").forEach(list => { const lr = list.getBoundingClientRect(), dx = Math.max(lr.left - e.clientX, 0, e.clientX - lr.right) * 1.3; if (dx >= R) return;
-      let f = -1, best = 0;
-      const info = $$(".card", list).map((c, i) => { const h = c.offsetHeight, cy = lr.top + c.offsetTop - list.offsetTop + h / 2, d = Math.hypot(dx, cy - e.clientY), k = d < R ? Math.cos(d / R * Math.PI / 2) ** 2 : 0; if (k > best) { best = k; f = i; } return { c, k, g: h * k * A / 2, ty: 0 }; });
-      if (f < 0) return; let acc = 0;   // como no Dock: quem cresce empurra os vizinhos
-      for (let i = f + 1; i < info.length; i++) { acc += info[i - 1].g + info[i].g; info[i].ty = acc; }
-      acc = 0; for (let i = f - 1; i >= 0; i--) { acc -= info[i + 1].g + info[i].g; info[i].ty = acc; }
-      info.forEach(o => { if (o.k < .002 && Math.abs(o.ty) < .5) return; const st = o.c.style; st.setProperty("--mag", (1 + A * o.k).toFixed(3)); st.setProperty("--k", o.k.toFixed(3)); st.setProperty("--mz", Math.round(o.k * 10)); st.setProperty("--ty", o.ty.toFixed(1) + "px"); next.push(o.c); }); }); }
-  magged.forEach(c => { if (!next.includes(c)) unmag(c); }); magged = next;
+  if (bd) bd.classList.toggle("focus", !!(on && ui.view === "quadro" && !drag && e.target.closest(".card")));
+  if (on && ui.view === "quadro") $$(".stage .card").forEach(c => { const r = c.getBoundingClientRect(), d = Math.hypot(Math.max(r.left - e.clientX, 0, e.clientX - r.right), Math.max(r.top - e.clientY, 0, e.clientY - r.bottom)); if (d > 280) return;
+    const st = c.style; st.setProperty("--gx", Math.round(e.clientX - r.left) + "px"); st.setProperty("--gy", Math.round(e.clientY - r.top) + "px"); st.setProperty("--glare", (1 - d / 280).toFixed(2)); next.push(c); });
+  lit.forEach(c => { if (!next.includes(c)) c.style.removeProperty("--glare"); }); lit = next;
 }
-document.documentElement.addEventListener("mouseleave", () => { $("#spot").classList.remove("on"); const b = $(".board"); if (b) b.classList.remove("focus"); magged.forEach(unmag); magged = []; });
+document.documentElement.addEventListener("mouseleave", () => { $("#spot").classList.remove("on"); const b = $(".board"); if (b) b.classList.remove("focus"); lit.forEach(c => c.style.removeProperty("--glare")); lit = []; });
 /* poeira em suspensão: partículas em três profundidades que derivam e acompanham a câmera (só no Total) */
 (function motes() {
   const c = $("#motes"), x = c.getContext("2d"); let W = 0, H = 0, mx = .5, my = .5, sx = .5, sy = .5, raf = 0, color = "", tc = 0;
@@ -1385,8 +1504,8 @@ new MutationObserver(() => { const L = $("#layer"), k = ui.overlay ? ui.overlay 
   document.body.classList.toggle("push-side", !!$(".drawer", L)); document.body.classList.toggle("push-back", !!$(".modal", L)); }).observe($("#layer"), { childList: true });
 function tilt(e) {
   const card = e.target.closest && e.target.closest(".card:not(.ghost)");
-  if (tilted && tilted !== card) { const i = $(".card-in", tilted); if (i) { i.style.removeProperty("--rx"); i.style.removeProperty("--ry"); } tilted.style.removeProperty("--glare"); tilted = null; }
-  if (!card || calm.matches || !state.settings.depth || e.pointerType === "touch") return;
+  if (tilted && tilted !== card) { const i = $(".card-in", tilted); if (i) { i.style.removeProperty("--rx"); i.style.removeProperty("--ry"); } if (!glassOn()) tilted.style.removeProperty("--glare"); tilted = null; }
+  if (!card || calm.matches || !state.settings.depth || e.pointerType === "touch" || glassOn()) return;
   const r = card.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height, k = state.settings.depth === 2 ? 16 : 5, inn = $(".card-in", card);
   inn.style.setProperty("--ry", ((px - .5) * k).toFixed(2) + "deg"); inn.style.setProperty("--rx", ((.5 - py) * k).toFixed(2) + "deg");
   card.style.setProperty("--gx", px * 100 + "%"); card.style.setProperty("--gy", py * 100 + "%"); card.style.setProperty("--glare", "1"); tilted = card;

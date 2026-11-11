@@ -16,7 +16,9 @@ Quadro kanban em um único arquivo HTML + JavaScript, sem servidor e sem instala
 - Botão direito no cartão: prioridade, prazo, mover, tags, Outlook
 - Visão **Órbita**: tarefas como planetas, mais perto do centro quanto mais perto do prazo
 - Lista, relatórios com gráficos e exportação em CSV
-- Cena 3D, lupa estilo Dock e destaque do cartão sob o mouse
+- Cena 3D com cartões de vidro e uma luz que segue o mouse
+- Observações em texto rico, campos extras, anexos (imagens, PDF) e modelos de checklist por tag
+- Exportação da tarefa em Markdown pronta para o Obsidian
 - Sons diferentes para cada tipo de alerta
 - Bloco de tempo no calendário do Outlook (link direto ou arquivo `.ics`)
 - Salvamento em 3 camadas: navegador, arquivo `.json` conectado e redes de segurança
