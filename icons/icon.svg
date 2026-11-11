@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14306b"/><stop offset="1" stop-color="#050b1f"/></linearGradient>
+<radialGradient id="pl" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="#ffe9a6"/><stop offset=".5" stop-color="#e0a93a"/><stop offset="1" stop-color="#8a5a12"/></radialGradient>
+<clipPath id="c"><circle cx="256" cy="256" r="150"/></clipPath>
+<radialGradient id="sh" cx=".3" cy=".25" r=".9"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#020617" stop-opacity=".6"/></radialGradient>
+</defs>
+<rect width="512" height="512" rx="112" fill="url(#bg)"/>
+<g fill="#fff"><circle cx="70" cy="90" r="3"/><circle cx="440" cy="70" r="2.5"/><circle cx="460" cy="400" r="3"/><circle cx="90" cy="430" r="2.5"/><circle cx="400" cy="150" r="2"/></g>
+<circle cx="256" cy="256" r="150" fill="url(#pl)"/>
+<g clip-path="url(#c)">
+<path d="M90 160H430V190Q340 204 256 190T90 190Z" fill="#1f4fae" opacity=".85"/>
+<path d="M90 228H430V252Q340 266 256 252T90 252Z" fill="#2f6fe0" opacity=".8"/>
+<path d="M90 296H430V326Q340 312 256 326T90 326Z" fill="#1f4fae" opacity=".85"/>
+<path d="M90 350H430V372Q340 384 256 372T90 372Z" fill="#2f6fe0" opacity=".7"/>
+<ellipse cx="318" cy="288" rx="30" ry="17" fill="#b8541f" opacity=".9"/>
+<circle cx="256" cy="256" r="150" fill="url(#sh)"/>
+</g>
+<path d="M70 330Q256 420 446 190" fill="none" stroke="#f2c75c" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+<circle cx="446" cy="190" r="14" fill="#7db3ff"/>
+</svg>
