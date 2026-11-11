@@ -211,37 +211,117 @@ button.tag { opacity: .45; } button.tag.on { opacity: 1; box-shadow: 0 0 0 1.5px
 body.dragging { cursor: grabbing; }
 body.dragging .card { cursor: grabbing; }
 
-/* ---------- orbita ---------- */
+/* ---------- orbita: o observatório ---------- */
+@property --wz { syntax: "<angle>"; inherits: true; initial-value: 0deg; }
+@property --m { syntax: "<number>"; inherits: false; initial-value: 1; }
 .orbit-wrap { padding: 6px 16px 24px; }
-.orbit-info { display: flex; gap: 14px; flex-wrap: wrap; color: var(--ink2); font-size: 12.5px; max-width: 980px; margin: 0 auto 4px; }
-.orbit-info b { color: var(--ink); }
-.orbit { position: relative; margin: 0 auto; perspective: 1400px; overflow: hidden; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.obs { --cs: 1; position: relative; isolation: isolate; border-radius: 26px; overflow: hidden; color: #dbe6ff; background: radial-gradient(120% 90% at 50% 42%, #0e1538 0%, #070a1f 55%, #03040d 100%); border: 1px solid rgba(140,170,255,.2); box-shadow: 0 34px 80px -34px rgba(0,0,50,.75), inset 0 0 140px rgba(80,110,255,.08); }
+.obs::before { content: ""; position: absolute; inset: -20%; z-index: -2; pointer-events: none; background: radial-gradient(40% 35% at 20% 30%, rgba(125,75,255,.24), transparent 70%), radial-gradient(35% 40% at 82% 70%, rgba(0,190,235,.17), transparent 70%), radial-gradient(30% 30% at 62% 14%, rgba(255,125,85,.11), transparent 70%); animation: nebula 70s ease-in-out infinite alternate; }
+@keyframes nebula { to { transform: translate3d(-3%, 2%, 0) scale(1.08) rotate(4deg); } }
+.obs-stars { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.obs-grid { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: center; padding: 10px; }
+.obs.wide .obs-grid { grid-template-columns: 250px minmax(0, 1fr) 250px; padding: 16px; }
+.orbit { position: relative; margin: 0 auto; width: 100%; perspective: 1400px; overflow: hidden; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
 .orbit:active { cursor: grabbing; }
 .space { position: absolute; left: 50%; top: 44%; width: var(--S); height: var(--S); margin: calc(var(--S) / -2) 0 0 calc(var(--S) / -2); transform: rotateX(var(--tilt)); transform-style: preserve-3d; }
 .lay { position: absolute; inset: 0; transform-style: preserve-3d; }
-.lay.spin { transform: rotateZ(calc(var(--spin) + var(--so))); animation: spin 320s linear infinite; }
+.lay.spin { transform: rotateZ(calc(var(--spin) + var(--so) + var(--wz))); animation: spin 320s linear calc(var(--sd, 0s) * -1) infinite; }
 .orbit:hover .lay.spin { animation-play-state: paused; }
-.orbit.enter .space { animation: orbIn .9s cubic-bezier(.2,.8,.2,1) backwards; }
-@keyframes orbIn { from { --tilt: 82deg; scale: .72; opacity: 0; } }
-.orbit.enter .planet i { animation: pIn .55s cubic-bezier(.2,1.4,.4,1) backwards; animation-delay: calc(var(--k) * 60ms + .45s); }
-@keyframes pIn { from { transform: scale(0); } }
 @keyframes spin { to { --spin: 360deg; } }
-.ring { position: absolute; left: 50%; top: 50%; width: calc(var(--r) * 2); height: calc(var(--r) * 2); margin: calc(var(--r) * -1); border-radius: 50%; border: 1.5px dashed var(--line); }
-.ring.r0 { background: radial-gradient(circle, color-mix(in oklab, var(--p0) 22%, transparent), transparent 70%); border-color: var(--p0); border-style: solid; }
-.bb { position: absolute; left: 50%; top: 50%; transform-origin: 50% 100%; transform: translate(-50%, -100%) translate3d(var(--x), var(--y), 0) rotateX(calc(var(--tilt) * -1)); }
-.spin .bb { transform: translate(-50%, -100%) translate3d(var(--x), var(--y), 0) rotateZ(calc((var(--spin) + var(--so)) * -1)) rotateX(calc(var(--tilt) * -1)); }
-.ring-l { display: block; font: 500 10.5px var(--mono); color: var(--ink2); white-space: nowrap; background: var(--bg); border: 1px solid var(--line); padding: 0 7px; border-radius: 99px; translate: 0 50%; }
-.planet { background: none; border: 0; padding: 0; display: grid; justify-items: center; gap: 2px; width: 132px; pointer-events: none; }
+.ring { position: absolute; left: 50%; top: 50%; width: calc(var(--r) * 2); height: calc(var(--r) * 2); margin: calc(var(--r) * -1); border-radius: 50%; border: 1.5px dashed color-mix(in oklab, var(--rc) 48%, transparent); box-shadow: 0 0 16px color-mix(in oklab, var(--rc) 16%, transparent), inset 0 0 24px color-mix(in oklab, var(--rc) 7%, transparent); transition: opacity .3s, border-color .3s, box-shadow .3s; }
+.ring.r0 { background: radial-gradient(circle, color-mix(in oklab, var(--rc) 24%, transparent), transparent 70%); border-style: solid; }
+.bb { position: absolute; left: 50%; top: 50%; transform-origin: 50% 100%; transform: translate(-50%, -100%) translate3d(calc(var(--x) * var(--m)), calc(var(--y) * var(--m)), 0) rotateX(calc(var(--tilt) * -1)); }
+.spin .bb { transform: translate(-50%, -100%) translate3d(calc(var(--x) * var(--m)), calc(var(--y) * var(--m)), 0) rotateZ(calc((var(--spin) + var(--so) + var(--wz)) * -1)) rotateX(calc(var(--tilt) * -1)); }
+.ring-l { display: block; font: 500 10.5px var(--mono); color: var(--rc); white-space: nowrap; background: rgba(8,12,32,.78); border: 1px solid color-mix(in oklab, var(--rc) 40%, transparent); padding: 0 7px; border-radius: 99px; translate: 0 50%; transition: opacity .3s; }
+.planet { background: none; border: 0; padding: 0; display: grid; justify-items: center; gap: 2px; width: 132px; pointer-events: none; color: inherit; transition: opacity .3s; }
 .planet > * { pointer-events: auto; }
 .planet.nolabel span, .planet.nolabel em { opacity: 0; pointer-events: none; transition: opacity .15s; }
 .planet.nolabel:hover span, .planet.nolabel:hover em, .planet.nolabel:focus-visible span, .planet.nolabel:focus-visible em { opacity: 1; }
-.planet i { width: var(--d); height: var(--d); border-radius: 50%; background: radial-gradient(circle at 32% 28%, color-mix(in oklab, var(--pc) 55%, #fff), var(--pc) 55%, color-mix(in oklab, var(--pc) 60%, #000)); box-shadow: 0 10px 14px -6px rgb(var(--shadow) / .6); transition: transform .2s; }
-.planet:hover i, .planet:focus-visible i { transform: scale(1.25); }
-.planet span { font-size: 11.5px; line-height: 1.25; max-width: 132px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: var(--bg); border: 1px solid var(--line); padding: 0 6px; border-radius: 99px; }
+.planet i { position: relative; width: var(--d); height: var(--d); border-radius: 50%; background: radial-gradient(circle at 32% 28%, color-mix(in oklab, var(--pc) 45%, #fff), var(--pc) 52%, color-mix(in oklab, var(--pc) 55%, #000)); box-shadow: inset -5px -7px 11px rgba(0,0,40,.5); transition: transform .2s; }
+.planet i b { position: absolute; inset: -80%; border-radius: 50%; z-index: -1; pointer-events: none; background: radial-gradient(circle, color-mix(in oklab, var(--pc) 55%, transparent) 0, transparent 62%); }
+.planet.ck i::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; background: conic-gradient(var(--pc) var(--pct), rgba(255,255,255,.16) 0); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px)); }
+.planet.late i::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--pc); animation: ping 1.9s ease-out infinite; }
+@keyframes ping { from { transform: scale(.9); opacity: .9; } to { transform: scale(2.3); opacity: 0; } }
+.planet:hover i, .planet:focus-visible i { transform: scale(1.28); }
+.planet span { font-size: 11.5px; line-height: 1.25; max-width: 132px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: rgba(8,12,32,.78); color: #e8f0ff; border: 1px solid rgba(150,180,255,.26); padding: 0 6px; border-radius: 99px; }
 .planet:hover span { border-color: var(--pc); }
-.planet em { font: 500 10.5px var(--mono); color: var(--ink2); font-style: normal; }
-.sun { width: 66px; height: 66px; border-radius: 50%; display: grid; place-content: center; text-align: center; background: radial-gradient(circle at 35% 30%, #ffe2a8, #f5a623 60%, #c9650a); color: #3a1d00; font: 700 19px/1 var(--display); box-shadow: 0 0 40px 6px rgb(245 166 35 / .45); }
+.planet em { font: 500 10.5px var(--mono); color: #9fb4ff; font-style: normal; }
+.sun { width: 74px; height: 74px; border-radius: 50%; display: grid; place-content: center; text-align: center; background: radial-gradient(circle at 35% 30%, #fff1c9, #ffb52e 55%, #d4690c); color: #3a1d00; font: 700 22px/1 var(--display); }
+.sun-glow { position: absolute; z-index: 0; left: 50%; top: 50%; width: calc(var(--S) * .46); height: calc(var(--S) * .46); margin: calc(var(--S) * -.23) 0 0 calc(var(--S) * -.23); border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255,185,60,.5), rgba(255,120,25,.2) 38%, transparent 68%); }
+.obs.cine .sun-rays { animation: rot 55s linear infinite, glowIn calc(1.8s * var(--cs)) ease-out calc(.6s * var(--cs)) backwards; }
+.obs.cine .sun-glow { animation: glowIn calc(1.6s * var(--cs)) ease-out calc(.5s * var(--cs)) backwards; } @keyframes glowIn { from { transform: scale(0); opacity: 0; } }
 .sun small { font: 600 9px var(--body); letter-spacing: .08em; text-transform: uppercase; }
+.sun-rays { position: absolute; left: 50%; top: 50%; width: calc(var(--S) * .3); height: calc(var(--S) * .3); margin: calc(var(--S) * -.15) 0 0 calc(var(--S) * -.15); border-radius: 50%; pointer-events: none; background: conic-gradient(transparent 0 8%, rgba(255,205,110,.55) 10% 11%, transparent 13% 25%, rgba(255,205,110,.36) 27% 28%, transparent 30% 45%, rgba(255,205,110,.55) 47% 48%, transparent 50% 70%, rgba(255,205,110,.36) 72% 73%, transparent 75%); -webkit-mask: radial-gradient(circle, transparent 20%, #000 24%, transparent 68%); mask: radial-gradient(circle, transparent 20%, #000 24%, transparent 68%); animation: rot 55s linear infinite; }
+.sun-ping { position: absolute; left: 50%; top: 50%; width: 74px; height: 74px; margin: -37px 0 0 -37px; border-radius: 50%; border: 2px solid rgba(255,190,80,.75); pointer-events: none; animation: ping 3.4s ease-out infinite; }
+@keyframes rot { to { transform: rotate(360deg); } }
+.obs-flash, .obs-wave { position: absolute; left: 50%; top: 44%; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; pointer-events: none; opacity: 0; }
+.obs-flash { background: radial-gradient(circle, rgba(255,236,190,.95), rgba(255,170,60,.4) 45%, transparent 70%); }
+.obs-wave { border: 2px solid rgba(255,225,160,.8); }
+.obs-hint { position: absolute; left: 50%; bottom: 10px; translate: -50% 0; z-index: 3; pointer-events: none; font-size: 11.5px; color: rgba(205,220,255,.8); background: rgba(8,12,32,.6); border: 1px solid rgba(150,180,255,.2); border-radius: 99px; padding: 3px 12px; white-space: nowrap; animation: hintIn .6s ease calc(2.8s * var(--cs)) backwards, hintOut 1s ease 10s forwards; }
+@keyframes hintIn { from { opacity: 0; translate: -50% 8px; } }
+@keyframes hintOut { to { opacity: 0; } }
+.obs-skip { position: absolute; top: 12px; right: 14px; z-index: 6; font: 600 11.5px var(--body); color: rgba(220,230,255,.85); background: rgba(8,12,32,.6); border: 1px solid rgba(150,180,255,.3); border-radius: 99px; padding: 4px 12px; cursor: pointer; animation: skipOut .5s ease calc(3.1s * var(--cs)) forwards; }
+@keyframes skipOut { to { opacity: 0; visibility: hidden; } }
+
+/* painéis laterais: o que é o quê */
+.obs-side { display: grid; gap: 10px; align-content: start; padding: 14px; border-radius: 18px; background: linear-gradient(160deg, rgba(255,255,255,.075), rgba(255,255,255,.02)); border: 1px solid rgba(160,185,255,.2); box-shadow: 0 10px 30px -14px rgba(0,0,0,.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.obs-side h4 { margin: 0; font: 700 11px var(--body); letter-spacing: .12em; text-transform: uppercase; color: #9fb4ff; }
+.obs-side .obs-lead { margin: 0; font-size: 12.5px; line-height: 1.45; color: rgba(215,228,255,.85); }
+.obs-side ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.obs-item { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 22px 1fr auto; gap: 9px; align-items: center; width: 100%; padding: 7px 8px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: background .2s, border-color .2s, transform .2s; }
+.obs-item:hover, .obs-item:focus-visible, .obs-item.on, .obs[data-lr="0"] .obs-item[data-ring="0"], .obs[data-lr="1"] .obs-item[data-ring="1"], .obs[data-lr="2"] .obs-item[data-ring="2"], .obs[data-lr="3"] .obs-item[data-ring="3"], .obs[data-lr="4"] .obs-item[data-ring="4"],
+.obs[data-lp="0"] .obs-item[data-pri="0"], .obs[data-lp="1"] .obs-item[data-pri="1"], .obs[data-lp="2"] .obs-item[data-pri="2"], .obs[data-lp="3"] .obs-item[data-pri="3"] { background: rgba(255,255,255,.09); border-color: color-mix(in oklab, var(--rc, var(--pc)) 55%, transparent); transform: translateX(2px); }
+.obs-item:focus-visible { outline: 2px solid #9fb4ff; outline-offset: 1px; }
+.obs-item .sw { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--rc); box-shadow: 0 0 10px var(--rc); justify-self: center; }
+.obs-item .dot { justify-self: center; border-radius: 50%; width: var(--d); height: var(--d); background: radial-gradient(circle at 32% 28%, color-mix(in oklab, var(--pc) 45%, #fff), var(--pc) 55%, color-mix(in oklab, var(--pc) 55%, #000)); box-shadow: 0 0 10px -1px var(--pc); }
+.obs-item .tx { display: grid; gap: 1px; min-width: 0; } .obs-item b { font-size: 12.5px; font-weight: 650; color: #f1f5ff; } .obs-item small { font-size: 11px; line-height: 1.35; color: rgba(200,215,250,.72); }
+.obs-item .n { font: 600 12px var(--mono); color: #cfe0ff; min-width: 1.6em; text-align: right; }
+.obs-next { display: grid; gap: 6px; padding-top: 6px; border-top: 1px solid rgba(160,185,255,.16); }
+.obs-nextbtn { all: unset; box-sizing: border-box; cursor: pointer; display: grid; gap: 2px; padding: 8px 10px; border-radius: 12px; background: linear-gradient(135deg, rgba(255,181,46,.16), rgba(255,181,46,.04)); border: 1px solid rgba(255,190,90,.35); transition: transform .2s, border-color .2s; }
+.obs-nextbtn:hover, .obs-nextbtn:focus-visible { transform: translateY(-1px); border-color: rgba(255,200,110,.8); } .obs-nextbtn:focus-visible { outline: 2px solid #ffd27a; outline-offset: 1px; }
+.obs-nextbtn b { font-size: 12.5px; color: #fff3da; line-height: 1.3; } .obs-nextbtn small { font-size: 11px; color: rgba(255,226,170,.85); }
+.obs-how { display: grid; gap: 6px; padding-top: 6px; border-top: 1px solid rgba(160,185,255,.16); }
+.obs-how li { font-size: 11.5px; line-height: 1.4; color: rgba(205,220,255,.8); padding-left: 14px; position: relative; } .obs-how li::before { content: "✦"; position: absolute; left: 0; color: #9fb4ff; font-size: 9px; top: 2px; }
+.obs-how .btn { justify-self: start; background: rgba(255,255,255,.08); color: #e8f0ff; border-color: rgba(160,185,255,.3); }
+.obs-more { margin-top: 2px; } .obs-more > summary { cursor: pointer; list-style: none; padding: 9px 12px; border-radius: 14px; font: 650 12.5px var(--body); color: #cfe0ff; background: rgba(255,255,255,.06); border: 1px solid rgba(160,185,255,.2); } .obs-more > summary::-webkit-details-marker { display: none; } .obs-more > summary::after { content: " ▾"; } .obs-more[open] > summary::after { content: " ▴"; }
+.obs-more .obs-notes { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 10px; }
+
+/* destaque cruzado: legenda <-> cena */
+.obs[data-hr="0"] .planet:not([data-r="0"]), .obs[data-hr="1"] .planet:not([data-r="1"]), .obs[data-hr="2"] .planet:not([data-r="2"]), .obs[data-hr="3"] .planet:not([data-r="3"]), .obs[data-hr="4"] .planet:not([data-r="4"]),
+.obs[data-hp="0"] .planet:not([data-p="0"]), .obs[data-hp="1"] .planet:not([data-p="1"]), .obs[data-hp="2"] .planet:not([data-p="2"]), .obs[data-hp="3"] .planet:not([data-p="3"]) { opacity: .16; }
+.obs[data-hr="0"] .ring:not(.r0), .obs[data-hr="1"] .ring:not(.r1), .obs[data-hr="2"] .ring:not(.r2), .obs[data-hr="3"] .ring:not(.r3), .obs[data-hr="4"] .ring:not(.r4) { opacity: .25; }
+.obs[data-hr="0"] .ring.r0, .obs[data-hr="1"] .ring.r1, .obs[data-hr="2"] .ring.r2, .obs[data-hr="3"] .ring.r3, .obs[data-hr="4"] .ring.r4 { border-color: var(--rc); box-shadow: 0 0 30px var(--rc), inset 0 0 34px color-mix(in oklab, var(--rc) 30%, transparent); }
+.obs[data-hr="0"] .planet[data-r="0"] i, .obs[data-hr="1"] .planet[data-r="1"] i, .obs[data-hr="2"] .planet[data-r="2"] i, .obs[data-hr="3"] .planet[data-r="3"] i, .obs[data-hr="4"] .planet[data-r="4"] i,
+.obs[data-hp="0"] .planet[data-p="0"] i, .obs[data-hp="1"] .planet[data-p="1"] i, .obs[data-hp="2"] .planet[data-p="2"] i, .obs[data-hp="3"] .planet[data-p="3"] i { transform: scale(1.3); }
+
+/* a abertura: dobra espacial -> o sol acende -> órbitas se desenham -> planetas voam -> painéis giram para dentro */
+.obs.cine .space { animation: camIn calc(2.7s * var(--cs)) cubic-bezier(.16,.8,.2,1) backwards; }
+@keyframes camIn { from { --tilt: 90deg; scale: .5; opacity: 0; } 22% { opacity: 1; } 68% { --tilt: 52deg; scale: 1.07; } }
+.obs.cine .lay.spin { animation: spin 320s linear calc(var(--sd, 0s) * -1) infinite, swirl calc(2.9s * var(--cs)) cubic-bezier(.16,.8,.2,1) calc(1.1s * var(--cs)) backwards; }
+@keyframes swirl { from { --wz: -150deg; } }
+.obs.cine .sun { animation: sunIn calc(1.5s * var(--cs)) cubic-bezier(.2,1.3,.3,1) calc(.5s * var(--cs)) backwards; }
+@keyframes sunIn { from { transform: scale(0); filter: brightness(3); } 55% { filter: brightness(1.6); } }
+.obs.cine .ring { animation: ringIn calc(1.1s * var(--cs)) cubic-bezier(.2,.9,.2,1) calc((.9s + var(--ri) * .14s) * var(--cs)) backwards; }
+@keyframes ringIn { from { transform: scale(0); opacity: 0; } }
+.obs.cine .ring-l { animation: fadeUp calc(.7s * var(--cs)) ease calc((1.7s + var(--ri) * .1s) * var(--cs)) backwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } }
+.obs.cine .planet.bb { animation: fly calc(1.35s * var(--cs)) cubic-bezier(.16,.85,.2,1) calc((1.3s + var(--k) * .045s) * var(--cs)) backwards; }
+@keyframes fly { from { --m: 0; opacity: 0; } 25% { opacity: 1; } }
+.obs.cine .planet i { animation: pop calc(.8s * var(--cs)) cubic-bezier(.2,1.6,.4,1) calc((1.55s + var(--k) * .045s) * var(--cs)) backwards; }
+@keyframes pop { from { transform: scale(0); filter: brightness(3); } }
+.obs.cine .obs-flash { animation: flash calc(1.2s * var(--cs)) ease-out calc(.55s * var(--cs)) backwards; }
+@keyframes flash { 0% { opacity: 0; transform: scale(.3); } 22% { opacity: .9; } 100% { opacity: 0; transform: scale(14); } }
+.obs.cine .obs-wave { animation: wave calc(1.6s * var(--cs)) cubic-bezier(.2,.7,.3,1) calc(.7s * var(--cs)) backwards; }
+@keyframes wave { 0% { opacity: .9; transform: scale(.4); } 100% { opacity: 0; transform: scale(16); } }
+.obs.cine .obs-side.L { transform-origin: left center; animation: sideL calc(1.2s * var(--cs)) cubic-bezier(.2,.9,.2,1) calc(2.0s * var(--cs)) backwards; }
+.obs.cine .obs-side.R { transform-origin: right center; animation: sideR calc(1.2s * var(--cs)) cubic-bezier(.2,.9,.2,1) calc(2.1s * var(--cs)) backwards; }
+@keyframes sideL { from { opacity: 0; transform: perspective(900px) translateX(-70px) rotateY(38deg); } }
+@keyframes sideR { from { opacity: 0; transform: perspective(900px) translateX(70px) rotateY(-38deg); } }
+.obs.cine .obs-item { animation: itemIn calc(.55s * var(--cs)) ease calc((2.3s + var(--i, 0) * .09s) * var(--cs)) backwards; }
+@keyframes itemIn { from { opacity: 0; transform: translateX(-14px); } }
+.obs.cine .obs-next, .obs.cine .obs-how, .obs.cine .obs-more { animation: fadeUp calc(.6s * var(--cs)) ease calc(3.0s * var(--cs)) backwards; }
+@media (max-width: 720px) { .obs { border-radius: 20px; } .obs-hint, .ring-l { display: none; } .sun { width: 60px; height: 60px; font-size: 19px; } }
+@media (prefers-reduced-motion: reduce) { .obs *, .obs::before { animation: none !important; } }
 
 /* ---------- lista ---------- */
 .pad { padding: 6px 16px 28px; }
@@ -607,7 +687,7 @@ function demoState() {
     tags: [{ id: "t_sup", name: "Suporte", hue: 190 }, { id: "t_rede", name: "Rede", hue: 240 }, { id: "t_hw", name: "Hardware", hue: 60 }, { id: "t_fac", name: "Faculdade", hue: 290 }, { id: "t_pes", name: "Pessoal", hue: 340 }],
     fields: [{ id: "f_sol", name: "Solicitante", type: "text" }],
     templates: [{ id: "tpl_fmt", name: "Exemplo: formatação de máquina", tag: "t_hw", items: ["Fazer backup dos arquivos do usuário", "Anotar patrimônio e nome da máquina", "Formatar e instalar o sistema", "Instalar drivers e atualizações", "Ingressar no domínio", "Instalar os programas padrão", "Restaurar os arquivos", "Validar com o usuário"] }],
-    settings: { theme: "auto", accent: 190, density: "normal", depth: 2, glass: "on", obsidian: "", sound: "on", volume: 60, outlook: "work", notifyHours: 24 },
+    settings: { theme: "auto", accent: 190, density: "normal", depth: 2, glass: "on", orbIntro: "always", obsidian: "", sound: "on", volume: 60, outlook: "work", notifyHours: 24 },
     timer: null,
     tasks: [
       T({ title: "Exemplo: instalar certificado digital no financeiro", ticket: "CH-48213", priority: 0, due: due(0, "17:00"), tags: ["t_sup"], col: c[2], createdAt: now - 2 * DAY, timeMs: 25 * 6e4, check: ck(["Acessar a máquina remotamente", 1], ["Instalar o certificado"], ["Validar com o usuário"]), custom: { f_sol: "Financeiro" }, desc: "Cartão de exemplo. Clique para editar ou use o botão de virar para ver o verso." }),
@@ -1008,20 +1088,79 @@ function renderBoard() {
   if (ui.fresh) { const c = $(`.card[data-id="${ui.fresh}"]`); ui.fresh = null; if (c && fxOn()) c.animate([{ transform: "perspective(600px) rotateX(-85deg) scale(.7)", opacity: 0 }, { transform: "perspective(600px) rotateX(12deg) scale(1.03)", opacity: 1, offset: .7 }, { transform: "none" }], { duration: 480, easing: "ease-out" }); }
   if (ui.refocus) { const el = $("#q_" + ui.refocus); if (el) el.focus(); ui.refocus = null; }
 }
+const ORB = { stars: null, raf: 0, seen: false, t0: performance.now(), until: 0, lock: null };
+const RING_NAMES = ["Atrasada ou hoje", "até 3 dias", "até 7 dias", "até 30 dias", "sem prazo"];
+const RING_INFO = [["Núcleo · agora", "Atrasadas e as de hoje giram coladas no sol. Comece por aqui."], ["Até 3 dias", "Prazo curto: ainda dá tempo, mas já está no radar."], ["Até 7 dias", "Esta semana. Hora de decidir quando fazer."], ["Até 30 dias", "No mês. Longe o bastante para não tirar o foco."], ["Sem prazo ou além", "A órbita distante. Sem pressa, mas não esqueça."]];
+const RING_COL = ["#ff6b6f", "#ffa04d", "#5fd6b8", "#5aa9ff", "#a493ff"];
+const PRI_INFO = ["O maior planeta. Para ontem.", "Grande. Importante e próxima.", "Médio. Segue o fluxo normal.", "Pequeno. Quando sobrar tempo."];
+function orbSkip() { ORB.until = 0; ui.en = ""; renderOrbit(); }
 function renderOrbit() {
-  const v = $("#view"), S = Math.max(320, Math.min(v.clientWidth - 32, 1000)), names = ["Atrasada ou hoje", "até 3 dias", "até 7 dias", "até 30 dias", "sem prazo"];
-  const rings = [[], [], [], [], []];
-  live().filter(t => !isDone(t) && passes(t)).forEach(t => { const di = dueInfo(t); rings[!di ? 4 : (di.ms < 0 || di.day === 0) ? 0 : di.day <= 3 ? 1 : di.day <= 7 ? 2 : di.day <= 30 ? 3 : 4].push(t); });
-  const R = i => (S / 2) * (0.25 + i * 0.18), sizes = [44, 36, 29, 23];
+  const v = $("#view"), vw = v.clientWidth, wide = vw >= 1080, mode = state.settings.orbIntro || "always";
+  const replay = ui.orbReplay; ui.orbReplay = false;
+  let cine = !!ui.en && fxOn() && mode !== "off"; let cs = 1;
+  if (replay && fxOn()) { cine = true; cs = 1; } else if (cine && mode === "first" && ORB.seen) cs = .4;
+  if (cine) { ORB.seen = true; ORB.until = Date.now() + 3600 * cs; }
+  const S = Math.max(320, Math.min(wide ? vw - 32 - 500 - 28 - 32 : vw - 32 - 20, 900));
+  const rings = [[], [], [], [], []], sizes = [44, 36, 29, 23], open = live().filter(t => !isDone(t) && passes(t));
+  open.forEach(t => { const di = dueInfo(t); rings[!di ? 4 : (di.ms < 0 || di.day === 0) ? 0 : di.day <= 3 ? 1 : di.day <= 7 ? 2 : di.day <= 30 ? 3 : 4].push(t); });
+  const R = i => (S / 2) * (0.25 + i * 0.18), sd = (((performance.now() - ORB.t0) / 1000) % 320).toFixed(2);
   let base = "", spin = "", n = 0;
-  for (let i = 4; i >= 0; i--) base += `<div class="ring r${i}" style="--r:${R(i)}px"></div><div class="bb" style="--x:0px;--y:${R(i)}px"><span class="ring-l">${names[i]}${rings[i].length ? " · " + rings[i].length : ""}</span></div>`;
-  base += `<div class="bb" style="--x:0px;--y:0px"><div class="sun"><span>${rings[0].length}</span><small>agora</small></div></div>`;
-  rings.forEach((list, i) => { const fit = Math.max(2, Math.floor(2 * Math.PI * R(i) / 210));   // rótulo fixo só quando cabe sem encavalar
-    list.forEach((t, j) => { const a = (j / list.length) * Math.PI * 2 + i * 1.1 + 0.5, x = Math.cos(a) * R(i), y = Math.sin(a) * R(i), di = dueInfo(t);
-      spin += `<button class="bb planet p${t.priority}${list.length > fit ? " nolabel" : ""}" style="--x:${x.toFixed(1)}px;--y:${y.toFixed(1)}px;--d:${sizes[t.priority]}px;--k:${n++}" data-act="open" data-id="${t.id}" data-tip="${esc(t.title + " · " + PRI[t.priority] + " · " + (di ? di.label : "sem prazo") + " · " + col(t.col).name)}"><span>${esc(t.title)}</span>${t.ticket ? `<em>#${esc(t.ticket)}</em>` : ""}<i></i></button>`; }); });
-  const total = rings.reduce((a, r) => a + r.length, 0);
-  v.innerHTML = `<div class="orbit-wrap"><div class="orbit-info"><span><b>${total}</b> tarefas abertas em órbita.</span><span>Quanto mais perto do centro, mais perto do prazo.</span><span>O tamanho do planeta é a prioridade.</span><span>Arraste para girar e inclinar.</span></div>
-    <div class="orbit${ui.en}" style="--S:${S}px;height:${Math.round(S * 0.6 + 90)}px;--so:${ui.so || 0}deg;--tilt:${ui.tilt || 62}deg"><div class="space"><div class="lay">${base}</div><div class="lay spin">${spin}</div></div></div></div>`;
+  for (let i = 4; i >= 0; i--) base += `<div class="ring r${i}" style="--r:${R(i)}px;--rc:${RING_COL[i]};--ri:${i}"></div><div class="bb" style="--x:0px;--y:${R(i)}px;--rc:${RING_COL[i]};--ri:${i}"><span class="ring-l">${RING_NAMES[i]}${rings[i].length ? " · " + rings[i].length : ""}</span></div>`;
+  base += `<div class="sun-glow"></div><div class="sun-rays"></div><div class="sun-ping"></div><div class="bb" style="--x:0px;--y:0px"><div class="sun" title="Tarefas atrasadas ou para hoje"><span class="cnt" data-to="${rings[0].length}">${rings[0].length}</span><small>agora</small></div></div>`;
+  rings.forEach((list, i) => { const fit = Math.max(2, Math.floor(2 * Math.PI * R(i) / 210));
+    list.forEach((t, j) => { const a = (j / list.length) * Math.PI * 2 + i * 1.1 + 0.5, x = Math.cos(a) * R(i), y = Math.sin(a) * R(i), di = dueInfo(t), ck = t.check.length, pct = ck ? Math.round(t.check.filter(c => c.d).length / ck * 100) : 0;
+      spin += `<button class="bb planet p${t.priority}${list.length > fit ? " nolabel" : ""}${ck ? " ck" : ""}${i === 0 && di && di.ms < 0 ? " late" : ""}" data-r="${i}" data-p="${t.priority}" style="--x:${x.toFixed(1)}px;--y:${y.toFixed(1)}px;--d:${sizes[t.priority]}px;--k:${n++}" data-act="open" data-id="${t.id}" data-tip="${esc(t.title + " · " + PRI[t.priority] + " · " + (di ? di.label : "sem prazo") + " · " + col(t.col).name + (ck ? " · checklist " + pct + "%" : ""))}"><span>${esc(t.title)}</span>${t.ticket ? `<em>#${esc(t.ticket)}</em>` : ""}<i style="--pct:${pct}%"><b></b></i></button>`; }); });
+  const total = open.length, byPri = [0, 1, 2, 3].map(p => open.filter(t => t.priority === p).length);
+  const next = open.slice().sort((a, b) => { const da = dueInfo(a), db = dueInfo(b); return (da ? da.ms : Infinity) - (db ? db.ms : Infinity) || a.priority - b.priority; })[0], nd = next && dueInfo(next);
+  const left = `<aside class="obs-side L" aria-label="Distância e prazo"><h4>Distância = prazo</h4><p class="obs-lead"><b>${total}</b> ${total === 1 ? "tarefa aberta orbita" : "tarefas abertas orbitam"} o seu dia. Quanto mais perto do sol, mais perto do prazo.</p><ul>${RING_INFO.map((r, i) => `<li><button type="button" class="obs-item" data-ring="${i}" style="--rc:${RING_COL[i]};--i:${i}" aria-pressed="false"><span class="sw"></span><span class="tx"><b>${r[0]}</b><small>${r[1]}</small></span><span class="n cnt" data-to="${rings[i].length}">${rings[i].length}</span></button></li>`).join("")}</ul></aside>`;
+  const right = `<aside class="obs-side R" aria-label="Prioridade e navegação"><h4>Tamanho = prioridade</h4><p class="obs-lead">Planetas maiores pedem mais atenção. O anel ao redor mostra o progresso do checklist.</p><ul>${PRI.map((p, i) => `<li><button type="button" class="obs-item" data-pri="${i}" style="--pc:var(--p${i});--i:${i}" aria-pressed="false"><span class="dot" style="--d:${Math.round(sizes[i] * .5)}px"></span><span class="tx"><b>${p}</b><small>${PRI_INFO[i]}</small></span><span class="n cnt" data-to="${byPri[i]}">${byPri[i]}</span></button></li>`).join("")}</ul>
+    ${next ? `<div class="obs-next"><h4>Próxima da fila</h4><button class="obs-nextbtn" data-act="open" data-id="${next.id}"><b>${esc(next.title)}</b><small>${nd ? nd.label : "sem prazo"} · ${esc(col(next.col).name)}</small></button></div>` : ""}
+    <div class="obs-how"><h4>Como navegar</h4><ul><li>Arraste o espaço para girar e inclinar.</li><li>Clique num planeta para abrir a tarefa.</li><li>Passe o mouse (ou toque) na legenda para destacar.</li></ul><button class="btn sm" data-act="orbReplay">↻ Rever abertura</button></div></aside>`;
+  const scene = `<div class="orbit" style="--S:${S}px;height:${Math.round(S * 0.6 + 90)}px;--so:${ui.so || 0}deg;--tilt:${ui.tilt || 62}deg;--sd:${sd}s"><div class="obs-flash"></div><div class="obs-wave"></div><div class="space"><div class="lay">${base}</div><div class="lay spin">${spin}</div></div><div class="obs-hint">Arraste para girar · clique num planeta para abrir</div></div>`;
+  v.innerHTML = `<div class="orbit-wrap"><div class="obs${wide ? " wide" : ""}${cine ? " cine" : ""}" style="--cs:${cs}"><canvas class="obs-stars" aria-hidden="true"></canvas>${cine ? `<button class="obs-skip" data-act="orbSkip" aria-label="Pular a abertura">Pular ⏎</button>` : ""}
+    <div class="obs-grid">${wide ? left + scene + right : scene}</div>${wide ? "" : `<details class="obs-more" style="margin:0 10px 10px"${ORB.more ? " open" : ""}><summary>Como ler esta tela</summary><div class="obs-notes">${left}${right}</div></details>`}</div></div>`;
+  const obs = $(".obs", v); if (!obs) return;
+  orbStars($(".obs-stars", obs), cs, cine);
+  clearTimeout(ORB.endT); if (cine) ORB.endT = setTimeout(() => { const o = $(".obs.cine"); if (o) o.classList.remove("cine"); }, 3800 * cs + 300);
+  if (cine) $$(".cnt", obs).forEach(el => { const to = +el.dataset.to; if (!to) return; el.textContent = "0"; const t0 = performance.now() + 2100 * cs, dur = 900 * cs + 250; const step = now => { const u = Math.min(1, Math.max(0, (now - t0) / dur)); el.textContent = Math.round(to * (1 - Math.pow(1 - u, 3))); if (u < 1 && el.isConnected) requestAnimationFrame(step); }; requestAnimationFrame(step); });
+  if (ORB.lock) { obs.dataset[ORB.lock.k] = ORB.lock.v; if (window.orbPaint) orbPaint(); }
+}
+/* céu: estrelas em profundidade; na abertura viram a "dobra espacial" e depois só flutuam */
+function orbStars(cv, cs, cine) {
+  cancelAnimationFrame(ORB.raf); if (!cv) return;
+  const ctx = cv.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2), r0 = cv.getBoundingClientRect(), W = Math.max(1, r0.width), H = Math.max(1, r0.height);
+  cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (ORB.ro) ORB.ro.disconnect();
+  if (window.ResizeObserver && cv.parentElement) { ORB.ro = new ResizeObserver(() => { cancelAnimationFrame(ORB.rz); ORB.rz = requestAnimationFrame(() => { const r = cv.getBoundingClientRect(); if (cv.isConnected && (Math.abs(r.width - W) > 4 || Math.abs(r.height - H) > 4)) orbStars(cv, cs, false); }); }); ORB.ro.observe(cv.parentElement); }
+  const N = Math.round(Math.min(260, Math.max(110, W * H / 5200)));
+  if (!ORB.stars || ORB.stars.length < N) ORB.stars = Array.from({ length: 260 }, () => ({ x: Math.random() * 2 - 1, y: Math.random() * 2 - 1, z: Math.random() * .96 + .04, tw: Math.random() * 6.28, c: Math.random() }));
+  const stars = ORB.stars.slice(0, N), motion = fxOn(), t0 = performance.now(), cx = W / 2, cy = H * .44, sc = Math.max(W, H) * .5;
+  let last = t0, shoot = null, nextShoot = t0 + 5000 + Math.random() * 5000;
+  const warp = ms => { if (!cine) return 0; const u = ms / (cs * 1000); return u < .15 ? u / .15 : u < .9 ? 1 : u < 2.2 ? 1 - (u - .9) / 1.3 : 0; };
+  const col = s => s.c < .1 ? "255,233,176" : s.c < .45 ? "205,222,255" : "255,255,255";
+  const proj = (s, z, rot) => { const c = Math.cos(rot), sn = Math.sin(rot), x = s.x * c - s.y * sn, y = s.x * sn + s.y * c; return [cx + x / z * sc * .36, cy + y / z * sc * .36]; };
+  const frame = now => {
+    if (!cv.isConnected) return;
+    if (motion) ORB.raf = requestAnimationFrame(frame);
+    if (document.hidden) { last = now; return; }
+    const dt = Math.min(50, now - last); last = now; const w = warp(now - t0), rot = (ui.so || 0) * .004;
+    ctx.clearRect(0, 0, W, H);
+    const speed = motion ? (.00005 + w * w * .0021) * dt : 0;
+    for (const s of stars) {
+      const zp = s.z; s.z -= speed * (.45 + s.c);
+      if (s.z <= .03) { s.z = 1; s.x = Math.random() * 2 - 1; s.y = Math.random() * 2 - 1; continue; }
+      const [px, py] = proj(s, s.z, rot); if (px < -20 || px > W + 20 || py < -20 || py > H + 20) continue;
+      const tw = .72 + .28 * Math.sin(now * .002 + s.tw), a = Math.min(1, (.3 + .7 * (1 - s.z)) * tw + w * .35);
+      ctx.strokeStyle = ctx.fillStyle = `rgba(${col(s)},${a.toFixed(3)})`;
+      if (w > .05) { const [qx, qy] = proj(s, Math.min(1.2, zp + speed * 3.2 + .0005), rot); ctx.lineWidth = .6 + (1 - s.z) * 1.4; ctx.beginPath(); ctx.moveTo(qx, qy); ctx.lineTo(px, py); ctx.stroke(); }
+      else { const r = .35 + (1 - s.z) * 1.35; ctx.beginPath(); ctx.arc(px, py, r, 0, 6.2832); ctx.fill(); }
+    }
+    if (motion && !cine || motion && w === 0) {
+      if (!shoot && now > nextShoot) { const a = Math.random() * .6 + .25; shoot = { x: Math.random() * W * .7, y: Math.random() * H * .35, vx: Math.cos(a) * .9, vy: Math.sin(a) * .9, life: 0 }; nextShoot = now + 6000 + Math.random() * 9000; }
+      if (shoot) { shoot.life += dt; shoot.x += shoot.vx * dt; shoot.y += shoot.vy * dt; const k = 1 - shoot.life / 650; if (k <= 0) shoot = null; else { const g = ctx.createLinearGradient(shoot.x, shoot.y, shoot.x - shoot.vx * 110, shoot.y - shoot.vy * 110); g.addColorStop(0, `rgba(255,255,255,${k})`); g.addColorStop(1, "rgba(255,255,255,0)"); ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(shoot.x, shoot.y); ctx.lineTo(shoot.x - shoot.vx * 110, shoot.y - shoot.vy * 110); ctx.stroke(); } }
+    }
+  };
+  frame(performance.now());
 }
 function renderList() {
   const { k, dir } = ui.sort, ci = t => state.columns.indexOf(col(t.col));
@@ -1111,7 +1250,7 @@ function fxLand(id, done) {
   c.animate([{ transform: "translateY(-20px) scale(1.08)" }, { transform: "translateY(3px) scale(.98)", offset: .6 }, { transform: "none" }], { duration: 440, easing: "ease-out" });
   if (done) { $(".card-in", c).animate([{ transform: "rotateY(0deg) translateZ(50px)" }, { transform: "rotateY(360deg) translateZ(0px)" }], { duration: 750, easing: "cubic-bezier(.2,.8,.2,1)" }); const r = c.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2); }
 }
-function renderView() { ui.en = ui.enter ? " enter" : ""; ui.enter = false; document.body.dataset.view = ui.view; ({ quadro: renderBoard, orbita: renderOrbit, lista: renderList, relatorios: renderReports }[ui.view])(); }
+function renderView() { ui.en = ui.enter ? " enter" : ""; ui.enter = false; document.body.dataset.view = ui.view; if (ui.view !== "orbita") ORB.lock = null; ({ quadro: renderBoard, orbita: renderOrbit, lista: renderList, relatorios: renderReports }[ui.view])(); }
 function render() { renderChrome(); renderView(); }
 
 /* ---------- gaveta da tarefa ---------- */
@@ -1207,6 +1346,7 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Cor de destaque</span><div class="hues">${ACCENTS.map(([h, n]) => `<button class="hue ${s.accent === h ? "on" : ""}" style="--h:${h}" data-act="setOpt" data-k="accent" data-v="${h}" title="${n}" aria-label="${n}"></button>`).join("")}</div></div>
     <div class="set-row"><span class="lbl" style="width:110px">Efeito 3D</span>${seg("depth", [[0, "Desligado"], [1, "Suave"], [2, "Total"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Vidro e luz</span>${seg("glass", [["on", "Ligado"], ["off", "Desligado"]])}</div>
+    <div class="set-row"><span class="lbl" style="width:110px">Abertura da Órbita</span>${seg("orbIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div></section>
   <section><h3>Avisos de prazo</h3>
     <div class="set-row"><label for="s_hours">Avisar quando faltar até</label><input class="inp" style="flex:none;width:80px" id="s_hours" type="number" min="1" max="168" value="${s.notifyHours}" data-in="setHours"><span>horas</span></div>
@@ -1516,6 +1656,8 @@ const acts = {
   tagDel: el => { const id = el.dataset.id; snapshotUndo("Tag apagada"); tomb(id); state.tags = state.tags.filter(g => g.id !== id); state.tasks.forEach(t => t.tags = t.tags.filter(x => x !== id)); ui.f.tags.delete(id); save(); render(); openSettings(); },
   infoAdd: () => { const f = { id: "i_" + uid(), name: "Novo campo" }; state.infoFields.push(f); save(); renderDrawer(); const i = $(`.info-row[data-k="${f.id}"] .lbl-inp`); if (i) { i.scrollIntoView({ block: "center" }); i.focus(); i.select(); } },
   infoDel: el => { const id = el.dataset.v; snapshotUndo("Campo apagado"); tomb(id); state.infoFields = state.infoFields.filter(f => f.id !== id); state.tasks.forEach(t => { if (t.info) delete t.info[id]; }); save(); render(); renderDrawer(); },
+  orbReplay: () => { if (!fxOn()) return toast("As animações estão desligadas (efeito 3D ou movimento reduzido)."); ui.orbReplay = true; ui.enter = true; renderView(); },
+  orbSkip: () => orbSkip(),
   fieldAdd: () => { const f = { id: uid(), name: "Novo campo", type: "text" }; state.fields.push(f); save(); openSettings(); const i = $("#fd_" + f.id); if (i) { i.focus(); i.select(); } },
   fieldDel: el => { snapshotUndo("Campo apagado"); tomb(el.dataset.id); state.fields = state.fields.filter(f => f.id !== el.dataset.id); save(); openSettings(); },
   exportJson: () => exportar(),
@@ -1651,9 +1793,24 @@ window.addEventListener("pointerup", () => { upOk = true; endDrag(); upOk = fals
 /* inclinação dos cartões sob o cursor */
 let tilted = null, orb = null;
 function scene() { /* a câmera da bancada ficou parada: o 3D agora vem da profundidade dos cartões, não de girar o quadro */ }
-$("#view").addEventListener("pointerdown", e => { if (ui.view !== "orbita" || !e.target.closest(".orbit") || e.target.closest(".planet")) return; orb = { x: e.clientX, y: e.clientY, so: ui.so || 0, tilt: ui.tilt || 62 }; });
-function orbDrag(e) { const o = $(".orbit"); if (!o) return; ui.so = orb.so - (e.clientX - orb.x) * .35; ui.tilt = clamp(orb.tilt - (e.clientY - orb.y) * .25, 15, 82); o.style.setProperty("--so", ui.so + "deg"); o.style.setProperty("--tilt", ui.tilt + "deg"); }
-addEventListener("pointerup", () => { orb = null; }); addEventListener("pointercancel", () => { orb = null; });
+$("#view").addEventListener("pointerdown", e => { if (ui.view !== "orbita" || !e.target.closest(".orbit") || e.target.closest(".planet")) return; cancelAnimationFrame(ORB.ir); ORB.v = 0; orb = { x: e.clientX, y: e.clientY, so: ui.so || 0, tilt: ui.tilt || 62, lx: e.clientX, lt: e.timeStamp }; });
+function orbDrag(e) { const o = $(".orbit"); if (!o) return; const dt = Math.max(1, e.timeStamp - orb.lt); ORB.v = (ORB.v || 0) * .6 + (-(e.clientX - orb.lx) * .35 / dt) * .4; orb.lx = e.clientX; orb.lt = e.timeStamp; ui.so = orb.so - (e.clientX - orb.x) * .35; ui.tilt = clamp(orb.tilt - (e.clientY - orb.y) * .25, 15, 82); o.style.setProperty("--so", ui.so + "deg"); o.style.setProperty("--tilt", ui.tilt + "deg"); }
+function orbInertia() { cancelAnimationFrame(ORB.ir); const step = () => { const o = $(".orbit"); if (!o || Math.abs(ORB.v) < .002 || !fxOn()) { ORB.v = 0; return; } ui.so = (ui.so || 0) + ORB.v * 16; ORB.v *= .94; o.style.setProperty("--so", ui.so + "deg"); ORB.ir = requestAnimationFrame(step); }; step(); }
+addEventListener("pointerup", () => { if (orb && Math.abs(ORB.v || 0) > .003) orbInertia(); orb = null; }); addEventListener("pointercancel", () => { orb = null; });
+/* legenda <-> cena: passar o mouse destaca, tocar/clicar fixa; planeta sob o mouse acende o item da legenda */
+(function () {
+  const v = $("#view"), put = (k, val) => { const o = $(".obs"); if (!o) return; if (val == null) delete o.dataset[k]; else o.dataset[k] = val; };
+  const paint = () => { $$(".obs-item").forEach(b => { const on = ORB.lock && ((ORB.lock.k === "hr" && b.dataset.ring === ORB.lock.v) || (ORB.lock.k === "hp" && b.dataset.pri === ORB.lock.v)); b.classList.toggle("on", !!on); b.setAttribute("aria-pressed", on ? "true" : "false"); }); };
+  v.addEventListener("pointerover", e => { if (e.pointerType !== "mouse") return; const it = e.target.closest(".obs-item"), pl = e.target.closest(".planet");
+    if (it && !ORB.lock) { put("hr", it.dataset.ring ?? null); put("hp", it.dataset.pri ?? null); } if (pl) { put("lr", pl.dataset.r); put("lp", pl.dataset.p); } });
+  v.addEventListener("pointerout", e => { if (e.pointerType !== "mouse") return; const it = e.target.closest(".obs-item"), pl = e.target.closest(".planet"); if (it && !ORB.lock) { put("hr", null); put("hp", null); } if (pl) { put("lr", null); put("lp", null); } });
+  v.addEventListener("click", e => { const it = e.target.closest(".obs-item"); if (!it) return; const k = it.dataset.ring != null ? "hr" : "hp", val = it.dataset.ring ?? it.dataset.pri;
+    put("hr", null); put("hp", null); if (ORB.lock && ORB.lock.k === k && ORB.lock.v === val) ORB.lock = null; else { ORB.lock = { k, v: val }; put(k, val); } paint(); });
+  v.addEventListener("pointerdown", e => { const o = e.target.closest && e.target.closest(".obs.cine"); if (o && Date.now() < ORB.until && !e.target.closest("button")) orbSkip(); });
+  addEventListener("keydown", e => { if (e.key === "Escape" && Date.now() < ORB.until && $(".obs.cine")) orbSkip(); });
+  v.addEventListener("toggle", e => { if (e.target.classList && e.target.classList.contains("obs-more")) ORB.more = e.target.open; }, true);
+  window.orbPaint = paint;
+})();
 /* vidro e luz: a luz acompanha o cursor e bate em todos os cartões por perto, acendendo a borda de cada um */
 let lensRaf = 0, lensE = null, lit = [];
 const glassOn = () => state.settings.glass !== "off" && fxOn();
