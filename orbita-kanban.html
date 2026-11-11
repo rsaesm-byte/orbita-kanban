@@ -136,8 +136,7 @@ main { flex: 1; min-height: 0; overflow: auto; position: relative; }
 :root:not([data-depth="0"]) .card.running .face { animation: run 2.4s ease-in-out infinite; }
 @keyframes run { 50% { box-shadow: 0 0 0 2px var(--accent), 0 0 30px -2px var(--accent); } }
 .motes { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-:root:not([data-depth="0"]) .col:hover { transform: translateZ(30px); }
-:root[data-depth="2"] .col:hover { transform: translateZ(22px); }
+/* a coluna não sobe mais ao passar o mouse: com perspectiva isso empurrava as colunas das pontas para fora da tela */
 :root[data-depth="2"] .card:hover .card-in { --lift: 26px; }
 .board.enter .col { animation: colIn .65s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i) * 80ms); }
 @keyframes colIn { from { transform: rotateX(-72deg) translateZ(-140px) translateY(50px); opacity: 0; } }
