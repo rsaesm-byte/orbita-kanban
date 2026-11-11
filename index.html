@@ -66,7 +66,7 @@ svg.ic { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-wid
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
 /* ---------- topo ---------- */
-.top { display: flex; align-items: center; gap: 12px; padding: 10px 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); background: var(--bg); }
+.top { position: relative; z-index: 60; display: flex; align-items: center; gap: 12px; padding: 10px 16px; flex-wrap: wrap; border-bottom: 1px solid var(--line); background: var(--bg); }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .logo { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: radial-gradient(circle at 30% 20%, #0b1636, #000 75%); box-shadow: 0 0 0 1px rgb(240 190 80 / .35), 0 4px 14px -4px rgb(47 123 255 / .55), inset 0 0 12px rgb(47 123 255 / .18); transition: box-shadow .3s, transform .3s; }
 .logo svg { width: 30px; height: 30px; overflow: visible; }
@@ -80,7 +80,7 @@ svg.ic { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-wid
 .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: 10px; }
 .tabs a { padding: 5px 12px; border-radius: 8px; color: var(--ink2); text-decoration: none; font-weight: 500; white-space: nowrap; }
 .tabs a.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(var(--shadow) / .18); }
-.brand .menu-body { left: 0; right: auto; width: 250px; }
+.brand .menu-body { left: 0; right: auto; width: 300px; max-height: min(78vh, 560px); overflow-y: auto; }
 .menu-body button.on { background: var(--accent-soft); font-weight: 600; }
 .menu-body button small { float: right; color: var(--ink3); font-weight: 400; }
 .menu-body hr { border: 0; border-top: 1px solid var(--line); margin: 2px 0; width: 100%; }
@@ -608,8 +608,8 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
   .search-btn { min-width: 0; padding-inline: 10px; } .search-btn span, .search-btn kbd { display: none; }
   .btn { min-height: 40px; } .btn.bell, #btn-set, .search-btn { min-width: 40px; justify-content: center; }
   /* abas viram barra de navegação no rodapé */
-  .tabs { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 90; display: grid; grid-template-columns: repeat(4, 1fr); padding: 4px; border-radius: 16px; background: color-mix(in oklab, var(--surface) 88%, transparent); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid var(--line); box-shadow: 0 10px 30px -8px rgb(var(--shadow) / .55); }
-  .tabs a { text-align: center; padding: 11px 4px; font-size: 13px; }
+  .tabs { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 90; display: grid; grid-template-columns: repeat(5, 1fr); padding: 4px; border-radius: 16px; background: color-mix(in oklab, var(--surface) 88%, transparent); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid var(--line); box-shadow: 0 10px 30px -8px rgb(var(--shadow) / .55); }
+  .tabs a { text-align: center; padding: 11px 2px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
   main { padding-bottom: calc(84px + env(safe-area-inset-bottom)); scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
   #btn-new { position: fixed; right: 16px; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 91; height: 52px; min-width: 52px; border-radius: 26px; padding: 0 18px; box-shadow: 0 12px 28px -6px rgb(var(--shadow) / .65), 0 0 0 1px rgb(255 255 255 / .12) inset; }
   .board { padding: 4px 12px 20px; perspective: none; } .stage { transform: none !important; transition: none; gap: 10px; }
@@ -687,6 +687,115 @@ html:root[data-depth="2"] .board.cine.enter .card { animation: bdDeal .72s cubic
 .menu-body button.hue { background: oklch(0.62 0.13 var(--h)); padding: 0; width: 18px; height: 18px; border: 2px solid var(--surface); border-radius: 50%; flex: none; }
 .menu-body button.hue:hover { background: oklch(0.62 0.13 var(--h)); transform: scale(1.15); }
 .menu-body button.hue.on { background: oklch(0.62 0.13 var(--h)); box-shadow: 0 0 0 2px var(--ink); }
+/* ===== menu de quadros ===== */
+.bm-h { font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); padding: 6px 8px 2px; }
+.bm-h b { text-transform: none; letter-spacing: 0; color: var(--ink); font-size: 12px; }
+.menu-body button svg.ic { margin-right: 8px; vertical-align: -3px; color: var(--ink3); }
+.menu-body button.danger svg.ic { color: var(--p0); }
+.menu-body .bm-new { display: flex; align-items: center; gap: 9px; margin: 4px 0 2px; padding: 7px 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.menu-body .bm-new:hover { background: var(--accent); color: var(--accent-ink); }
+.menu-body .bm-new .qa-ico { background: var(--accent); color: var(--accent-ink); }
+.menu-body .bm-new:hover .qa-ico { background: var(--accent-ink); color: var(--accent); transform: rotate(90deg); }
+.menu-body .bm-new svg.ic { margin: 0; color: inherit; }
+.bm-sel { flex-direction: column; align-items: stretch !important; gap: 4px !important; padding: 6px 8px !important; color: var(--ink2); }
+.bm-sel .inp { width: 100%; }
+/* ===== modo calmo: sem animações, sem sons, sem 3D ===== */
+:root[data-calm="on"] *, :root[data-calm="on"] *::before, :root[data-calm="on"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+:root[data-calm="on"] .motes, :root[data-calm="on"] .aurora, :root[data-calm="on"] .floor, :root[data-calm="on"] .spot { display: none !important; }
+.btn.calm-btn.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+/* ===== Manual do Usuário ===== */
+body[data-view="manual"] #strip { display: none; }
+.man { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 30px; max-width: 1200px; margin: 0 auto; padding: 20px 22px 70px; }
+.man-toc { position: sticky; top: 10px; align-self: start; max-height: calc(100vh - 120px); overflow-y: auto; padding: 4px 2px 12px; scrollbar-width: thin; }
+.man-search { display: flex; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; margin-bottom: 10px; color: var(--ink3); transition: border-color .2s, box-shadow .2s; }
+.man-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent); }
+.man-search input { border: 0; outline: 0; background: none; width: 100%; color: var(--ink); }
+.man-tg { font: 600 10.5px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); padding: 12px 10px 4px; }
+.man-toc a { display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 9px; color: var(--ink2); text-decoration: none; font-size: 13px; border-left: 3px solid transparent; transition: background .2s, color .2s, border-color .2s, transform .2s; }
+.man-toc a svg.ic { width: 14px; height: 14px; opacity: .7; }
+.man-toc a:hover { background: color-mix(in oklab, var(--ink) 5%, transparent); color: var(--ink); transform: translateX(2px); }
+.man-toc a.on { background: var(--accent-soft); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+.man-toc a[hidden] { display: none; }
+.man-main { min-width: 0; }
+.man-hero { position: relative; overflow: hidden; border-radius: 22px; padding: 34px 34px 28px; margin-bottom: 20px; border: 1px solid var(--line); background: linear-gradient(135deg, var(--accent-soft), var(--surface) 70%); }
+.man-hero::before { content: ""; position: absolute; right: -70px; top: -90px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, color-mix(in oklab, var(--accent) 38%, transparent), transparent 68%); animation: manFloat 9s ease-in-out infinite alternate; pointer-events: none; }
+.man-hero::after { content: ""; position: absolute; right: 60px; bottom: -80px; width: 190px; height: 190px; border-radius: 50%; border: 2px dashed color-mix(in oklab, var(--accent) 35%, transparent); animation: manSpin 40s linear infinite; pointer-events: none; }
+@keyframes manFloat { to { transform: translate(-24px, 26px) scale(1.1); } } @keyframes manSpin { to { transform: rotate(360deg); } }
+.man-eyebrow { display: inline-flex; align-items: center; gap: 7px; font: 600 12px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: 4px 11px; border-radius: 99px; }
+.man-hero h1 { font: 700 clamp(26px, 4vw, 40px)/1.1 var(--display); margin: 14px 0 10px; max-width: 18ch; position: relative; }
+.man-hero p { max-width: 56ch; color: var(--ink2); font-size: 15px; margin: 0 0 20px; position: relative; }
+.man-quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; position: relative; }
+.man-q { display: flex; align-items: center; gap: 11px; text-align: left; padding: 11px 13px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; color: var(--ink); transition: transform .25s cubic-bezier(.2,1.4,.4,1), box-shadow .25s, border-color .25s; }
+.man-q b { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); flex: none; font-family: var(--display); }
+.man-q:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 10px 22px -12px rgb(var(--shadow) / .4); }
+.man-sec { scroll-margin-top: 14px; position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px 28px 22px; margin-bottom: 18px; box-shadow: 0 1px 2px rgb(var(--shadow) / .05); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
+.man-sec[hidden] { display: none; }
+.man.js .man-sec:not(.in) { opacity: 0; transform: translateY(22px); }
+.man-sec > header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.man-num { font: 700 30px/1 var(--display); background: linear-gradient(135deg, var(--accent), oklch(0.68 0.14 calc(var(--ah) + 60))); -webkit-background-clip: text; background-clip: text; color: transparent; min-width: 46px; }
+.man-grp { font: 600 10.5px var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); }
+.man-sec h2 { margin: 0; font: 700 22px/1.2 var(--display); }
+.man-ico { margin-left: auto; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: none; }
+.man-ico svg.ic { width: 18px; height: 18px; }
+.man-lead { font-size: 15px; color: var(--ink2); margin: 0 0 16px; max-width: 70ch; }
+.man-steps { list-style: none; counter-reset: s; margin: 0 0 16px; padding: 0; display: grid; gap: 0; }
+.man-steps li { counter-increment: s; position: relative; padding: 4px 0 14px 44px; }
+.man-steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font: 700 13px var(--body); z-index: 1; }
+.man-steps li::after { content: ""; position: absolute; left: 13px; top: 28px; bottom: 0; width: 2px; background: color-mix(in oklab, var(--accent) 25%, transparent); }
+.man-steps li:last-child { padding-bottom: 2px; } .man-steps li:last-child::after { display: none; }
+.man-steps li > span { display: block; padding-top: 3px; }
+.man-note { display: flex; gap: 11px; align-items: flex-start; padding: 11px 14px; border-radius: 12px; margin: 12px 0; font-size: 13.5px; border: 1px solid transparent; }
+.man-note > b { flex: none; font: 700 10.5px var(--body); letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 99px; margin-top: 1px; }
+.man-note.tip { background: color-mix(in oklab, var(--accent) 9%, transparent); border-color: color-mix(in oklab, var(--accent) 24%, transparent); } .man-note.tip > b { background: var(--accent); color: var(--accent-ink); }
+.man-note.warn { background: color-mix(in oklab, var(--p1) 10%, transparent); border-color: color-mix(in oklab, var(--p1) 30%, transparent); } .man-note.warn > b { background: var(--p1); color: #fff; }
+.man-note.trick { background: color-mix(in oklab, var(--s1) 9%, transparent); border-color: color-mix(in oklab, var(--s1) 26%, transparent); } .man-note.trick > b { background: var(--s1); color: #fff; }
+.man-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 6px 0 14px; }
+.man-card { padding: 13px 15px; border-radius: 14px; background: var(--surface2); border: 1px solid var(--line); transition: transform .25s, border-color .25s, box-shadow .25s; }
+.man-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 10px 20px -14px rgb(var(--shadow) / .45); }
+.man-card h4, .man-h4 { margin: 0 0 4px; font: 700 14px var(--display); } .man-h4 { margin: 14px 0 6px; font-size: 15px; }
+.man-card p { margin: 0; color: var(--ink2); font-size: 13.5px; }
+.man-code { margin: 8px 0 12px; padding: 12px 14px; border-radius: 12px; background: var(--ink); color: var(--bg); overflow-x: auto; }
+.man-code mark { background: color-mix(in oklab, var(--accent) 80%, white); color: #06201f; padding: 1px 6px; border-radius: 6px; }
+.man-table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 13.5px; }
+.man-table th { text-align: left; font: 600 11px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.man-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; } .man-table tr:last-child td { border-bottom: 0; }
+.man-anat { display: grid; grid-template-columns: minmax(250px, 300px) 1fr; gap: 20px; align-items: center; margin: 6px 0 12px; }
+.man-card-demo { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--p0); border-radius: 12px; padding: 12px; display: grid; gap: 7px; box-shadow: 0 10px 24px -14px rgb(var(--shadow) / .5); font-size: 12px; transform: rotate(-1.5deg); }
+.mcd-top { display: flex; justify-content: space-between; color: var(--ink3); } .mcd-pri { color: var(--p0); font-weight: 700; }
+.mcd-t { display: flex; gap: 8px; align-items: center; font: 600 14px var(--body); } .mcd-t i { width: 16px; height: 16px; border: 2px solid var(--ink3); border-radius: 50%; flex: none; }
+.mcd-tags b { background: color-mix(in oklab, var(--s2) 16%, transparent); color: var(--s2); padding: 1px 8px; border-radius: 99px; font-size: 11px; }
+.mcd-meta { display: flex; gap: 10px; color: var(--ink2); } .mcd-meta span:first-child { color: var(--p0); font-weight: 600; }
+.mcd-ck { display: flex; gap: 8px; align-items: center; padding: 4px 8px; border-radius: 8px; background: color-mix(in oklab, var(--ink) 5%, transparent); color: var(--ink2); } .mcd-ck i { width: 12px; height: 12px; border: 1.5px solid var(--ink3); border-radius: 50%; } .mcd-ck em { margin-left: auto; font: 600 9.5px var(--body); font-style: normal; color: var(--ink3); }
+.man-legend { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 13.5px; color: var(--ink2); } .man-legend b { color: var(--ink); }
+.man-hero-note { display: flex; gap: 14px; padding: 16px; border-radius: 16px; border: 1px solid color-mix(in oklab, var(--accent) 28%, transparent); background: linear-gradient(135deg, var(--accent-soft), transparent); margin: 10px 0; }
+.man-hero-note h4 { margin: 0 0 4px; font: 700 16px var(--display); } .man-hero-note p { margin: 0 0 10px; color: var(--ink2); }
+.man-try-row { margin: 12px 0 0; } .man-try { gap: 8px; } .man-try span { transition: transform .2s; } .man-try:hover span { transform: translateX(4px); }
+.man-next { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding: 12px 16px; border-radius: 14px; text-decoration: none; color: var(--ink2); background: color-mix(in oklab, var(--ink) 4%, transparent); border: 1px dashed var(--edge, var(--line)); transition: background .25s, transform .25s, border-color .25s; }
+.man-next b { color: var(--accent); white-space: nowrap; transition: transform .25s; }
+.man-next:hover { background: var(--accent-soft); border-color: var(--accent); } .man-next:hover b { transform: translateX(5px); }
+.man-faq details { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; background: var(--surface2); overflow: hidden; }
+.man-faq summary { cursor: pointer; padding: 11px 14px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 10px; }
+.man-faq summary::-webkit-details-marker { display: none; } .man-faq summary::after { content: "+"; font-size: 18px; color: var(--accent); transition: transform .25s; }
+.man-faq details[open] summary::after { transform: rotate(45deg); } .man-faq details[open] { border-color: var(--accent); background: var(--surface); }
+.man-faq details p { margin: 0; padding: 0 14px 13px; color: var(--ink2); animation: manOpen .3s ease; } @keyframes manOpen { from { opacity: 0; transform: translateY(-4px); } }
+.man-az { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; } .man-az a { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 9px; background: var(--accent-soft); color: var(--accent); font-weight: 700; text-decoration: none; transition: transform .2s, background .2s; } .man-az a:hover { background: var(--accent); color: var(--accent-ink); transform: translateY(-2px); }
+.man-gl { margin: 0; padding: 9px 12px; border-radius: 10px; display: grid; grid-template-columns: 170px 1fr; gap: 10px; border-bottom: 1px solid var(--line); transition: background .4s; } .man-gl.flash { background: var(--accent-soft); }
+.man-gl dt { font-weight: 700; color: var(--accent); } .man-gl dd { margin: 0; color: var(--ink2); }
+.man-empty { padding: 24px; text-align: center; color: var(--ink2); border: 1px dashed var(--line); border-radius: 16px; margin-bottom: 18px; }
+.man-foot { text-align: center; color: var(--ink3); font-size: 13px; padding: 14px; } .man-foot a { color: var(--accent); }
+.man-sec p a, .man-steps a, .man-faq a { color: var(--accent); font-weight: 600; text-underline-offset: 2px; }
+@media (max-width: 900px) {
+  .man > * { min-width: 0; }
+  .man { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 10px 12px 60px; }
+  .man-toc { position: sticky; top: 0; z-index: 5; max-height: none; overflow: visible; background: var(--bg); padding: 6px 0; margin: 0 -12px; padding-inline: 12px; }
+  .man-toc nav { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 6px; scrollbar-width: none; } .man-toc .man-tg { display: none; }
+  .man-toc a { flex: none; border: 1px solid var(--line); border-left-width: 1px; border-radius: 99px; background: var(--surface); white-space: nowrap; }
+  .man-toc a.on { border-color: var(--accent); }
+  .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
+}
+.tab-x { }
+@media (max-width: 760px) { .tab-x { display: none; } }
+:root[data-calm="on"] .man.js .man-sec:not(.in) { opacity: 1; transform: none; }
 /* ===== tema claro: limpo e nítido (superfícies sólidas, bordas finas, sombras curtas) ===== */
 html:root[data-theme="light"]{
   --bg: #f5f6f8; --bg2: #eceef2; --surface: #ffffff; --surface2: #f6f7f9;
@@ -810,6 +919,7 @@ html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px da
   <span class="spacer"></span>
   <button class="btn search-btn" data-act="palette" id="btn-search"></button>
   <button class="btn main" data-act="newTask" id="btn-new"></button>
+  <button class="btn calm-btn" data-act="calm" id="btn-calm" aria-label="Modo calmo" aria-pressed="false"></button>
   <button class="btn bell" data-act="bell" id="btn-bell" aria-label="Pendências"></button>
   <button class="btn" data-act="settings" id="btn-set" aria-label="Configurações"></button>
 </header>
@@ -847,6 +957,7 @@ function fmtDur(ms) { const m = Math.round(ms / 6e4); if (m < 1) return "0min"; 
 function fmtClock(ms) { const s = Math.floor(ms / 1000); return pad2(Math.floor(s / 3600)) + ":" + pad2(Math.floor(s / 60) % 60) + ":" + pad2(s % 60); }
 const ICONS = {
   tick: '<path d="m3.5 8.5 3 3 6-7"/>', pin: '<path d="M6 2.2h4l-.7 3.6 2.1 2.2H4.6l2.1-2.2zM8 8.2v5.6"/>', phone: '<path d="M3.2 2.2h2.4l1.1 3-1.6 1.2a8.2 8.2 0 0 0 3.8 3.8l1.2-1.6 3 1.1v2.4a1.3 1.3 0 0 1-1.4 1.3C6.5 13.1 2.9 9.5 1.9 3.6A1.3 1.3 0 0 1 3.2 2.2z"/>',
+  leaf: '<path d="M3 13c0-6 3-9.5 10-10 0 6.5-3 10-9 10zM3 13l5-5"/>', book: '<path d="M3 3.5h4.3a1.7 1.7 0 0 1 1.7 1.7V13a1.5 1.5 0 0 0-1.5-1.5H3zM13 3.5H9.7A1.7 1.7 0 0 0 8 5.2V13a1.5 1.5 0 0 1 1.5-1.5H13z"/>',
   search: '<circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/>', plus: '<path d="M8 3v10M3 8h10"/>',
   bell: '<path d="M4 11V7a4 4 0 0 1 8 0v4l1.2 1.5H2.8zM6.5 14h3"/>', gear: '<circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6 5 5M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4"/>',
   clock: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/>', check: '<rect x="2.5" y="2.5" width="11" height="11" rx="2.5"/><path d="m5.5 8 2 2 3.2-3.8"/>',
@@ -858,7 +969,7 @@ const ic = n => `<svg class="ic" viewBox="0 0 16 16" aria-hidden="true">${ICONS[
 const PRI = ["Crítica", "Alta", "Média", "Baixa"];
 const HUES = [25, 60, 95, 150, 190, 240, 290, 340];
 const ACCENTS = [[190, "Petróleo"], [250, "Cobalto"], [300, "Violeta"], [350, "Magenta"], [150, "Verde"]];
-const VIEWS = [["quadro", "Quadro"], ["orbita", "Órbita"], ["lista", "Lista"], ["relatorios", "Relatórios"]];
+const VIEWS = [["quadro", "Quadro"], ["orbita", "Órbita"], ["lista", "Lista"], ["relatorios", "Relatórios"], ["manual", "Manual do Usuário"]];
 const LS = "orbita-kanban-v1", LSN = "orbita-kanban-avisos", LSB = "orbita_kanban_quadro";
 
 /* ================= estado ================= */
@@ -877,7 +988,7 @@ function demoState() {
     tags: [{ id: "t_sup", name: "Suporte", hue: 190 }, { id: "t_rede", name: "Rede", hue: 240 }, { id: "t_hw", name: "Hardware", hue: 60 }, { id: "t_fac", name: "Faculdade", hue: 290 }, { id: "t_pes", name: "Pessoal", hue: 340 }],
     fields: [{ id: "f_sol", name: "Solicitante", type: "text" }],
     templates: [{ id: "tpl_fmt", name: "Exemplo: formatação de máquina", tag: "t_hw", items: ["Fazer backup dos arquivos do usuário", "Anotar patrimônio e nome da máquina", "Formatar e instalar o sistema", "Instalar drivers e atualizações", "Ingressar no domínio", "Instalar os programas padrão", "Restaurar os arquivos", "Validar com o usuário"] }],
-    settings: { theme: "auto", accent: 190, density: "normal", depth: 2, glass: "on", orbIntro: "always", boardIntro: "always", obsidian: "", sound: "on", volume: 60, outlook: "work", notifyHours: 24 },
+    settings: { theme: "auto", accent: 190, density: "normal", depth: 2, glass: "on", orbIntro: "always", boardIntro: "always", calm: false, obsidian: "", sound: "on", volume: 60, outlook: "work", notifyHours: 24 },
     timer: null,
     tasks: [
       T({ title: "Exemplo: instalar certificado digital no financeiro", ticket: "CH-48213", priority: 0, due: due(0, "17:00"), tags: ["t_sup"], col: c[2], createdAt: now - 2 * DAY, timeMs: 25 * 6e4, check: ck(["Acessar a máquina remotamente", 1], ["Instalar o certificado"], ["Validar com o usuário"]), custom: { f_sol: "Financeiro" }, desc: "Cartão de exemplo. Clique para editar ou use o botão de virar para ver o verso." }),
@@ -1268,7 +1379,7 @@ function applySettings() {
   const r = document.documentElement, s = state.settings;
   if (applySettings.host === undefined) applySettings.host = r.getAttribute("data-theme") || "";
   if (s.theme === "auto") { if (applySettings.host) r.setAttribute("data-theme", applySettings.host); else r.removeAttribute("data-theme"); } else r.setAttribute("data-theme", s.theme);
-  r.style.setProperty("--ah", s.accent); r.dataset.density = s.density; r.dataset.depth = s.depth; r.dataset.glass = s.glass === "off" ? "off" : "on";
+  r.style.setProperty("--ah", s.accent); r.dataset.density = s.density; r.dataset.depth = s.calm ? 0 : s.depth; r.dataset.calm = s.calm ? "on" : "off"; r.dataset.glass = s.glass === "off" ? "off" : "on";
 }
 function pending() {
   const h = (state.settings.notifyHours || 24) * 36e5, out = [];
@@ -1278,11 +1389,17 @@ function pending() {
 function renderChrome() {
   if (document.activeElement !== $("#board-name")) $("#board-name").value = board().name;
   $("#board-sum").innerHTML = ic("chev");
-  $("#board-list").innerHTML = state.boards.map(b => `<button class="${b.id === board().id ? "on" : ""}" data-act="boardGo" data-id="${b.id}">${esc(b.name)}<small>${state.tasks.filter(t => !t.archived && boardOf(t) === b.id && !isDone(t)).length} abertas</small></button>`).join("") + `<hr><button data-act="boardAdd">+ Novo quadro</button>` + (state.boards.length > 1 ? `<button class="danger" data-act="boardDel">${ui.armed === "board" ? "Clique de novo para apagar" : "Apagar este quadro"}</button>` : "");
-  $("#tabs").innerHTML = VIEWS.map(([k, n]) => `<a href="#${k}" class="${ui.view === k ? "on" : ""}">${n}</a>`).join("");
+  { const cb = board(), n = b => state.tasks.filter(t => !t.archived && boardOf(t) === b.id && !isDone(t)).length;
+    $("#board-list").innerHTML = `<div class="bm-h">Seus quadros</div>` + state.boards.map(b => `<button class="${b.id === cb.id ? "on" : ""}" data-act="boardGo" data-id="${b.id}">${esc(b.name)}<small>${n(b)} abertas</small></button>`).join("")
+    + `<button class="bm-new" data-act="boardAdd"><span class="qa-ico">${ic("plus")}</span>Novo quadro</button><hr><div class="bm-h">Quadro atual: <b>${esc(cb.name)}</b></div>`
+    + `<button data-act="boardRename">${ic("note")}Renomear</button><button data-act="boardDup">${ic("copy")}Duplicar quadro</button><button data-act="boardArchive">${ic("check")}Arquivar tarefas concluídas</button>`
+    + `<label class="bm-sel">Modelo padrão das novas tarefas<select class="inp" data-in="boardModelSel" id="bm_model">${state.models.map(m => `<option value="${m.id}" ${boardModelId() === m.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}</select></label>`
+    + (state.boards.length > 1 ? `<hr><button class="danger" data-act="boardDel">${ic("trash")}${ui.armed === "board" ? "Clique de novo para apagar" : "Apagar este quadro"}</button>` : ""); }
+  $("#tabs").innerHTML = VIEWS.map(([k, n]) => `<a href="#${k}" class="${ui.view === k ? "on" : ""}">${k === "manual" ? `Manual<span class="tab-x"> do Usuário</span>` : n}</a>`).join("");
   $("#btn-search").innerHTML = `${ic("search")}<span>Buscar ou executar…</span><kbd>Ctrl K</kbd>`;
   $("#btn-new").innerHTML = `${ic("plus")}Nova tarefa`;
   const n = pending().length;
+  { const cb = $("#btn-calm"), on = !!state.settings.calm; cb.innerHTML = ic("leaf"); cb.classList.toggle("on", on); cb.setAttribute("aria-pressed", on); cb.title = on ? "Modo calmo ligado: sem animações e sem sons. Clique para desligar" : "Modo calmo: tira todas as animações e todos os sons"; }
   $("#btn-bell").innerHTML = ic("bell") + (n ? `<span class="badge">${n}</span>` : "");
   $("#btn-set").innerHTML = ic("gear");
   const nx = nextUp(), f = ui.f, any = f.pri.size || f.tags.size || f.due;
@@ -1579,7 +1696,7 @@ function csvText() {
   return "﻿" + [head.map(q).join(";"), ...state.tasks.map(t => [bname(t), t.ticket, t.title, col(t.col).name, PRI[t.priority], t.due.replace("T", " "), t.tags.map(tag).filter(Boolean).map(g => g.name).join(", "), t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : "", Math.round(spent(t) / 6e4), fmtDT(t.createdAt), t.doneAt ? fmtDT(t.doneAt) : "", t.archived ? "sim" : "", plain(t.notes), t.extra.filter(x => x.k || x.v).map(x => x.k + ": " + x.v).join(" | "), modelOf(t).name, ...csvNames.map(n => { const f = modelOf(t).fields.find(x => x.name === n); return f ? fieldText(f, (t.info || {})[f.id]) : ""; }), diaryOf(t).map(e => fmtD(e.date || "") + " " + (e.theme || "Geral") + ": " + plain(e.html)).join(" | "), ...state.fields.map(f => t.custom[f.id] ?? "")].map(q).join(";"))].join("\r\n");
 }
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
-const fxOn = () => !calm.matches && state.settings.depth > 0;
+const fxOn = () => !calm.matches && !state.settings.calm && state.settings.depth > 0;
 function transit(kind, fn) {   // troca de visão ou de quadro girando a cena em 3D
   const v = $("#view"), el = v.firstElementChild; ui.enter = true;
   if (!fxOn() || !el) return fn();
@@ -1602,7 +1719,223 @@ function fxLand(id, done) {
   c.animate([{ transform: "translateY(-20px) scale(1.08)" }, { transform: "translateY(3px) scale(.98)", offset: .6 }, { transform: "none" }], { duration: 440, easing: "ease-out" });
   if (done) { $(".card-in", c).animate([{ transform: "rotateY(0deg) translateZ(50px)" }, { transform: "rotateY(360deg) translateZ(0px)" }], { duration: 750, easing: "cubic-bezier(.2,.8,.2,1)" }); const r = c.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2); }
 }
-function renderView() { ui.en = ui.enter ? " enter" : ""; ui.enter = false; document.body.dataset.view = ui.view; if (ui.view !== "orbita") ORB.lock = null; ({ quadro: renderBoard, orbita: renderOrbit, lista: renderList, relatorios: renderReports }[ui.view])(); }
+/* ---------- Manual do Usuário ---------- */
+const MANUAL = () => {
+  const step = (...a) => `<ol class="man-steps">${a.map(x => `<li><span>${x}</span></li>`).join("")}</ol>`;
+  const note = (kind, label, t) => `<div class="man-note ${kind}"><b>${label}</b><span>${t}</span></div>`;
+  const tip = t => note("tip", "Dica", t), warn = t => note("warn", "Cuidado", t), trick = t => note("trick", "Truque", t);
+  const go = (label, v) => `<button class="btn sm man-try" data-act="manDo" data-v="${v}">${label}<span aria-hidden="true">→</span></button>`;
+  const k = t => `<kbd>${t}</kbd>`;
+  const grid = (...a) => `<div class="man-grid">${a.map(([h, p]) => `<div class="man-card"><h4>${h}</h4><p>${p}</p></div>`).join("")}</div>`;
+  const S = [];
+  const add = (grp, id, icon, t, lead, html, bridge) => S.push({ grp, id, icon, t, lead, html, bridge });
+
+  add("Começando", "comecar", "play", "Comece por aqui", "Em três minutos você cria, move e conclui sua primeira tarefa. O resto do manual é para quando você quiser ir mais fundo.",
+    step(`Clique em <b>Adicionar tarefa</b> no pé de uma coluna (ou aperte ${k("N")}), escreva <i>Trocar toner</i> e aperte ${k("Enter")}.`,
+      `<b>Arraste</b> o cartão para a coluna ao lado quando mudar de etapa. No celular, segure o dedo no cartão por um instante e arraste.`,
+      `Clique no <b>círculo</b> do cartão quando terminar: ele vai sozinho para a coluna de concluídas.`,
+      `Seus dados já estão salvos no navegador. Para ter segurança extra, veja o capítulo <a href="#" data-act="manJump" data-v="salvar">Salvar seus dados</a>.`)
+    + tip("Pense no quadro como uma parede de post-its: cada coluna é uma etapa do trabalho e cada cartão é uma tarefa que anda da esquerda para a direita."),
+    "Agora que você já mexeu em um cartão, vamos entender cada pedaço da tela.");
+
+  add("Começando", "tela", "search", "Conhecendo a tela", "Tudo o que você precisa está em quatro áreas. Saber onde cada uma fica já resolve metade das dúvidas.",
+    grid(["Barra do topo", "Nome do quadro (com a setinha para trocar ou criar quadros), as abas <b>Quadro, Órbita, Lista, Relatórios e Manual</b>, busca, <b>Nova tarefa</b>, modo calmo, sino de pendências e configurações."],
+      ["Faixa de filtros", "Mostra a <b>próxima tarefa</b> sugerida e botões para filtrar por prioridade, tag e prazo. Clique de novo no botão para tirar o filtro."],
+      ["Colunas", "Cada coluna é uma etapa. O número ao lado do nome é quantas tarefas ela tem. No celular, uma barra de chips no topo leva você de coluna em coluna."],
+      ["Cartões", "Cada cartão resume uma tarefa: chamado, prioridade, título, tags, prazo, checklist e tempo. Clique nele para abrir tudo."])
+    + trick(`Aperte ${k("?")} em qualquer tela para ver a lista rápida de atalhos.`),
+    "A primeira coisa que você vai querer organizar são os quadros.");
+
+  add("Começando", "quadros", "copy", "Quadros", "Um quadro é um espaço de trabalho inteiro, com suas próprias colunas e tarefas. Use um para o trabalho, outro para a faculdade, outro para a vida pessoal.",
+    step(`Clique no <b>nome do quadro</b> ou na setinha ao lado dele.`, `Para criar, clique em <b>Novo quadro</b> (o botão em destaque). Para trocar, clique no nome do quadro na lista.`,
+      `Em <b>Quadro atual</b> você encontra: <b>Renomear</b>, <b>Duplicar quadro</b> (copia colunas e tarefas abertas), <b>Arquivar tarefas concluídas</b>, o <b>Modelo padrão</b> das novas tarefas e <b>Apagar este quadro</b>.`)
+    + tip("O nome do quadro também pode ser editado direto na barra do topo: clique nele, digite e saia do campo.")
+    + warn("Apagar um quadro apaga as tarefas dele, mas aparece um aviso com o botão <b>Desfazer</b> por alguns segundos.")
+    + `<p class="man-try-row">${go("Abrir o menu de quadros", "boards")}</p>`,
+    "Dentro de cada quadro, as colunas contam a história do seu fluxo.");
+
+  add("O dia a dia", "colunas", "chev", "Colunas", "As colunas são as etapas do seu fluxo. Você pode ter quantas quiser, com o nome e a cor que fizer sentido.",
+    step(`Clique nos <b>três pontinhos</b> do cabeçalho da coluna.`, `Escolha uma <b>cor</b>, defina um <b>Limite (WIP)</b>, marque <b>Coluna de concluídas</b>, mova para a esquerda ou direita, ou apague.`, `Para criar outra, use <b>+ Nova coluna</b> no fim do quadro.`)
+    + grid(["Limite (WIP)", "É o máximo de tarefas que você aceita ter ao mesmo tempo naquela etapa. Passou do limite, o contador fica em alerta. Serve para não começar mil coisas e não terminar nenhuma."],
+      ["Coluna de concluídas", "Tudo o que cai nela conta como feito (aparece riscado e entra nos relatórios). Pode haver mais de uma."],
+      ["Arquivar", "Na coluna de concluídas, o menu tem <b>Arquivar tarefas desta coluna</b>: elas saem do quadro, mas continuam na busca e nos relatórios."])
+    + tip("Clique no nome da coluna para renomear. Sem precisar abrir menu."),
+    "Com as colunas prontas, é hora de criar tarefas do jeito mais rápido possível.");
+
+  add("O dia a dia", "criar", "plus", "Criando tarefas", "Existem três caminhos. Escolha o que combina com o momento.",
+    grid(["Botão Adicionar tarefa", "No pé de cada coluna. Abre uma caixinha: digite o nome e aperte Enter. A caixa continua aberta para você cadastrar várias seguidas. Esc fecha."],
+      ["Nova tarefa", `Botão verde no topo ou tecla ${k("N")}. Cria na primeira coluna e já abre a gaveta para você preencher os detalhes.`],
+      ["Captura rápida", `Escreva tudo numa linha só, com marcadores, e o sistema separa os campos para você.`])
+    + `<div class="man-code"><span class="mono">Trocar toner <mark>#CH-48300</mark> <mark>!alta</mark> <mark>@amanha</mark> <mark>+Hardware</mark></span></div>`
+    + `<table class="man-table"><tr><th>Marcador</th><th>O que faz</th><th>Exemplos</th></tr>
+    <tr><td class="mono">#</td><td>Número do chamado</td><td class="mono">#CH-48300</td></tr>
+    <tr><td class="mono">!</td><td>Prioridade</td><td class="mono">!critica &nbsp; !alta &nbsp; !media &nbsp; !baixa &nbsp; (ou !1 a !4)</td></tr>
+    <tr><td class="mono">@</td><td>Prazo</td><td class="mono">@hoje &nbsp; @amanha &nbsp; @+3 (em 3 dias) &nbsp; @25/12</td></tr>
+    <tr><td class="mono">+</td><td>Tag (cria se não existir)</td><td class="mono">+Rede &nbsp; +Faculdade</td></tr></table>`
+    + trick(`Funciona também no campo de busca (${k("Ctrl")} ${k("K")}): digite a frase e escolha <b>Criar tarefa</b>.`),
+    "Criada a tarefa, vamos ver o que cada pedaço do cartão quer dizer.");
+
+  add("O dia a dia", "cartao", "note", "Entendendo o cartão", "O cartão é um resumo vivo da tarefa. Cada detalhe tem um significado.",
+    `<div class="man-anat"><div class="man-card-demo"><div class="mcd-top"><span class="mono">#CH-48213</span><span class="mcd-pri">● CRÍTICA</span></div><div class="mcd-t"><i></i>Instalar certificado digital</div><div class="mcd-tags"><b>Suporte</b></div><div class="mcd-meta"><span>⏱ Vence hoje 17:00</span><span>☑ 1/3 · 33%</span></div><div class="mcd-ck"><i></i>Validar com o usuário<em>FALTA</em></div></div>
+    <ul class="man-legend"><li><b>Cor da lateral e etiqueta</b> mostram a prioridade (crítica, alta, média, baixa).</li><li><b>Círculo</b> conclui a tarefa; clique de novo para reabrir.</li><li><b>Prazo</b> fica vermelho se atrasou, laranja se é hoje e amarelo se está perto.</li><li><b>1/3 · 33%</b> é o progresso do checklist.</li><li><b>Faixa do checklist</b> passa um item por vez, mostrando o que está <i>feito</i> e o que <i>falta</i>.</li><li><b>Ícone de virar</b> ⟲ mostra o verso do cartão, com o checklist completo.</li></ul></div>`
+    + tip("<b>Marque itens sem abrir o cartão:</b> clique no item que está passando na faixa do checklist. Um clique marca, outro desmarca, e o ciclo pausa uns segundos para você conferir.")
+    + trick("Botão direito no cartão abre um menu rápido: prioridade, prazo, mover de coluna, tags, cronômetro, duplicar, arquivar e apagar."),
+    "Para editar de verdade, abra a gaveta da tarefa.");
+
+  add("O dia a dia", "gaveta", "clip", "A gaveta da tarefa", "Clique em qualquer cartão e abre um painel com tudo sobre a tarefa. Tudo salva sozinho enquanto você digita.",
+    grid(["Tarefa", "Título, número do chamado e descrição."], ["Prioridade e prazo", "Quatro níveis de prioridade; prazo com data e hora opcional."],
+      ["Tags", "Etiquetas coloridas para agrupar (Rede, Hardware, Faculdade…). Crie novas na hora."], ["Checklist", "Passos da tarefa, com progresso automático no cartão."],
+      ["Modelo e campos", "Campos extras de acordo com o modelo do cartão. Veja o capítulo Modelos."], ["Observações e diário", "Texto formatado (negrito, listas, cores) e o diário por tema e dia."],
+      ["Anexos", "Imagens e arquivos. Clique na miniatura para ampliar."], ["Tempo e calendário", "Cronômetro e bloco de tempo no Outlook ou arquivo .ics."])
+    + tip(`Na parte de baixo da gaveta ficam <b>Duplicar</b>, <b>Exportar .md</b> (para o Obsidian) e <b>Apagar</b>. Apagou sem querer? Use o <b>Desfazer</b> que aparece.`)
+    + `<p class="man-try-row">${go("Criar uma tarefa e abrir a gaveta", "newTask")}</p>`,
+    "A parte mais usada da gaveta é o checklist.");
+
+  add("O dia a dia", "checklist", "check", "Checklist e modelos de checklist", "Quebre a tarefa em passos pequenos e acompanhe o progresso sem esforço.",
+    step(`Na gaveta, em <b>Checklist</b>, digite um passo e aperte Enter. Repita para os outros.`, `Marque cada item ao concluir: a barra e o percentual do cartão atualizam na hora.`, `Ou marque direto no cartão, clicando no item da faixa que passa.`)
+    + grid(["Modelo de checklist", "Um conjunto de passos pronto, ligado a uma tag. Ao aplicar a tag a uma tarefa, o sistema oferece adicionar os passos."], ["Como criar", "Monte um checklist na gaveta e use <b>Salvar como modelo</b>. Gerencie todos em <b>Configurações → Modelos de checklist</b>."])
+    + tip("Ótimo para rotinas repetidas, como o preventivo de uma sala ou a instalação de um equipamento: monte uma vez, reaproveite sempre."),
+    "Se cada tipo de tarefa pede campos diferentes, use os modelos de cartão.");
+
+  add("O dia a dia", "modelos", "pin", "Modelos de cartão e campos", "Um modelo define quais campos aparecem na gaveta. Chamado de TI precisa de máquina e patrimônio; matéria da faculdade precisa de professor e nota. Cada um tem seu modelo.",
+    grid(["Trabalho JBS", "Máquina antiga e nova, patrimônio, Service Tag, pacote Office, licença 365, usuário, senha de rede, e-mail, ramal e celular."],
+      ["Faculdade", "Curso/matéria, datas, aula atual e próxima, professor, notas das atividades e da prova, observações e dificuldade em estrelas. Tem <b>diário de anotações</b>."])
+    + step(`Abra uma tarefa e, no topo dos dados, escolha o <b>Modelo</b>.`, `Preencha os campos. Eles salvam sozinhos.`, `Use o botão <b>⚙ Modelo</b> para renomear o modelo, ligar o diário, definir como padrão do quadro, criar um modelo em branco, duplicar ou apagar.`)
+    + `<h4 class="man-h4">Mexendo nos campos</h4>` + grid(["Renomear", "Clique no nome do campo e digite."], ["Reordenar", "Arraste pela alça <b>⋮⋮</b> para cima ou para baixo."], ["Apagar", "Botão ×. Há Desfazer."],
+      ["Criar", "<b>+ Novo campo</b>, escolhendo o tipo: texto, número, data, estrelas, lista, telefone, e-mail, link, sim/não ou texto formatado."], ["Alfinete 📌", "Marca o campo para aparecer no cartão do quadro (ex.: data da prova, ramal)."], ["Vale para todos", "Mudou um campo? Muda em todos os cartões que usam aquele modelo."])
+    + tip("O modelo padrão do quadro vale para as <b>novas</b> tarefas. Por isso o quadro da faculdade pode nascer já no modelo Faculdade: abra o menu do quadro e escolha em <b>Modelo padrão</b>.")
+    + `<p class="man-try-row">${go("Ver os modelos nas Configurações", "settings")}</p>`,
+    "Modelos com diário têm um recurso extra para registrar o dia a dia.");
+
+  add("O dia a dia", "diario", "note", "Diário de anotações", "Um caderno dentro do cartão. Perfeito para aulas, atendimentos e qualquer coisa que evolui ao longo dos dias.",
+    step(`No fim da gaveta, em <b>Diário de anotações</b>, clique em adicionar entrada.`, `Escolha o <b>dia</b>, escreva o <b>tema</b> (ex.: Banco de dados) e o texto formatado.`, `As entradas ficam <b>agrupadas por tema</b>, com as mais recentes primeiro. Use o filtro para ver só um tema.`)
+    + tip("O diário só aparece em modelos com a opção ligada (o Faculdade já vem com ele). Ligue em <b>⚙ Modelo → Diário de anotações</b>.")
+    + trick("O diário entra na busca (Ctrl K), no CSV e no .md do Obsidian, organizado por tema e data."),
+    "Para sentir o ritmo do trabalho, use o cronômetro.");
+
+  add("O dia a dia", "mover", "flip", "Arrastar, soltar e mover", "Mover cartões é a ação mais importante do quadro. Há mais de um jeito.",
+    grid(["Mouse", "Clique, segure e arraste o cartão até a coluna desejada e solte."], ["Celular", "Segure o dedo no cartão por um instante (ele levanta e, se o aparelho permitir, vibra); depois arraste. Os chips de coluna no topo levam você de uma coluna à outra."],
+      ["Menu do botão direito", "Em <b>Mover para</b>, escolha a coluna sem arrastar."], ["Círculo do cartão", "Conclui (vai para a coluna de concluídas) e reabre (volta para a primeira coluna aberta)."])
+    + tip("A ordem dentro da coluna também vale: solte o cartão entre dois outros para posicionar."),
+    "Quanto tempo uma tarefa leva? O cronômetro responde.");
+
+  add("O dia a dia", "tempo", "clock", "Cronômetro e prazos", "Meça o tempo real das tarefas e nunca mais perca um prazo.",
+    step(`No verso do cartão ou na gaveta, clique em <b>Cronometrar</b>. O contador aparece no cartão e só uma tarefa por vez fica correndo.`, `Clique em <b>Pausar</b> para parar. O tempo acumula entre as sessões.`, `Defina o <b>prazo</b> (e a hora, se quiser). O cartão muda de cor conforme o prazo chega.`)
+    + grid(["Sino de pendências", "Lista as tarefas atrasadas e as que vencem nas próximas horas. A janela de aviso (24 h por padrão) é ajustável em Configurações."], ["Avisos do navegador", "Em Configurações → Avisos de prazo, ative para receber notificações com o app aberto."], ["Sons dos alertas", "Tocam em eventos como tarefa atrasada ou concluída. Dá para ajustar o volume ou desligar tudo no modo calmo."])
+    + tip("Em <b>Relatórios</b> você vê o tempo total cronometrado e o tempo médio até concluir."),
+    "Com muitas tarefas, filtros e busca poupam tempo.");
+
+  add("O dia a dia", "busca", "search", "Filtros, busca e comandos", "Achar rápido é metade da produtividade.",
+    grid(["Filtros da faixa", "Prioridade, tags e prazo (Atrasadas, Hoje, 7 dias). Combine quantos quiser. Para limpar, clique de novo ou use o comando <b>Limpar filtros</b>."], ["Busca e comandos", `${k("Ctrl")} ${k("K")} (ou ${k("/")}) abre a busca. Digite parte do título, o número do chamado (#CH-48213), tag ou até texto de campos e do diário.`])
+    + step(`Aperte ${k("Ctrl")} ${k("K")}.`, `Digite o que procura. Use ↑ ↓ para escolher e Enter para abrir.`, `Para executar uma ação, digite o nome dela: <i>tema</i>, <i>novo quadro</i>, <i>backup</i>, <i>csv</i>, <i>configurações</i>…`)
+    + trick("A busca também <b>cria</b> tarefas: escreva a frase com marcadores e escolha Criar tarefa.")
+    + `<p class="man-try-row">${go("Abrir a busca agora", "palette")}</p>`,
+    "Além do quadro, o sistema tem outras formas de enxergar as mesmas tarefas.");
+
+  add("Visões", "orbita", "play", "Visão Órbita", "As mesmas tarefas, vistas como um sistema solar. Boa para decidir o que fazer agora sem se perder em listas.",
+    grid(["Distância do sol = prazo", "Quanto mais perto do centro, mais urgente. O núcleo reúne atrasadas e de hoje."], ["Tamanho = prioridade", "Planeta grande pede mais atenção. Crítica é o maior."], ["Anel = checklist", "O anel ao redor do planeta enche conforme você marca os itens."], ["Cor", "Segue a prioridade: vermelho, laranja, amarelo e azul-acinzentado."])
+    + step(`<b>Arraste</b> o espaço para girar e inclinar; solte e ele continua girando com inércia.`, `<b>Clique num planeta</b> para abrir a tarefa.`, `Passe o mouse (ou toque) na legenda dos painéis laterais para destacar os planetas correspondentes.`, `Use <b>Rever abertura</b> para rever a animação de entrada.`)
+    + tip("O painel da direita mostra a <b>Próxima da fila</b>: a tarefa que o sistema sugere atacar primeiro.")
+    + `<p class="man-try-row">${go("Ir para a Órbita", "view:orbita")}</p>`,
+    "Se você prefere números e filtros, a Lista é o seu lugar.");
+
+  add("Visões", "lista", "check", "Visão Lista", "Uma tabela com todas as tarefas, ótima para ordenar, conferir e achar prioridades.",
+    step(`Clique no <b>título de uma coluna</b> da tabela (Chamado, Tarefa, Coluna, Prioridade, Prazo, Tempo) para ordenar. Clique de novo para inverter.`, `Clique em uma linha para abrir a tarefa.`, `Os filtros da faixa do topo também valem aqui.`)
+    + tip("Quer levar a tabela para o Excel? Use o comando <b>Baixar CSV</b> na busca (Ctrl K) ou em Configurações → Dados.")
+    + `<p class="man-try-row">${go("Ir para a Lista", "view:lista")}</p>`,
+    "E para ver o todo, com gráficos, existem os Relatórios.");
+
+  add("Visões", "relatorios", "bell", "Relatórios", "Números e gráficos para entender seu ritmo e mostrar resultado.",
+    grid(["Cartões de números", "Abertas, atrasadas, concluídas, criadas, tempo até concluir e tempo cronometrado."], ["Gráficos", "Abertas por prioridade e por tag, criadas e concluídas por dia, tarefas por coluna. Passe o mouse nas barras para ver o valor."])
+    + tip(`Use o comando <b>Copiar resumo do relatório</b> (${k("Ctrl")} ${k("K")}) para colar um resumo pronto em e-mail ou chamado.`)
+    + `<p class="man-try-row">${go("Ir para os Relatórios", "view:relatorios")}</p>`,
+    "Agora um assunto importante: onde seus dados ficam guardados.");
+
+  add("Dados e segurança", "salvar", "tick", "Salvar seus dados", "O sistema salva sozinho a cada alteração. Entender onde ajuda a escolher o nível de segurança.",
+    grid(["1. Neste navegador", "Sempre ativo. Se você limpar os dados do navegador, perde. Por isso existem as camadas abaixo."], ["2. Arquivo de dados", "No Chrome ou Edge do computador, conecte um arquivo .json em <b>Configurações → Dados</b>. Cada alteração é gravada nele (Ctrl+S grava na hora). Em uma pasta do OneDrive ou Google Drive, ele sincroniza entre computadores."],
+      ["3. GitHub (nuvem)", "Veja o próximo capítulo: seus dados num Gist privado, acessível de qualquer máquina."], ["Backups", "<b>Baixar backup (JSON)</b> a qualquer momento e <b>Restaurar backup</b> para voltar no tempo. Sem arquivo conectado, o computador baixa cópias automáticas a cada 10 minutos com alterações."])
+    + warn("Se o indicador do topo disser <i>Salvo só no navegador. Reconecte o arquivo</i>, clique em Reconectar. O navegador pede permissão de novo a cada sessão.")
+    + tip("O indicador do topo (abaixo do nome do quadro) mostra o estado: <i>Salvo no navegador às 19:31</i>, <i>Sincronizado com o GitHub</i>, etc."),
+    "Para usar em mais de um computador, sincronize com o GitHub.");
+
+  add("Dados e segurança", "sync", "cal", "Sincronizar entre computadores (GitHub)", "Abra o mesmo link em qualquer máquina e veja os mesmos dados. É gratuito e seus dados ficam num Gist <b>privado</b> da <b>sua</b> conta.",
+    step(`Vá em <b>Configurações → Sincronizar entre computadores</b> e clique em <b>1. Criar token no GitHub</b>.`, `No GitHub, escolha <b>Generate token (classic)</b>, deixe marcada <b>somente</b> a caixa <b>gist</b> e gere. Copie o código (começa com <span class="mono">ghp_</span>).`, `Volte ao app, cole no campo e clique em <b>Conectar</b>. Pronto: o topo mostra <i>Sincronizado com o GitHub</i>.`, `Em outro computador, abra o link, repita só os passos 2 e 3 com <b>o mesmo token</b> ou gere outro na mesma conta. Seus dados aparecem.`)
+    + grid(["Como funciona", "Cada alteração sobe em segundos. Mudanças de outros computadores chegam em até 1 minuto ou ao voltar para a aba."], ["Conflitos", "Se dois computadores mudarem ao mesmo tempo, os dados são combinados. Nada some; excluídos continuam excluídos."], ["Botões extras", "<b>Sincronizar agora</b>, <b>Enviar deste aparelho</b>, <b>Baixar do GitHub</b> e <b>Desconectar</b>."])
+    + warn("O token é como uma senha para seus Gists. Nunca o compartilhe. Se outra pessoa for usar o sistema, ela deve criar o token <b>da conta dela</b>: os dados dela ficam separados dos seus.")
+    + tip("Perdeu o token ou quer revogar? Apague em github.com/settings/tokens e conecte de novo com outro."),
+    "Quer levar tarefas para outros programas? Veja as exportações.");
+
+  add("Dados e segurança", "exportar", "note", "Exportar e integrar", "Seus dados são seus. Leve-os para onde precisar.",
+    grid(["CSV (Excel)", "Todas as tarefas em planilha, com os campos de todos os modelos."], ["Markdown (.md)", "Por tarefa, pronto para o Obsidian, com propriedades no topo, campos, observações e diário por tema e data. Use <b>Exportar .md</b> na gaveta ou no botão direito."],
+      ["Outlook e calendário", "Reserve um <b>bloco de tempo</b> na gaveta: abre o Outlook na web (conta de trabalho ou pessoal) ou baixa um arquivo .ics para qualquer calendário."], ["Backup JSON", "Cópia completa para restaurar em outro lugar."])
+    + tip("Escolha a conta do Outlook em <b>Configurações → Calendário</b>."),
+    "Para deixar o sistema com a sua cara, passe pela aparência.");
+
+  add("Ajustes", "aparencia", "gear", "Aparência e conforto", "Deixe o sistema do seu jeito, em Configurações.",
+    grid(["Tema e cor", "Automático, claro ou escuro, e cor de destaque (muda botões, barras e planetas)."], ["Efeito 3D", "Desligado, Suave ou Total. Menos efeito = mais rápido em computadores simples."], ["Vidro e luz", "O brilho e a transparência dos cartões."], ["Cartões", "Confortável ou compacto (mais cartões por tela)."],
+      ["Aberturas", "As animações de entrada do Quadro e da Órbita: sempre, só na 1ª vez ou desligadas. Clique em qualquer lugar ou Esc para pular."], ["Sons", "Liga, desliga, volume e botões para ouvir cada som."])
+    + `<div class="man-hero-note"><div class="man-ico">${ic("leaf")}</div><div><h4>Modo calmo</h4><p>O botão de folha na barra do topo <b>desliga todas as animações e todos os sons</b> de uma vez, e achata o 3D. Ideal para concentração, computadores lentos ou quem se distrai com movimento. Clique de novo para voltar.</p>${go("Ligar ou desligar o modo calmo", "calm")}</div></div>`
+    + tip("O sistema também respeita a configuração do seu aparelho de <i>reduzir movimento</i>."),
+    "Quer usar como aplicativo no celular ou no computador?");
+
+  add("Ajustes", "app", "plus", "Instalar como aplicativo", "O Órbita Kanban pode virar um app, com ícone próprio, janela sem barra do navegador e uso sem internet.",
+    step(`No computador (Chrome ou Edge), abra <b>Configurações → Aplicativo</b> e clique em <b>Instalar app</b>, ou use o ícone de instalar na barra de endereços.`, `No celular (Android), abra o menu do navegador e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.`, `Para pegar a versão mais nova do sistema, use <b>Atualizar app</b> nas mesmas configurações.`)
+    + warn("Se o app não mostrar uma novidade, toque em <b>Atualizar app</b>. Ele busca a versão nova do GitHub e recarrega, sem apagar seus dados."),
+    "Se algo não saiu como esperado, olhe as respostas rápidas.");
+
+  add("Ajuda", "faq", "bell", "Problemas comuns e soluções", "Respostas rápidas para as dúvidas mais frequentes.",
+    `<div class="man-faq">${[
+      ["Meus dados sumiram. E agora?", "Primeiro, confira se está no quadro certo (setinha ao lado do nome). Depois veja se há filtros ativos na faixa do topo. Se você conectou GitHub ou arquivo, use <b>Baixar do GitHub</b> ou <b>Restaurar backup</b> em Configurações."],
+      ["O app não atualiza.", "Configurações → Aplicativo → <b>Atualizar app</b>. O GitHub Pages também pode levar alguns minutos para publicar."],
+      ["Arrastar não funciona no celular.", "Segure o dedo sobre o cartão até sentir a vibração; só então arraste. Ou use o botão direito/menu do cartão para escolher a coluna."],
+      ["Está lento ou travando.", "Ligue o <b>Modo calmo</b> (folha no topo) ou reduza o <b>Efeito 3D</b> em Configurações."],
+      ["Não quero som nem animação.", "Clique na folha do topo (Modo calmo). Ele desliga os dois."],
+      ["Excluí algo sem querer.", "Logo após excluir aparece um aviso com <b>Desfazer</b>. Aproveite na hora."],
+      ["Tenho dois computadores.", "Use a sincronização com o GitHub (capítulo Sincronizar entre computadores) ou conecte o arquivo de dados em uma pasta do OneDrive/Google Drive."],
+      ["Como limpar os exemplos?", "Configurações → Dados → <b>Remover tarefas de exemplo</b>."],
+      ["O menu ficou atrás dos cartões.", "Recarregue com <b>Atualizar app</b>: esse problema foi corrigido na versão mais recente."],
+      ["O token do GitHub deu erro.", "Confira se é um <b>token clássico</b> com a permissão <b>gist</b> e se foi copiado inteiro. Tokens expirados precisam ser recriados."]
+    ].map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("")}</div>`,
+    "Por fim, o resumo de atalhos e o glossário A a Z.");
+
+  add("Ajuda", "atalhos", "search", "Atalhos e gestos", "Para quem gosta de ser rápido.",
+    `<table class="man-table"><tr><th>Atalho</th><th>O que faz</th></tr>
+    <tr><td>${k("Ctrl")} ${k("K")} ou ${k("/")}</td><td>Buscar tarefas e executar comandos</td></tr><tr><td>${k("N")}</td><td>Nova tarefa</td></tr>
+    <tr><td>${k("1")} ${k("2")} ${k("3")} ${k("4")} ${k("5")}</td><td>Quadro, Órbita, Lista, Relatórios, Manual</td></tr><tr><td>${k("Ctrl")} ${k("S")}</td><td>Gravar no arquivo de dados agora</td></tr>
+    <tr><td>${k("?")}</td><td>Atalhos rápidos</td></tr><tr><td>${k("Esc")}</td><td>Fechar janelas, caixas de nova tarefa e pular aberturas</td></tr><tr><td>Botão direito</td><td>Menu rápido no cartão</td></tr>
+    <tr><td>Deslizar</td><td>No celular, deslize a barra de abas para trocar de visão</td></tr></table>`,
+    "");
+  return S;
+};
+const GLOSS = [["Alfinete", "Marca um campo para aparecer no cartão do quadro."], ["Arquivar", "Tira do quadro sem apagar; continua na busca e nos relatórios."], ["Atrasada", "Tarefa com prazo vencido e ainda aberta."],
+  ["Chamado", "Número do ticket (ex.: #CH-48213), usado na busca e no cartão."], ["Checklist", "Lista de passos da tarefa com progresso."], ["Coluna de concluídas", "Coluna cujo conteúdo conta como feito."], ["Cronômetro", "Mede o tempo real gasto em uma tarefa."],
+  ["Diário", "Anotações por tema e dia dentro do cartão."], ["Gaveta", "Painel lateral com todos os detalhes da tarefa."], ["Gist", "Arquivo privado no GitHub usado para sincronizar seus dados."], ["Limite (WIP)", "Máximo de tarefas simultâneas numa coluna."],
+  ["Modelo", "Conjunto de campos de um tipo de cartão (Trabalho JBS, Faculdade…)."], ["Modo calmo", "Desliga animações e sons."], ["Órbita", "Visão em formato de sistema solar."], ["Prioridade", "Crítica, alta, média ou baixa; define cor e tamanho."],
+  ["Quadro", "Espaço de trabalho com colunas e tarefas próprias."], ["Tag", "Etiqueta colorida para agrupar tarefas."], ["Token", "Código que autoriza o app a usar seu Gist no GitHub."], ["Verso", "Lado de trás do cartão, com o checklist."]];
+
+function renderManual() {
+  const S = MANUAL(), groups = [...new Set(S.map(s => s.grp))];
+  const toc = groups.map(g => `<div class="man-tg">${g}</div>` + S.filter(s => s.grp === g).map(s => `<a href="#" data-act="manJump" data-v="${s.id}" data-sec="${s.id}">${ic(s.icon)}<span>${s.t}</span></a>`).join("")).join("") + `<div class="man-tg">Consulta</div><a href="#" data-act="manJump" data-v="glossario" data-sec="glossario">${ic("book")}<span>Glossário A a Z</span></a>`;
+  const body = S.map((s, i) => `<section class="man-sec" id="m-${s.id}" data-sec="${s.id}"><header><span class="man-num">${String(i + 1).padStart(2, "0")}</span><div><div class="man-grp">${s.grp}</div><h2>${s.t}</h2></div><span class="man-ico">${ic(s.icon)}</span></header><p class="man-lead">${s.lead}</p>${s.html}${s.bridge ? `<a href="#" class="man-next" data-act="manJump" data-v="${S[i + 1] ? S[i + 1].id : "glossario"}"><span>${s.bridge}</span><b>${S[i + 1] ? S[i + 1].t : "Glossário"} →</b></a>` : ""}</section>`).join("");
+  const letters = [...new Set(GLOSS.map(g => g[0][0].toUpperCase()))];
+  const gl = `<section class="man-sec" id="m-glossario" data-sec="glossario"><header><span class="man-num">A–Z</span><div><div class="man-grp">Consulta</div><h2>Glossário de A a Z</h2></div><span class="man-ico">${ic("book")}</span></header><p class="man-lead">Todos os termos do sistema, em ordem alfabética.</p><div class="man-az">${letters.map(l => `<a href="#" data-act="manLetter" data-v="${l}">${l}</a>`).join("")}</div>${GLOSS.map(([a, b]) => `<dl class="man-gl" data-l="${a[0].toUpperCase()}"><dt>${a}</dt><dd>${b}</dd></dl>`).join("")}</section>`;
+  $("#view").innerHTML = `<div class="man${ui.en}"><aside class="man-toc" aria-label="Índice do manual"><div class="man-search">${ic("search")}<input id="man_q" data-in="manQ" placeholder="Buscar no manual…" autocomplete="off" aria-label="Buscar no manual"></div><nav>${toc}</nav></aside>
+  <article class="man-main"><header class="man-hero"><span class="man-eyebrow">${ic("book")} Manual do Usuário</span><h1>Tudo sobre o Órbita Kanban, de A a Z</h1><p>Do primeiro cartão à sincronização entre computadores. Leia na ordem ou use o índice e a busca para ir direto ao ponto.</p>
+  <div class="man-quick"><button class="man-q" data-act="manJump" data-v="comecar"><b>1</b><span>Comece em 3 minutos</span></button><button class="man-q" data-act="manJump" data-v="criar"><b>2</b><span>Criar tarefas rápido</span></button><button class="man-q" data-act="manJump" data-v="sync"><b>3</b><span>Usar em vários computadores</span></button><button class="man-q" data-act="manJump" data-v="faq"><b>?</b><span>Estou com dificuldade</span></button></div></header>
+  <div class="man-empty" hidden>Nada encontrado. Tente outra palavra, como <i>prazo</i>, <i>checklist</i> ou <i>token</i>.</div>${body}${gl}<footer class="man-foot">Fim do manual. Dúvida que não está aqui? Aperte ${`<kbd>?</kbd>`} para os atalhos ou volte ao <a href="#" data-act="manJump" data-v="faq">FAQ</a>.</footer></article></div>`;
+  manSpy();
+}
+function manSpy() {
+  const v = $("#view"), man = $(".man", v); if (!man) return; man.classList.add("js");
+  if (manSpy.io) manSpy.io.disconnect();
+  const secs = $$(".man-sec", man), links = $$(".man-toc a[data-sec]", man);
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add("in"); }), { root: v, threshold: .08 });
+  secs.forEach(s => io.observe(s)); manSpy.io = io;
+  const spy = () => { let cur = secs[0], top = v.getBoundingClientRect().top + 120; secs.forEach(s => { if (!s.hidden && s.getBoundingClientRect().top <= top) cur = s; }); links.forEach(a => a.classList.toggle("on", a.dataset.sec === cur.dataset.sec)); const on = $(".man-toc a.on", man); if (on && man.querySelector(".man-toc").scrollHeight > man.querySelector(".man-toc").clientHeight) { const t = man.querySelector(".man-toc"), r = on.getBoundingClientRect(), tr = t.getBoundingClientRect(); if (r.top < tr.top + 50 || r.bottom > tr.bottom - 20) t.scrollTop += r.top - tr.top - 80; } };
+  v.onscroll = () => { cancelAnimationFrame(manSpy.r); manSpy.r = requestAnimationFrame(spy); }; spy();
+}
+
+function renderView() { ui.en = ui.enter ? " enter" : ""; ui.enter = false; document.body.dataset.view = ui.view; $("#view").onscroll = null; if (ui.view !== "orbita") ORB.lock = null; ({ quadro: renderBoard, orbita: renderOrbit, lista: renderList, relatorios: renderReports, manual: renderManual }[ui.view])(); }
 function render() { renderChrome(); renderView(); }
 
 /* ---------- gaveta da tarefa ---------- */
@@ -1691,6 +2024,7 @@ function openSettings() {
   <section><h3>Aparência</h3>
     <div class="set-row"><span class="lbl" style="width:110px">Tema</span>${seg("theme", [["auto", "Automático"], ["light", "Claro"], ["dark", "Escuro"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Cor de destaque</span><div class="hues">${ACCENTS.map(([h, n]) => `<button class="hue ${s.accent === h ? "on" : ""}" style="--h:${h}" data-act="setOpt" data-k="accent" data-v="${h}" title="${n}" aria-label="${n}"></button>`).join("")}</div></div>
+    <div class="set-row"><span class="lbl" style="width:110px">Modo calmo</span><button class="btn calm-btn ${s.calm ? "on" : ""}" data-act="calm">${ic("leaf")}${s.calm ? "Ligado: sem animações e sem sons" : "Desligado"}</button></div>
     <div class="set-row"><span class="lbl" style="width:110px">Efeito 3D</span>${seg("depth", [[0, "Desligado"], [1, "Suave"], [2, "Total"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Vidro e luz</span>${seg("glass", [["on", "Ligado"], ["off", "Desligado"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Abertura da Órbita</span>${seg("orbIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}</div>
@@ -1717,7 +2051,7 @@ function openSettings() {
 function openHelp() {
   ui.overlay = "help"; const row = (k, d) => `<div class="set-row"><span style="width:150px">${k.split(" ").map(x => `<kbd>${x}</kbd>`).join(" ")}</span><span>${d}</span></div>`;
   $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Atalhos"><div class="d-head" style="border-top:0"><h2>Atalhos e truques</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body"><section>
-  ${row("Ctrl K", "Buscar tarefas e executar comandos")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4", "Quadro, Órbita, Lista, Relatórios")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
+  ${row("Ctrl K", "Buscar tarefas e executar comandos")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4 5", "Quadro, Órbita, Lista, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
   <section><h3>Captura rápida</h3><p style="margin:0">No campo no fim de cada coluna, ou no Ctrl K, escreva tudo em uma linha:</p><p class="mono" style="margin:6px 0">Trocar toner #CH-48300 !alta @amanha +Hardware</p>
   ${row("#texto", "número do chamado")}${row("!alta", "prioridade: critica, alta, media, baixa ou 1 a 4")}${row("@hoje", "prazo: hoje, amanha, +3 (dias) ou 25/12")}${row("+tag", "adiciona a tag e cria se não existir")}</section></div></div>`;
 }
@@ -1756,7 +2090,7 @@ const SOUNDS = {
 };
 let actx = null; const lastSound = {};
 function playSound(k, force) {
-  if (!force && state.settings.sound === "off") return; const now = Date.now(); if (now - (lastSound[k] || 0) < 400) return; lastSound[k] = now;
+  if (!force && (state.settings.sound === "off" || state.settings.calm)) return; const now = Date.now(); if (now - (lastSound[k] || 0) < 400) return; lastSound[k] = now;
   try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume();
     const t0 = actx.currentTime + .03, vol = clamp((state.settings.volume ?? 60) / 100, 0, 1) * .3;
     SOUNDS[k].seq.forEach(([f, at, dur, type]) => { const o = actx.createOscillator(), g = actx.createGain(); o.type = type; o.frequency.value = f;
@@ -1993,6 +2327,14 @@ const acts = {
   unarchive: () => { state.tasks.forEach(t => t.archived = false); save(); render(); openSettings(); },
   boardGo: el => { $("#board-menu").open = false; ui.armed = null; const id = el.dataset.id; if (id === board().id) return; transit("turn", () => { setBoard(id); render(); }); },
   boardAdd: () => { $("#board-menu").open = false; const b = { id: uid(), name: "Novo quadro" }; state.boards.push(b); state.columns.push(...newCols(b.id)); setBoard(b.id); save(); if (ui.overlay) closeLayer(); location.hash = "quadro"; ui.view = "quadro"; render(); const i = $("#board-name"); i.value = b.name; i.focus(); i.select(); },
+  boardRename: () => { $("#board-menu").open = false; const i = $("#board-name"); i.focus(); i.select(); },
+  boardDup: () => {
+    $("#board-menu").open = false; const src = board(), b = { id: uid(), name: src.name + " (cópia)", model: src.model }, cmap = {};
+    state.boards.push(b); cols(src.id).forEach(c => { const nc = Object.assign({}, c, { id: uid(), board: b.id }); cmap[c.id] = nc.id; state.columns.push(nc); });
+    const live0 = state.tasks.filter(t => cmap[t.col] && !t.archived); live0.forEach(t => { const k = JSON.parse(JSON.stringify(t)); k.id = uid(); k.col = cmap[t.col]; k.timeMs = 0; k.block = null; (k.check || []).forEach(c => c.id = uid()); (k.extra || []).forEach(x => x.id = uid()); (k.diary || []).forEach(d => d.id = uid()); k.createdAt = Date.now(); state.tasks.push(k); });
+    setBoard(b.id); save(); toast(`Quadro duplicado com ${live0.length} tarefas`); transit("turn", () => render());
+  },
+  boardArchive: () => { $("#board-menu").open = false; const cs = cols().map(c => c.id), list = state.tasks.filter(t => cs.includes(t.col) && isDone(t) && !t.archived); if (!list.length) return toast("Não há tarefas concluídas neste quadro"); snapshotUndo(list.length + " tarefas concluídas arquivadas. Elas continuam nos relatórios e na busca"); list.forEach(t => t.archived = true); save(); render(); },
   boardDel: el => { if (state.boards.length < 2) return; if (ui.armed !== "board") { ui.armed = "board"; el.textContent = "Clique de novo para apagar"; return; } ui.armed = null; $("#board-menu").open = false;
     const b = board(), cids = cols(b.id).map(c => c.id), tids = state.tasks.filter(t => cids.includes(t.col)).map(t => t.id);
     snapshotUndo(`Quadro “${b.name}” apagado com ${tids.length} tarefas`); tomb(b.id, ...cids, ...tids);
@@ -2033,6 +2375,10 @@ const acts = {
   fieldAdd: () => { const f = { id: uid(), name: "Novo campo", type: "text" }; state.fields.push(f); save(); openSettings(); const i = $("#fd_" + f.id); if (i) { i.focus(); i.select(); } },
   fieldDel: el => { snapshotUndo("Campo apagado"); tomb(el.dataset.id); state.fields = state.fields.filter(f => f.id !== el.dataset.id); save(); openSettings(); },
   exportJson: () => exportar(),
+  manJump: el => { const q = $("#man_q"); if (q && q.value) { q.value = ""; ins.manQ(q); } const t = $("#m-" + el.dataset.v); if (!t) return; t.classList.add("in"); t.scrollIntoView({ behavior: state.settings.calm || calm.matches ? "auto" : "smooth", block: "start" }); },
+  manLetter: el => { const t = $(`.man-gl[data-l="${el.dataset.v}"]`); if (!t) return; t.scrollIntoView({ behavior: state.settings.calm || calm.matches ? "auto" : "smooth", block: "center" }); t.classList.add("flash"); setTimeout(() => t.classList.remove("flash"), 1400); },
+  manDo: el => { const v = el.dataset.v; if (v.startsWith("view:")) location.hash = v.slice(5); else if (v === "settings") openSettings(); else if (v === "help") openHelp(); else if (v === "palette") openPalette(); else if (v === "newTask") acts.newTask(); else if (v === "calm") acts.calm(); else if (v === "boards") { scrollTo(0, 0); $("#board-menu").open = true; } },
+  calm: () => { state.settings.calm = !state.settings.calm; save(); applySettings(); renderChrome(); if (ui.overlay === "set") openSettings(); toast(state.settings.calm ? "Modo calmo ligado: sem animações e sem sons" : "Modo calmo desligado"); if (ui.view === "quadro" || ui.view === "orbita") renderView(); },
   qaOpen: el => { const f = el.closest(".quick"); f.classList.add("open"); const i = $("input", f); i.focus(); },
   qaClose: el => { const f = el.closest(".quick"); $("input", f).value = ""; f.classList.remove("open"); },
   gistConnect: () => gistConnect(), gistNow: () => gistNow(), gistUp: () => gistNow("up"), gistDown: () => { if (confirm("Isto troca os dados deste aparelho pelos do GitHub. Continuar?")) gistNow("down"); }, gistOff: () => gistOff(),
@@ -2055,6 +2401,7 @@ document.addEventListener("click", e => {
 });
 /* entradas */
 const ins = {
+  manQ: el => { const q = norm(el.value.trim()), man = $(".man"); if (!man) return; let n = 0; $$(".man-sec", man).forEach(s => { const hit = !q || norm(s.textContent).includes(q); s.hidden = !hit; if (hit) { n++; s.classList.add("in"); } }); $$(".man-toc a[data-sec]", man).forEach(a => { const s = $("#m-" + a.dataset.sec, man); a.hidden = !!s && s.hidden; }); $(".man-empty", man).hidden = n > 0; $(".man-hero", man).hidden = !!q; },
   infoName: el => { const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (f) { f.name = el.value.trim() || "Campo"; save(); } },
   mName: el => { const m = modelOf(cur()); m.name = el.value.trim() || "Modelo"; save(); const o = $("#d_model option:checked"); if (o) o.textContent = m.name; },
   tRich: el => { const t = cur(); if (!t) return; t.info = t.info || {}; const h = cleanHTML(el.innerHTML); t.info[el.dataset.v] = plain(h) ? h : ""; save(); },
@@ -2083,6 +2430,7 @@ const chg = {
   infoType: el => { const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (!f) return; f.type = el.value; if (f.type === "select" && !f.opts) f.opts = ["Opção 1", "Opção 2"]; save(); render(); renderDrawer(); },
   infoOpts: el => { const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (!f) return; f.opts = el.value.split(",").map(x => x.trim()).filter(Boolean); save(); renderDrawer(); },
   mDiary: el => { modelOf(cur()).diary = el.checked; save(); renderDrawer(); },
+  boardModelSel: el => { board().model = el.value; save(); toast("Novas tarefas deste quadro usarão o modelo “" + (state.models.find(m => m.id === el.value) || {}).name + "”"); },
   mDefault: el => { const b = board(), m = modelOf(cur()); if (el.checked) b.model = m.id; else delete b.model; save(); },
   dDate: el => { const t = cur(), e = t.diary.find(x => x.id === el.dataset.e); if (e) { e.date = el.value; save(); renderDrawer(); } },
   dTheme: el => { const t = cur(), e = t.diary.find(x => x.id === el.dataset.e); if (e) { e.theme = el.value.trim() || "Geral"; save(); renderDrawer(); } },
@@ -2122,7 +2470,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "n" || e.key === "N") { e.preventDefault(); acts.newTask(); }
   else if (e.key === "/") { e.preventDefault(); openPalette(); }
   else if (e.key === "?") openHelp();
-  else if (/^[1-4]$/.test(e.key)) location.hash = VIEWS[+e.key - 1][0];
+  else if (/^[1-5]$/.test(e.key)) location.hash = VIEWS[+e.key - 1][0];
 });
 
 /* ---------- arrastar e soltar com profundidade ---------- */
@@ -2293,7 +2641,7 @@ function leaveCard(c) {
 function tilt(e) {
   const card = e.target.closest && e.target.closest(".card:not(.ghost)");
   if (tilted && tilted !== card) { leaveCard(tilted); tilted = null; }
-  if (!card || calm.matches || !state.settings.depth || e.pointerType === "touch") return;
+  if (!card || calm.matches || state.settings.calm || !state.settings.depth || e.pointerType === "touch") return;
   const r = card.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height, d3 = state.settings.depth === 2;
   card.style.setProperty("--px", ((px - .5) * 2).toFixed(2)); card.style.setProperty("--py", ((py - .5) * 2).toFixed(2));
   if (tilted !== card) {
