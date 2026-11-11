@@ -629,8 +629,11 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 .ckl-dots i.d { background: var(--accent); border-color: var(--accent); }
 .ckl-dots i.on { transform: scale(1.45); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 24%, transparent); }
 .ckl-view { position: relative; flex: 1; min-width: 0; height: 18px; overflow: hidden; }
-.ckl-i { position: absolute; inset: 0; display: flex; align-items: center; gap: 7px; white-space: nowrap; color: var(--ink2); opacity: 0; transform: translateY(110%); transition: opacity .3s, transform .5s cubic-bezier(.2,.8,.2,1); }
-.ckl-i.on { opacity: 1; transform: none; }
+.ckl-i { font: inherit; border: 0; background: none; padding: 0; text-align: left; cursor: pointer; pointer-events: none; position: absolute; inset: 0; display: flex; align-items: center; gap: 7px; white-space: nowrap; color: var(--ink2); opacity: 0; transform: translateY(110%); transition: opacity .3s, transform .5s cubic-bezier(.2,.8,.2,1); }
+.ckl-i.on { opacity: 1; transform: none; pointer-events: auto; }
+.ckl-i.on:hover span { color: var(--ink); } .ckl-i.on:hover b { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 18%, transparent); } .ckl-i.d.on:hover b { background: var(--accent); }
+.ckl-i.hit b { animation: ckPop .5s cubic-bezier(.2,1.7,.4,1); }
+.ckl-i:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 .ckl-i.out { transform: translateY(-110%); }
 .ckl-i b { width: 14px; height: 14px; border-radius: 50%; flex: none; display: grid; place-items: center; border: 1.5px solid var(--ink3); box-sizing: border-box; }
 .ckl-i b svg { width: 9px; height: 9px; }
@@ -1291,7 +1294,7 @@ function cklShow(el, k) { const its = [...el.querySelectorAll(".ckl-i")], dots =
 function cklInit() {
   $$(".ckl").forEach(el => { const its = el.querySelectorAll(".ckl-i"), p = [...its].findIndex(x => !x.classList.contains("d")); cklShow(el, p < 0 ? 0 : p); });
   if (CKL.t || !fxOn()) return;
-  CKL.t = setInterval(() => { if (document.hidden || !fxOn()) return; CKL.n++; $$(".ckl").forEach((el, ci) => { const n = el.querySelectorAll(".ckl-i").length; if (n > 1 && (CKL.n + ci) % 3 === 0) cklShow(el, ((el._k || 0) + 1) % n); }); }, 750);
+  CKL.t = setInterval(() => { if (document.hidden || !fxOn()) return; CKL.n++; $$(".ckl").forEach((el, ci) => { const n = el.querySelectorAll(".ckl-i").length; if (n > 1 && (CKL.n + ci) % 3 === 0 && !(el._hold > Date.now())) cklShow(el, ((el._k || 0) + 1) % n); }); }, 750);
 }
 /* ---- abertura do Quadro ---- */
 const BD = { seen: false, until: 0, endT: 0, live: false };
@@ -1314,7 +1317,7 @@ function cardHTML(t, j) {
     <div class="c-meta">${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${pinChips(t)}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || (t.diary || []).length || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
       ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}
       <button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></div>
-    ${ck ? `<div class="ckl" aria-hidden="true"><div class="ckl-dots">${t.check.map(c => `<i class="${c.d ? "d" : ""}"></i>`).join("")}</div><div class="ckl-view">${t.check.map(c => `<div class="ckl-i ${c.d ? "d" : ""}"><b>${c.d ? ic("tick") : ""}</b><span>${esc(c.t)}</span><em>${c.d ? "feito" : "falta"}</em></div>`).join("")}</div></div>` : ""}
+    ${ck ? `<div class="ckl"><div class="ckl-dots" aria-hidden="true">${t.check.map(c => `<i class="${c.d ? "d" : ""}"></i>`).join("")}</div><div class="ckl-view">${t.check.map(c => `<button type="button" class="ckl-i ${c.d ? "d" : ""}" data-act="ckTap" data-id="${t.id}" data-ck="${c.id}" title="${c.d ? "Desmarcar" : "Marcar como feito"}" aria-label="${c.d ? "Desmarcar" : "Marcar"}: ${esc(c.t)}"><b>${c.d ? ic("tick") : ""}</b><span>${esc(c.t)}</span><em>${c.d ? "feito" : "falta"}</em></button>`).join("")}</div></div>` : ""}
     ${ck ? `<div class="bar"><i style="width:${Math.round(ckd / ck * 100)}%"></i></div>` : ""}
   </div><div class="face back">
     <div class="c-top"><span class="lbl">${ck ? "Checklist" : "Detalhes"}</span><button class="icon-btn" data-act="flip" data-id="${t.id}" title="Desvirar" aria-label="Desvirar">${ic("flip")}</button></div>
@@ -1928,6 +1931,17 @@ const acts = {
   infoDel: el => { const t = cur(), id = el.dataset.v, m = modelOf(t); snapshotUndo("Campo apagado"); m.fields = m.fields.filter(f => f.id !== id); if (!state.models.some(x => x.fields.some(f => f.id === id))) state.tasks.forEach(k => { if (k.info) delete k.info[id]; }); save(); render(); renderDrawer(); },
   orbReplay: () => { if (!fxOn()) return toast("As animações estão desligadas (efeito 3D ou movimento reduzido)."); ui.orbReplay = true; ui.enter = true; renderView(); },
   orbSkip: () => orbSkip(),
+  ckTap: el => {
+    const t = task(el.dataset.id), c = t && t.check.find(x => x.id === el.dataset.ck); if (!c) return; c.d = !c.d; save();
+    if (ui.drawer) { render(); renderDrawer(); return; }
+    const card = el.closest(".card"), strip = el.closest(".ckl"); if (!card) return;
+    el.classList.toggle("d", c.d); el.title = c.d ? "Desmarcar" : "Marcar como feito"; $("b", el).innerHTML = c.d ? ic("tick") : ""; $("em", el).textContent = c.d ? "feito" : "falta";
+    el.classList.remove("hit"); void el.offsetWidth; el.classList.add("hit");
+    const i = [...strip.querySelectorAll(".ckl-i")].indexOf(el), dot = strip.querySelectorAll(".ckl-dots i")[i]; if (dot) dot.classList.toggle("d", c.d);
+    const n = t.check.filter(x => x.d).length, tot = t.check.length, bar = $(".bar i", card); if (bar) bar.style.width = n / tot * 100 + "%";
+    const pct = $(".pct", card); if (pct) { pct.lastChild.textContent = `${n}/${tot} · ${Math.round(n / tot * 100)}%`; pct.classList.toggle("all", n === tot); pct.title = `Checklist: ${n} de ${tot} itens`; }
+    strip._hold = Date.now() + 3000;
+  },
   bdReplay: () => { if (!fxOn()) return toast("As animações estão desligadas (efeito 3D ou movimento reduzido)."); closeLayer(); ui.bdReplay = true; ui.enter = true; if (ui.view !== "quadro") location.hash = "#quadro"; else renderView(); },
   fieldAdd: () => { const f = { id: uid(), name: "Novo campo", type: "text" }; state.fields.push(f); save(); openSettings(); const i = $("#fd_" + f.id); if (i) { i.focus(); i.select(); } },
   fieldDel: el => { snapshotUndo("Campo apagado"); tomb(el.dataset.id); state.fields = state.fields.filter(f => f.id !== el.dataset.id); save(); openSettings(); },
