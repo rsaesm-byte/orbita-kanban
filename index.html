@@ -444,7 +444,10 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 .c-info { display: flex; flex-wrap: wrap; gap: 2px 6px; font-size: 12px; color: var(--ink2, inherit); opacity: .8; margin: 4px 0 2px; } .c-info i { font-style: normal; opacity: .5; }
 .info-grp { display: grid; gap: 6px; } .info-grp .hint { font-style: normal; text-transform: none; letter-spacing: 0; opacity: .6; font-weight: 400; margin-left: 6px; }
 .info-list { display: grid; gap: 6px; } .info-row { display: flex; align-items: stretch; gap: 6px; margin: 0; background: transparent; transition: transform .15s, box-shadow .15s; }
-.info-in { flex: 1; min-width: 0; } .info-row .grip { display: grid; place-items: center; width: 26px; flex: none; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; color: var(--ink2, #6b7b78); opacity: .65; letter-spacing: -2px; font-size: 15px; border-radius: 8px; align-self: end; height: 40px; }
+.info-in { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.lbl-inp { border: 0; border-bottom: 1px dashed transparent; background: transparent; font: inherit; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2, #6b7b78); padding: 2px 0; width: 100%; outline: 0; }
+.lbl-inp:hover, .lbl-inp:focus { border-bottom-color: var(--accent); color: var(--ink, inherit); }
+.info-del { flex: none; width: 30px; align-self: end; height: 40px; display: grid; place-items: center; border: 0; background: transparent; border-radius: 8px; cursor: pointer; color: var(--ink2, #6b7b78); opacity: .5; } .info-del:hover { opacity: 1; color: #c0392b; background: color-mix(in oklab, #c0392b 12%, transparent); } .info-del svg { width: 15px; height: 15px; } .info-row .grip { display: grid; place-items: center; width: 26px; flex: none; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; color: var(--ink2, #6b7b78); opacity: .65; letter-spacing: -2px; font-size: 15px; border-radius: 8px; align-self: end; height: 40px; }
 .info-row .grip:hover { opacity: 1; background: color-mix(in oklab, var(--accent) 12%, transparent); }
 .info-row.dragging { z-index: 5; position: relative; box-shadow: 0 10px 28px rgba(0,0,0,.22); border-radius: 12px; background: var(--surface, #fff); transform: scale(1.02); transition: none; } .info-row.dragging .grip { cursor: grabbing; }
 .c-meta a.tel:hover { background: color-mix(in oklab, var(--accent) 26%, transparent); } .c-meta .pct { font-variant-numeric: tabular-nums; } .c-meta .pct.all { color: var(--accent); font-weight: 600; }
@@ -626,7 +629,8 @@ function normalize(s) {
   if (!s || !Array.isArray(s.columns) || !Array.isArray(s.tasks)) return d;
   if (!Array.isArray(s.boards) || !s.boards.length) s.boards = [{ id: "b_main", name: (s.board && s.board.name) || "Meu quadro" }];
   s.deleted = s.deleted || {}; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
-  s.infoOrder = (Array.isArray(s.infoOrder) ? s.infoOrder : []).filter(k => INFO.some(i => i[0] === k)); INFO.forEach(([k]) => { if (!s.infoOrder.includes(k)) s.infoOrder.push(k); });
+  if (!Array.isArray(s.infoFields)) { const ord = (Array.isArray(s.infoOrder) ? s.infoOrder : []).filter(k => INFO.some(i => i[0] === k)); INFO.forEach(([k]) => { if (!ord.includes(k)) ord.push(k); }); s.infoFields = ord.map(k => ({ id: k, name: INFO.find(i => i[0] === k)[1] })); }
+  delete s.infoOrder; s.infoFields = s.infoFields.filter(f => f && f.id).map(f => ({ id: String(f.id), name: String(f.name || "Campo") }));
   s.settings = Object.assign({}, d.settings, s.settings); if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
   if (!s.columns.length) s.columns = d.columns;
   s.columns.forEach(c => { if (!s.boards.some(b => b.id === c.board)) c.board = s.boards[0].id; });
@@ -946,12 +950,12 @@ function renderChrome() {
   $("#strip").innerHTML = h; setSaveStatus();
 }
 const INFO = [["maqAntiga", "Máquina antiga"], ["maqNova", "Máquina nova"], ["patrimonio", "Patrimônio"], ["serviceTag", "Service Tag"], ["office", "Pacote Office"], ["lic365", "Licença 365"], ["usuario", "Usuário"], ["rede", "Senha rede"], ["email", "E-mail"], ["ramal", "Ramal"], ["celular", "Celular"]];
-const infoSorted = () => (state.infoOrder || INFO.map(i => i[0])).map(k => INFO.find(i => i[0] === k)).filter(Boolean);
+const infoSorted = () => (state.infoFields || []).map(f => [f.id, f.name]);
 const infoOf = t => infoSorted().filter(([k]) => t.info && t.info[k]).map(([k, n]) => [k, n, t.info[k]]);
 let tInfo_t = 0;
 function infoField(t, k) {
-  const n = INFO.find(i => i[0] === k)[1], type = k === "email" ? "email" : "text", tel = k === "ramal" || k === "celular";
-  return `<div class="field info-row" data-k="${k}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar ${n}">⋮⋮</span><div class="info-in"><label for="i_${k}">${n}</label><input class="inp" id="i_${k}" type="${type}"${tel ? ' inputmode="tel"' : ""} autocomplete="off" data-in="tInfo" data-v="${k}" value="${esc((t.info || {})[k] || "")}"${k === "celular" ? ' placeholder="(15) 99999-0000"' : k === "ramal" ? ' placeholder="4700"' : ""}></div></div>`;
+  const f = state.infoFields.find(x => x.id === k), n = f ? f.name : k, type = k === "email" ? "email" : "text", tel = k === "ramal" || k === "celular";
+  return `<div class="field info-row" data-k="${esc(k)}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar ${esc(n)}">⋮⋮</span><div class="info-in"><input class="lbl-inp" value="${esc(n)}" data-in="infoName" data-v="${esc(k)}" aria-label="Nome do campo" title="Toque para renomear o campo" autocomplete="off"><input class="inp" id="i_${esc(k)}" type="${type}"${tel ? ' inputmode="tel"' : ""} autocomplete="off" data-in="tInfo" data-v="${esc(k)}" aria-label="${esc(n)}" value="${esc((t.info || {})[k] || "")}"${k === "celular" ? ' placeholder="(15) 99999-0000"' : k === "ramal" ? ' placeholder="4700"' : ""}></div><button class="info-del" data-act="infoDel" data-v="${esc(k)}" title="Apagar este campo" aria-label="Apagar campo ${esc(n)}">${ic("x")}</button></div>`;
 }
 function phoneChip(p, ramal) {
   const d = String(p).replace(/\D/g, ""), txt = esc(p);
@@ -1080,8 +1084,8 @@ function reportText() {
 }
 function csvText() {
   const q = s => '"' + String(s ?? "").replace(/"/g, '""') + '"';
-  const head = ["Quadro", "Chamado", "Tarefa", "Coluna", "Prioridade", "Prazo", "Tags", "Checklist", "Tempo (min)", "Criada em", "Concluída em", "Arquivada", "Observações", "Informações adicionais", ...INFO.map(i => i[1]), ...state.fields.map(f => f.name)];
-  return "﻿" + [head.map(q).join(";"), ...state.tasks.map(t => [bname(t), t.ticket, t.title, col(t.col).name, PRI[t.priority], t.due.replace("T", " "), t.tags.map(tag).filter(Boolean).map(g => g.name).join(", "), t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : "", Math.round(spent(t) / 6e4), fmtDT(t.createdAt), t.doneAt ? fmtDT(t.doneAt) : "", t.archived ? "sim" : "", plain(t.notes), t.extra.filter(x => x.k || x.v).map(x => x.k + ": " + x.v).join(" | "), ...INFO.map(([k]) => t.info[k] || ""), ...state.fields.map(f => t.custom[f.id] ?? "")].map(q).join(";"))].join("\r\n");
+  const head = ["Quadro", "Chamado", "Tarefa", "Coluna", "Prioridade", "Prazo", "Tags", "Checklist", "Tempo (min)", "Criada em", "Concluída em", "Arquivada", "Observações", "Informações adicionais", ...infoSorted().map(i => i[1]), ...state.fields.map(f => f.name)];
+  return "﻿" + [head.map(q).join(";"), ...state.tasks.map(t => [bname(t), t.ticket, t.title, col(t.col).name, PRI[t.priority], t.due.replace("T", " "), t.tags.map(tag).filter(Boolean).map(g => g.name).join(", "), t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : "", Math.round(spent(t) / 6e4), fmtDT(t.createdAt), t.doneAt ? fmtDT(t.doneAt) : "", t.archived ? "sim" : "", plain(t.notes), t.extra.filter(x => x.k || x.v).map(x => x.k + ": " + x.v).join(" | "), ...infoSorted().map(([k]) => t.info[k] || ""), ...state.fields.map(f => t.custom[f.id] ?? "")].map(q).join(";"))].join("\r\n");
 }
 const calm = matchMedia("(prefers-reduced-motion: reduce)");
 const fxOn = () => !calm.matches && state.settings.depth > 0;
@@ -1123,8 +1127,8 @@ function renderDrawer() {
     <textarea class="inp title-inp" id="d_title" rows="2" data-in="tTitle" aria-label="Título">${esc(t.title)}</textarea>
     <div class="row"><div class="field"><label for="d_ticket">Nº do chamado</label><input class="inp mono" id="d_ticket" data-in="tTicket" value="${esc(t.ticket)}" placeholder="CH-00000"></div>
       <div class="field"><label for="d_col">Coluna</label><select class="inp" id="d_col" data-in="tCol">${cols(boardOf(t)).map(c => `<option value="${c.id}" ${c.id === t.col ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div></div>
-    <div class="field info-grp"><span class="lbl">Dados do chamado <em class="hint">arraste ⋮⋮ para mudar a ordem</em></span>
-      <div class="info-list">${infoSorted().map(([k]) => infoField(t, k)).join("")}</div></div>
+    <div class="field info-grp"><span class="lbl">Dados do chamado <em class="hint">toque no nome para renomear · arraste ⋮⋮ para mudar a ordem</em></span>
+      <div class="info-list">${infoSorted().map(([k]) => infoField(t, k)).join("")}</div><button class="btn sm" data-act="infoAdd" style="justify-self:start">+ Novo campo</button></div>
     ${state.boards.length > 1 ? `<div class="field"><label for="d_board">Quadro</label><select class="inp" id="d_board" data-in="tBoard">${state.boards.map(b => `<option value="${b.id}" ${b.id === boardOf(t) ? "selected" : ""}>${esc(b.name)}</option>`).join("")}</select></div>` : ""}
     <div class="field"><span class="lbl">Prioridade</span><div class="pri-seg">${PRI.map((p, i) => `<button class="p${i} ${t.priority === i ? "on" : ""}" data-act="tPri" data-v="${i}">${p}</button>`).join("")}</div></div>
     <div class="row"><div class="field"><label for="d_due">Prazo</label><input class="inp" type="date" id="d_due" data-in="tDue" value="${dd}"></div>
@@ -1510,6 +1514,8 @@ const acts = {
   tagAdd: () => { const g = { id: uid(), name: "Nova tag", hue: HUES[state.tags.length % HUES.length] }; state.tags.push(g); save(); render(); openSettings(); const i = $("#tg_" + g.id); if (i) { i.focus(); i.select(); } },
   tagHue: el => { tag(el.dataset.id).hue = +el.dataset.v; save(); render(); openSettings(); },
   tagDel: el => { const id = el.dataset.id; snapshotUndo("Tag apagada"); tomb(id); state.tags = state.tags.filter(g => g.id !== id); state.tasks.forEach(t => t.tags = t.tags.filter(x => x !== id)); ui.f.tags.delete(id); save(); render(); openSettings(); },
+  infoAdd: () => { const f = { id: "i_" + uid(), name: "Novo campo" }; state.infoFields.push(f); save(); renderDrawer(); const i = $(`.info-row[data-k="${f.id}"] .lbl-inp`); if (i) { i.scrollIntoView({ block: "center" }); i.focus(); i.select(); } },
+  infoDel: el => { const id = el.dataset.v; snapshotUndo("Campo apagado"); tomb(id); state.infoFields = state.infoFields.filter(f => f.id !== id); state.tasks.forEach(t => { if (t.info) delete t.info[id]; }); save(); render(); renderDrawer(); },
   fieldAdd: () => { const f = { id: uid(), name: "Novo campo", type: "text" }; state.fields.push(f); save(); openSettings(); const i = $("#fd_" + f.id); if (i) { i.focus(); i.select(); } },
   fieldDel: el => { snapshotUndo("Campo apagado"); tomb(el.dataset.id); state.fields = state.fields.filter(f => f.id !== el.dataset.id); save(); openSettings(); },
   exportJson: () => exportar(),
@@ -1532,6 +1538,7 @@ document.addEventListener("click", e => {
 });
 /* entradas */
 const ins = {
+  infoName: el => { const f = state.infoFields.find(x => x.id === el.dataset.v); if (f) { f.name = el.value.trim() || "Campo"; save(); } },
   boardName: (el) => { board().name = el.value; save(); },
   colName: (el) => { col(el.dataset.id).name = el.value || "Sem nome"; save(); },
   tTitle: el => { cur().title = el.value; cur().demo = false; save(); render(); },
@@ -1801,7 +1808,7 @@ iniciarSalvamento();
   const end = e => {
     if (!d || (e && e.pointerId !== d.id)) return;
     const { row, list } = d; d = null; row.classList.remove("dragging"); row.style.transform = "";
-    state.infoOrder = [...list.children].map(x => x.dataset.k); save(); render();
+    const by = Object.fromEntries(state.infoFields.map(f => [f.id, f])); state.infoFields = [...list.children].map(x => by[x.dataset.k]).filter(Boolean); save(); render(); renderDrawer();
   };
   document.addEventListener("mousedown", e => { if (e.target.closest && e.target.closest(".info-row .grip")) e.preventDefault(); });
   document.addEventListener("selectstart", e => { if (d) e.preventDefault(); });
