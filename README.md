@@ -30,3 +30,10 @@ Os dados ficam no seu computador (navegador e arquivo `.json`). Nada é enviado 
 ## Versão para celular
 
 Veja `GUIA - Orbita Kanban para celular Android.md`.
+
+## Celular (Android)
+
+O mesmo arquivo já é responsivo: abra `https://rsaesm-byte.github.io/orbita-kanban/` no Chrome do celular e use
+**Configurações → Aplicativo → Instalar app** (ou ⋮ → Instalar app). Ele vira um ícone na tela inicial, abre em tela cheia
+e funciona sem internet (`sw.js`). No celular: abas viram a barra de baixo, botão **+ Nova tarefa** flutuante, gaveta em tela cheia
+e **toque longo no cartão** abre o menu (prioridade, prazo, mover para outra coluna…).
