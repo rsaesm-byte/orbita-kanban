@@ -442,7 +442,11 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
 :root[data-depth="2"] .card:hover::before { inset: 14px 14px -10px; filter: blur(16px); }
 .c-meta .tel { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 600; text-decoration: none; padding: 1px 7px; border-radius: 99px; background: color-mix(in oklab, var(--accent) 13%, transparent); }
 .c-info { display: flex; flex-wrap: wrap; gap: 2px 6px; font-size: 12px; color: var(--ink2, inherit); opacity: .8; margin: 4px 0 2px; } .c-info i { font-style: normal; opacity: .5; }
-.info-grp { display: grid; gap: 8px; } .info-grp .row { margin: 0; }
+.info-grp { display: grid; gap: 6px; } .info-grp .hint { font-style: normal; text-transform: none; letter-spacing: 0; opacity: .6; font-weight: 400; margin-left: 6px; }
+.info-list { display: grid; gap: 6px; } .info-row { display: flex; align-items: stretch; gap: 6px; margin: 0; background: transparent; transition: transform .15s, box-shadow .15s; }
+.info-in { flex: 1; min-width: 0; } .info-row .grip { display: grid; place-items: center; width: 26px; flex: none; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; color: var(--ink2, #6b7b78); opacity: .65; letter-spacing: -2px; font-size: 15px; border-radius: 8px; align-self: end; height: 40px; }
+.info-row .grip:hover { opacity: 1; background: color-mix(in oklab, var(--accent) 12%, transparent); }
+.info-row.dragging { z-index: 5; position: relative; box-shadow: 0 10px 28px rgba(0,0,0,.22); border-radius: 12px; background: var(--surface, #fff); transform: scale(1.02); transition: none; } .info-row.dragging .grip { cursor: grabbing; }
 .c-meta a.tel:hover { background: color-mix(in oklab, var(--accent) 26%, transparent); } .c-meta .pct { font-variant-numeric: tabular-nums; } .c-meta .pct.all { color: var(--accent); font-weight: 600; }
 .card .bar i { transition: width .4s cubic-bezier(.2,.8,.2,1); }
 /* ===== Celular ===== */
@@ -622,6 +626,7 @@ function normalize(s) {
   if (!s || !Array.isArray(s.columns) || !Array.isArray(s.tasks)) return d;
   if (!Array.isArray(s.boards) || !s.boards.length) s.boards = [{ id: "b_main", name: (s.board && s.board.name) || "Meu quadro" }];
   s.deleted = s.deleted || {}; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
+  s.infoOrder = (Array.isArray(s.infoOrder) ? s.infoOrder : []).filter(k => INFO.some(i => i[0] === k)); INFO.forEach(([k]) => { if (!s.infoOrder.includes(k)) s.infoOrder.push(k); });
   s.settings = Object.assign({}, d.settings, s.settings); if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
   if (!s.columns.length) s.columns = d.columns;
   s.columns.forEach(c => { if (!s.boards.some(b => b.id === c.board)) c.board = s.boards[0].id; });
@@ -940,11 +945,13 @@ function renderChrome() {
     (any ? `<button class="chip" data-act="fClear">Limpar filtros</button>` : "") + `</div><span class="spacer"></span><button class="btn sm" id="reconnectBtn" data-act="fileReconnect" hidden>Reconectar arquivo</button><span id="sync" class="sync"></span>`;
   $("#strip").innerHTML = h; setSaveStatus();
 }
-const INFO = [["maqAntiga", "Máquina antiga"], ["maqNova", "Máquina nova"], ["patrimonio", "Patrimônio"], ["serviceTag", "Service Tag"], ["office", "Pacote Office"], ["lic365", "Licença 365"], ["usuario", "Usuário"], ["rede", "Rede"], ["email", "E-mail"], ["ramal", "Ramal"], ["celular", "Celular"]];
-const infoOf = t => INFO.filter(([k]) => t.info && t.info[k]).map(([k, n]) => [k, n, t.info[k]]);
-function infoField(t, k, type) {
-  const n = INFO.find(i => i[0] === k)[1];
-  return `<div class="field"><label for="i_${k}">${n}</label><input class="inp" id="i_${k}" type="${type === "email" ? "email" : "text"}"${type === "tel" ? ' inputmode="tel"' : ""} data-in="tInfo" data-v="${k}" value="${esc((t.info || {})[k] || "")}"${k === "celular" ? ' placeholder="(15) 99999-0000"' : k === "ramal" ? ' placeholder="4700"' : ""}></div>`;
+const INFO = [["maqAntiga", "Máquina antiga"], ["maqNova", "Máquina nova"], ["patrimonio", "Patrimônio"], ["serviceTag", "Service Tag"], ["office", "Pacote Office"], ["lic365", "Licença 365"], ["usuario", "Usuário"], ["rede", "Senha rede"], ["email", "E-mail"], ["ramal", "Ramal"], ["celular", "Celular"]];
+const infoSorted = () => (state.infoOrder || INFO.map(i => i[0])).map(k => INFO.find(i => i[0] === k)).filter(Boolean);
+const infoOf = t => infoSorted().filter(([k]) => t.info && t.info[k]).map(([k, n]) => [k, n, t.info[k]]);
+let tInfo_t = 0;
+function infoField(t, k) {
+  const n = INFO.find(i => i[0] === k)[1], type = k === "email" ? "email" : "text", tel = k === "ramal" || k === "celular";
+  return `<div class="field info-row" data-k="${k}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar ${n}">⋮⋮</span><div class="info-in"><label for="i_${k}">${n}</label><input class="inp" id="i_${k}" type="${type}"${tel ? ' inputmode="tel"' : ""} autocomplete="off" data-in="tInfo" data-v="${k}" value="${esc((t.info || {})[k] || "")}"${k === "celular" ? ' placeholder="(15) 99999-0000"' : k === "ramal" ? ' placeholder="4700"' : ""}></div></div>`;
 }
 function phoneChip(p, ramal) {
   const d = String(p).replace(/\D/g, ""), txt = esc(p);
@@ -1116,13 +1123,8 @@ function renderDrawer() {
     <textarea class="inp title-inp" id="d_title" rows="2" data-in="tTitle" aria-label="Título">${esc(t.title)}</textarea>
     <div class="row"><div class="field"><label for="d_ticket">Nº do chamado</label><input class="inp mono" id="d_ticket" data-in="tTicket" value="${esc(t.ticket)}" placeholder="CH-00000"></div>
       <div class="field"><label for="d_col">Coluna</label><select class="inp" id="d_col" data-in="tCol">${cols(boardOf(t)).map(c => `<option value="${c.id}" ${c.id === t.col ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div></div>
-    <div class="field info-grp"><span class="lbl">Dados do chamado</span>
-      <div class="row">${infoField(t, "maqAntiga")}${infoField(t, "maqNova")}</div>
-      <div class="row">${infoField(t, "patrimonio")}${infoField(t, "serviceTag")}</div>
-      <div class="row">${infoField(t, "office")}${infoField(t, "lic365")}</div>
-      <div class="row">${infoField(t, "usuario")}${infoField(t, "rede")}</div>
-      ${infoField(t, "email", "email")}
-      <div class="row">${infoField(t, "ramal", "tel")}${infoField(t, "celular", "tel")}</div></div>
+    <div class="field info-grp"><span class="lbl">Dados do chamado <em class="hint">arraste ⋮⋮ para mudar a ordem</em></span>
+      <div class="info-list">${infoSorted().map(([k]) => infoField(t, k)).join("")}</div></div>
     ${state.boards.length > 1 ? `<div class="field"><label for="d_board">Quadro</label><select class="inp" id="d_board" data-in="tBoard">${state.boards.map(b => `<option value="${b.id}" ${b.id === boardOf(t) ? "selected" : ""}>${esc(b.name)}</option>`).join("")}</select></div>` : ""}
     <div class="field"><span class="lbl">Prioridade</span><div class="pri-seg">${PRI.map((p, i) => `<button class="p${i} ${t.priority === i ? "on" : ""}" data-act="tPri" data-v="${i}">${p}</button>`).join("")}</div></div>
     <div class="row"><div class="field"><label for="d_due">Prazo</label><input class="inp" type="date" id="d_due" data-in="tDue" value="${dd}"></div>
@@ -1533,7 +1535,7 @@ const ins = {
   boardName: (el) => { board().name = el.value; save(); },
   colName: (el) => { col(el.dataset.id).name = el.value || "Sem nome"; save(); },
   tTitle: el => { cur().title = el.value; cur().demo = false; save(); render(); },
-  tInfo: el => { const t = cur(); t.info = t.info || {}; t.info[el.dataset.v] = el.value.trim(); save(); render(); },
+  tInfo: el => { const t = cur(); t.info = t.info || {}; t.info[el.dataset.v] = el.value.trim(); save(); clearTimeout(tInfo_t); tInfo_t = setTimeout(render, 250); },
   tTicket: el => { cur().ticket = el.value.replace(/^#/, "").trim(); save(); render(); },
   tDesc: el => { cur().desc = el.value; save(); },
   tplName: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.name = el.value; save(); } },
@@ -1774,6 +1776,37 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) { pu
 setInterval(() => { $$("[data-timer]").forEach(el => { const t = task(el.dataset.timer); if (t) el.textContent = fmtClock(spent(t)); }); }, 1000);
 setInterval(() => checkDue(), 60000);
 iniciarSalvamento();
+
+/* ===== Reordenar os campos "Dados do chamado" arrastando para cima/baixo (mouse e toque) ===== */
+(function () {
+  let d = null;
+  document.addEventListener("pointerdown", e => {
+    const g = e.target.closest && e.target.closest(".info-row .grip"); if (!g) return;
+    const row = g.closest(".info-row"), list = row.parentElement; e.preventDefault();
+    d = { row, list, id: e.pointerId, y0: e.clientY, grip: g }; row.classList.add("dragging");
+    try { g.setPointerCapture(e.pointerId); } catch {}
+  });
+  document.addEventListener("pointermove", e => {
+    if (!d || e.pointerId !== d.id) return;
+    const { row, list } = d; row.style.transform = `translateY(${e.clientY - d.y0}px) scale(1.02)`;
+    const others = [...list.children].filter(x => x !== row);
+    for (const o of others) {
+      const r = o.getBoundingClientRect(), mid = r.top + r.height / 2, me = row.getBoundingClientRect(), my = me.top + me.height / 2;
+      const below = o.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING;   // o vem antes de row
+      if (below && my < mid) { const h0 = row.getBoundingClientRect().top; list.insertBefore(row, o); d.y0 += row.getBoundingClientRect().top - h0; row.style.transform = `translateY(${e.clientY - d.y0}px) scale(1.02)`; break; }
+      if (!below && my > mid) { const h0 = row.getBoundingClientRect().top; list.insertBefore(row, o.nextSibling); d.y0 += row.getBoundingClientRect().top - h0; row.style.transform = `translateY(${e.clientY - d.y0}px) scale(1.02)`; break; }
+    }
+    const lr = list.getBoundingClientRect(); const sc = list.closest(".d-body"); if (sc) { const b = sc.getBoundingClientRect(); if (e.clientY > b.bottom - 40) sc.scrollTop += 8; else if (e.clientY < b.top + 40) sc.scrollTop -= 8; }
+  });
+  const end = e => {
+    if (!d || (e && e.pointerId !== d.id)) return;
+    const { row, list } = d; d = null; row.classList.remove("dragging"); row.style.transform = "";
+    state.infoOrder = [...list.children].map(x => x.dataset.k); save(); render();
+  };
+  document.addEventListener("mousedown", e => { if (e.target.closest && e.target.closest(".info-row .grip")) e.preventDefault(); });
+  document.addEventListener("selectstart", e => { if (d) e.preventDefault(); });
+  document.addEventListener("pointerup", end); document.addEventListener("pointercancel", end);
+})();
 </script>
 </body>
 </html>
