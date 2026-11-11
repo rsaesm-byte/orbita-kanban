@@ -1034,6 +1034,8 @@ setInterval(async () => {              // a cada 20 s: outro computador mudou o 
   } catch {}
 }, SAVE_CFG.conferirArquivoMs);
 
+setInterval(() => { if (remote && remote.gist && !document.hidden) pull(); }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && remote && remote.gist) pull(); });
 /* ===== camada 3: redes de segurança ===== */
 function semArquivo() { if (remote && ui.sync !== "err") return dirty || pushing; return handle ? (rev !== fileRev || gravando) : rev > Math.max(revAoAbrir, meta.exportRev || 0, meta.dlRev || 0); }
 addEventListener("beforeunload", e => { persistirSync(); if (semArquivo()) { e.preventDefault(); e.returnValue = ""; } });
@@ -1058,11 +1060,78 @@ function saveInfo() {
   if (handle && rev !== fileRev) return ["busy", "Alterações pendentes…"];
   if (handle) return ["", "Salvo em " + handle.name + (lastFileTime ? " às " + hora(lastFileTime) : "")];
   if (pendingHandle) return ["busy", "Salvo só no navegador. Reconecte o arquivo"];
-  if (remote || ui.sync !== "local") return [ui.sync === "busy" ? "busy" : ui.sync === "err" ? "err" : "", { cloud: "Salvo na nuvem", busy: "Salvando…", err: "Sem sincronizar, salvo só aqui", local: "Salvo no navegador" }[ui.sync]];
+  if (remote || ui.sync !== "local") return [ui.sync === "busy" ? "busy" : ui.sync === "err" ? "err" : "", { cloud: remote && remote.gist ? "Sincronizado com o GitHub" + (ui.syncAt ? " às " + hora(ui.syncAt) : "") : "Salvo na nuvem", busy: remote && remote.gist ? "Sincronizando…" : "Salvando…", err: "Sem sincronizar, salvo só aqui", local: "Salvo no navegador" }[ui.sync]];
   return [semArquivo() ? "busy" : "", "Salvo no navegador" + (lastBrowserSave ? " às " + hora(lastBrowserSave) : "")];
 }
 function setSaveStatus() { const el = $("#sync"), rb = $("#reconnectBtn"); if (!el) return; const [c, t] = saveInfo(); el.className = "sync " + c; el.textContent = t; if (rb) rb.hidden = !pendingHandle; }
 function setSync(s) { ui.sync = s; setSaveStatus(); }
+
+/* ===== sincronização entre computadores: GitHub Gist privado (token só neste navegador) ===== */
+const GIST = { FILE: "orbita-kanban-dados.json", LS: "orbita_gist_cfg", cfg: null, busy: null };
+try { GIST.cfg = JSON.parse(localStorage.getItem(GIST.LS)) || null; } catch {}
+const gistCfgSave = c => { GIST.cfg = c; try { c ? localStorage.setItem(GIST.LS, JSON.stringify(c)) : localStorage.removeItem(GIST.LS); } catch {} };
+async function gh(path, opt = {}) {
+  const get = !opt.method || opt.method === "GET";
+  const r = await fetch("https://api.github.com" + path + (get ? (path.includes("?") ? "&" : "?") + "_=" + Date.now() : ""), { method: opt.method || "GET", body: opt.body, headers: Object.assign({ Accept: "application/vnd.github+json", Authorization: "Bearer " + GIST.cfg.token }, opt.body ? { "Content-Type": "application/json" } : {}) });
+  if (!r.ok) { const e = new Error("github " + r.status); e.status = r.status; throw e; }
+  return r;
+}
+async function gistRead() {                         // null = o Gist (ou o arquivo) não existe
+  if (!GIST.cfg.id) return null;
+  let g; try { g = await (await gh("/gists/" + GIST.cfg.id)).json(); } catch (e) { if (e.status === 404) return null; throw e; }
+  const f = g.files && g.files[GIST.FILE]; if (!f) return null;
+  const txt = f.truncated ? await (await fetch(f.raw_url)).text() : f.content, o = JSON.parse(txt), d = o && o.dados ? o.dados : o;
+  if (!valido(d)) throw new Error("formato"); return d;
+}
+async function gistWrite() {
+  const json = JSON.stringify(state), at = state.updatedAt || 0, files = { [GIST.FILE]: { content: `{"app":${JSON.stringify(SAVE_CFG.appId)},"formato":1,"salvoEm":"${new Date().toISOString()}","dados":${json}}` } };
+  const create = async () => { const g = await (await gh("/gists", { method: "POST", body: JSON.stringify({ description: "Órbita Kanban: dados (não apague)", public: false, files }) })).json(); GIST.cfg.id = g.id; };
+  if (!GIST.cfg.id) await create(); else { try { await gh("/gists/" + GIST.cfg.id, { method: "PATCH", body: JSON.stringify({ files }) }); } catch (e) { if (e.status === 404) await create(); else throw e; } }
+  return at;
+}
+function gistAdopt(d) { state = normalize(d); rev++; persistir(); refresh(); }
+async function gistSync(force) {                    // force: "down" (nuvem vence) | "up" (este aparelho vence)
+  if (!GIST.cfg) return; if (GIST.busy) return GIST.busy;
+  return GIST.busy = (async () => {
+    const R = force === "up" ? (GIST.cfg.id ? { updatedAt: -1 } : null) : await gistRead(), c = GIST.cfg;
+    if (R && R.columns && (!state.updatedAt || force === "down")) gistAdopt(R);
+    else if (R && R.columns && R.updatedAt !== c.syncedAt && R.updatedAt !== state.updatedAt) {
+      if (state.updatedAt === c.syncedAt) gistAdopt(R);                                   // só a nuvem mudou: puxa
+      else { state = mergeStates(state, R); state.updatedAt = Date.now(); rev++; persistir(); refresh(); }   // os dois mudaram: junta
+    }
+    if (!R || !R.columns || state.updatedAt !== R.updatedAt) c.syncedAt = await gistWrite(); else c.syncedAt = state.updatedAt;
+    gistCfgSave(c); ui.syncAt = new Date();
+  })().finally(() => { GIST.busy = null; });
+}
+function gistErr(e) {
+  if (e && e.status === 401) toast("O token do GitHub não vale mais. Conecte de novo em Configurações");
+  else if (e && e.status === 403) toast("O GitHub recusou (limite de uso ou permissão do token)");
+}
+async function gistStart() {
+  if (!GIST.cfg || !GIST.cfg.token) return;
+  remote = { gist: true, set: () => gistSync() };
+  setSync("busy"); try { await gistSync(); setSync("cloud"); } catch (e) { setSync("err"); gistErr(e); }
+}
+async function gistConnect() {
+  const tok = ($("#gist_tok") || {}).value; if (!tok || !tok.trim()) return toast("Cole o token do GitHub no campo");
+  GIST.cfg = { token: tok.trim() }; setSync("busy");
+  try {
+    const u = await gh("/user"), sc = u.headers.get("x-oauth-scopes"); const login = (await u.json()).login;
+    if (sc !== null && !/\bgist\b/.test(sc)) { GIST.cfg = null; setSync("local"); return toast("Esse token não tem a permissão \"gist\". Crie outro marcando só essa caixa"); }
+    let id = null; for (let pg = 1; pg <= 5 && !id; pg++) { const l = await (await gh("/gists?per_page=100&page=" + pg)).json(); const g = l.find(x => x.files && x.files[GIST.FILE]); if (g) id = g.id; if (l.length < 100) break; }
+    GIST.cfg = { token: tok.trim(), login, id, syncedAt: undefined }; gistCfgSave(GIST.cfg);
+    remote = { gist: true, set: () => gistSync() };
+    await gistSync(); setSync("cloud"); toast(id ? "Conectado. Seus dados do GitHub foram carregados" : "Conectado. Seus dados foram enviados ao GitHub"); refresh();
+  } catch (e) { GIST.cfg = null; remote = null; setSync("local"); if (e && e.status === 401) toast("Token inválido. Confira se copiou inteiro"); else toast("Não consegui falar com o GitHub. Veja sua conexão"); }
+}
+async function gistNow(force) {
+  if (!GIST.cfg) return; setSync("busy");
+  try { await gistSync(force); setSync("cloud"); toast(force === "up" ? "Enviado ao GitHub" : force === "down" ? "Dados do GitHub carregados" : "Sincronizado"); refresh(); } catch (e) { setSync("err"); gistErr(e); toast("Não deu para sincronizar agora"); }
+}
+function gistOff() { gistCfgSave(null); remote = null; dirty = false; setSync("local"); toast("Desconectado. Os dados continuam salvos neste aparelho e no Gist"); refresh(); }
+const gistBox = () => GIST.cfg && GIST.cfg.token
+  ? `<p class="meta" style="margin:0 0 6px">Conectado como <b>${esc(GIST.cfg.login || "?")}</b>. ${ui.syncAt ? "Última sincronização às " + ui.syncAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) + "." : ""} Cada alteração sobe sozinha e as de outros computadores chegam em até 1 minuto.</p><div class="set-row"><button class="btn main" data-act="gistNow">Sincronizar agora</button><button class="btn" data-act="gistUp" title="Sobrescreve o GitHub com os dados deste aparelho">Enviar deste aparelho</button><button class="btn" data-act="gistDown" title="Sobrescreve este aparelho com os dados do GitHub">Baixar do GitHub</button><button class="btn ghost" data-act="gistOff">Desconectar</button></div>`
+  : `<p class="meta" style="margin:0 0 6px">Guarda seus dados num Gist <b>privado</b> da sua conta do GitHub. Em qualquer computador, abra o link, cole o token uma vez e tudo aparece. Se dois computadores mudarem ao mesmo tempo, os dados são combinados.</p><div class="set-row"><a class="btn" href="https://github.com/settings/tokens/new?scopes=gist&description=Orbita%20Kanban" target="_blank" rel="noopener">1. Criar token no GitHub</a></div><p class="meta" style="margin:0 0 6px">No GitHub escolha <b>Generate token (classic)</b>, deixe marcada só a caixa <b>gist</b>, gere e copie o código (começa com ghp_).</p><div class="set-row"><input class="inp" id="gist_tok" type="password" autocomplete="off" placeholder="2. Cole o token aqui (ghp_…)" aria-label="Token do GitHub"><button class="btn main" data-act="gistConnect">Conectar</button></div><p class="meta" style="margin:0">O token fica só neste navegador (não vai para backups). Repita em cada computador.</p>`;
 
 /* nuvem do artefato (só quando aberto pelo Claude) */
 let remote = null, pushing = false, dirty = false, pushTimer = null;
@@ -1077,6 +1146,7 @@ async function push() {
 }
 async function pull() {
   if (!remote || dirty || pushing) return;
+  if (remote.gist) { try { await gistSync(); if (ui.sync !== "busy") setSync("cloud"); } catch (e) { setSync("err"); } return; }
   try {
     const snap = await remote.get();
     if (snap.exists) { const d = snap.data(); if (d && d.json && d.updatedAt > (state.updatedAt || 0)) { state = normalize(JSON.parse(d.json)); rev++; persistir(); refresh(); } else if (d && (d.updatedAt || 0) < (state.updatedAt || 0)) { dirty = true; push(); return; } }
@@ -1085,7 +1155,7 @@ async function pull() {
   } catch { setSync("err"); }
 }
 async function initRemote() {
-  if (!EMBED || !window.claude || !window.claude.use) return;
+  if (remote || !EMBED || !window.claude || !window.claude.use) return;
   try {
     const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
     if (!db || !user) return;
@@ -1106,7 +1176,7 @@ async function iniciarSalvamento() {
   if (!temDados) { try { const old = JSON.parse(localStorage.getItem(LS)); if (valido(old) && old.updatedAt) { state = normalize(old); rev = 1; persistir(); temDados = true; } } catch {} }
   if (!temDados) state = normalize(demoState());
   revAoAbrir = rev; applySettings(); route(); checkDue(true);
-  await iniciarArquivo(); initRemote(); setTimeout(gcAnexos, 4000);
+  await iniciarArquivo(); gistStart(); initRemote(); setTimeout(gcAnexos, 4000);
   if (!EMBED && !handle && !pendingHandle && !localStorage.getItem(SAVE_CFG.lsKey + "_wizard")) {   // primeiro acesso: já salva e baixa o arquivo de dados sozinho
     try { localStorage.setItem(SAVE_CFG.lsKey + "_wizard", "1"); } catch {}
     if (!rev) { rev = 1; persistir(); }
@@ -1623,6 +1693,7 @@ function openSettings() {
   <section><h3>Tags</h3>${state.tags.map(g => `<div class="set-row"><span class="tag" style="--h:${g.hue}">●</span><input class="inp" value="${esc(g.name)}" data-in="tagName" data-id="${g.id}" id="tg_${g.id}" aria-label="Nome da tag"><div class="hues">${HUES.map(h => `<button class="hue ${g.hue === h ? "on" : ""}" style="--h:${h}" data-act="tagHue" data-id="${g.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><button class="icon-btn" data-act="tagDel" data-id="${g.id}" aria-label="Apagar tag">${ic("trash")}</button></div>`).join("")}<button class="btn sm" data-act="tagAdd">${ic("plus")}Nova tag</button></section>
   <section><h3>Campos personalizados</h3><p class="meta" style="margin:0 0 6px">Aparecem em todas as tarefas e no CSV.</p>${state.fields.map(f => `<div class="set-row"><input class="inp" value="${esc(f.name)}" data-in="fieldName" data-id="${f.id}" id="fd_${f.id}" aria-label="Nome do campo"><select class="inp" style="flex:none;width:110px" data-in="fieldType" data-id="${f.id}" id="ft_${f.id}" aria-label="Tipo">${[["text", "Texto"], ["number", "Número"], ["date", "Data"], ["url", "Link"]].map(([v, l]) => `<option value="${v}" ${f.type === v ? "selected" : ""}>${l}</option>`).join("")}</select><button class="icon-btn" data-act="fieldDel" data-id="${f.id}" aria-label="Apagar campo">${ic("trash")}</button></div>`).join("")}<button class="btn sm" data-act="fieldAdd">${ic("plus")}Novo campo</button></section>
   <section><h3>Aplicativo</h3><p class="meta" style="margin:0 0 6px">Busca a versão mais nova do app (a do GitHub) e recarrega. Suas tarefas, quadros, modelos e anexos ficam como estão.</p><div class="set-row"><button class="btn sm main" data-act="appUpdate">↻ Atualizar app</button><button class="btn sm" data-act="appInstall" id="btn-install">⤓ Instalar app</button></div><p class="meta" id="install-msg" style="margin:6px 0 0"></p></section>
+  <section><h3>Sincronizar entre computadores</h3>${gistBox()}</section>
   <section><h3>Dados</h3><p class="meta" style="margin:0 0 6px">${esc(saveInfo()[1])}. ${FS_OK ? "Com um arquivo de dados conectado, cada alteração é gravada nele sozinha (Ctrl+S grava na hora)." : EMBED ? "Aberto pelo Claude, os dados ficam na sua conta. Para gravar em um arquivo .json no computador, abra o arquivo .html no Chrome ou Edge." : "Este navegador não grava direto em arquivo. Use Chrome ou Edge, ou baixe backups."}</p>${FS_OK ? `<div class="set-row">${handle ? `<button class="btn main" data-act="fileSave">Salvar agora</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : pendingHandle ? `<button class="btn main" data-act="fileReconnect">Reconectar arquivo</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : `<button class="btn main" data-act="fileCreate">Criar arquivo de dados</button><button class="btn" data-act="fileOpen">Abrir arquivo existente</button>`}</div>` : ""}<div class="set-row"><button class="btn" data-act="exportJson">Baixar backup (JSON)</button><button class="btn" data-act="importJson">Restaurar backup</button><button class="btn" data-act="csv">Baixar CSV</button></div>
     <div class="set-row">${hasDemo ? `<button class="btn" data-act="clearDemo">Remover tarefas de exemplo</button>` : ""}<button class="btn" data-act="unarchive">Desarquivar tudo (${state.tasks.filter(t => t.archived).length})</button><button class="btn danger" data-act="reset">${ui.armed === "reset" ? "Clique de novo para apagar tudo" : "Apagar tudo e recomeçar"}</button></div></section>
   </div></div>`;
@@ -1946,6 +2017,7 @@ const acts = {
   fieldAdd: () => { const f = { id: uid(), name: "Novo campo", type: "text" }; state.fields.push(f); save(); openSettings(); const i = $("#fd_" + f.id); if (i) { i.focus(); i.select(); } },
   fieldDel: el => { snapshotUndo("Campo apagado"); tomb(el.dataset.id); state.fields = state.fields.filter(f => f.id !== el.dataset.id); save(); openSettings(); },
   exportJson: () => exportar(),
+  gistConnect: () => gistConnect(), gistNow: () => gistNow(), gistUp: () => gistNow("up"), gistDown: () => { if (confirm("Isto troca os dados deste aparelho pelos do GitHub. Continuar?")) gistNow("down"); }, gistOff: () => gistOff(),
   fileCreate: () => ativarArquivo(), fileOpen: () => abrirArquivo(), fileReconnect: () => reconectarArquivo(), fileSave: () => gravarArquivo(), fileDisconnect: () => desconectarArquivo(),
   importJson: () => $("#file-in").click(),
   csv: () => saveFile("tarefas-" + dkey(Date.now()) + ".csv", csvText()),
