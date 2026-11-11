@@ -940,7 +940,7 @@ function renderChrome() {
     (any ? `<button class="chip" data-act="fClear">Limpar filtros</button>` : "") + `</div><span class="spacer"></span><button class="btn sm" id="reconnectBtn" data-act="fileReconnect" hidden>Reconectar arquivo</button><span id="sync" class="sync"></span>`;
   $("#strip").innerHTML = h; setSaveStatus();
 }
-const INFO = [["maqAntiga", "Máquina antiga"], ["maqNova", "Máquina nova"], ["office", "Pacote Office"], ["lic365", "Licença 365"], ["usuario", "Usuário"], ["rede", "Rede"], ["email", "E-mail"], ["ramal", "Ramal"], ["celular", "Celular"]];
+const INFO = [["maqAntiga", "Máquina antiga"], ["maqNova", "Máquina nova"], ["patrimonio", "Patrimônio"], ["serviceTag", "Service Tag"], ["office", "Pacote Office"], ["lic365", "Licença 365"], ["usuario", "Usuário"], ["rede", "Rede"], ["email", "E-mail"], ["ramal", "Ramal"], ["celular", "Celular"]];
 const infoOf = t => INFO.filter(([k]) => t.info && t.info[k]).map(([k, n]) => [k, n, t.info[k]]);
 function infoField(t, k, type) {
   const n = INFO.find(i => i[0] === k)[1];
@@ -1118,6 +1118,7 @@ function renderDrawer() {
       <div class="field"><label for="d_col">Coluna</label><select class="inp" id="d_col" data-in="tCol">${cols(boardOf(t)).map(c => `<option value="${c.id}" ${c.id === t.col ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div></div>
     <div class="field info-grp"><span class="lbl">Dados do chamado</span>
       <div class="row">${infoField(t, "maqAntiga")}${infoField(t, "maqNova")}</div>
+      <div class="row">${infoField(t, "patrimonio")}${infoField(t, "serviceTag")}</div>
       <div class="row">${infoField(t, "office")}${infoField(t, "lic365")}</div>
       <div class="row">${infoField(t, "usuario")}${infoField(t, "rede")}</div>
       ${infoField(t, "email", "email")}
