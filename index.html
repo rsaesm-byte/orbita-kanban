@@ -1019,6 +1019,20 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 <input type="file" id="file-in" accept=".json,application/json" hidden>
 
 <script>
+/* Celular em "Site para computador": o navegador finge ter 980 px de largura e o layout de computador aparece.
+   Aqui detectamos isso (tela de toque pequena + janela larga) e forçamos o layout de celular. */
+(function () {
+  try {
+    const sw = Math.min(screen.width, screen.height), touch = navigator.maxTouchPoints > 0;
+    if (!touch || sw > 600 || innerWidth < 760 || innerWidth < sw * 1.4) return;
+    const W = sw, ok = c => { const m = c.match(/max-width:\s*(\d+)px/g); if (!m || /prefers|min-|orientation|hover/.test(c)) return false; return m.every(x => +x.match(/(\d+)/)[1] >= W); };
+    for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch { continue; } for (const r of rules) if (r.type === 4 && r.media && /max-width/.test(r.media.mediaText) && r.media.mediaText.split(",").some(ok)) r.media.mediaText = "all"; }
+    const z = innerWidth / W; document.documentElement.style.zoom = z; document.documentElement.dataset.forceMobile = "1";
+    window.__forceMobile = z;
+  } catch (e) {}
+})();
+</script>
+<script>
 "use strict";
 /* ================= utilidades ================= */
 const $ = (s, r = document) => r.querySelector(s);
