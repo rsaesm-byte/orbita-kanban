@@ -988,6 +988,20 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 }
 @media (max-width: 420px) { .top .brand .logo { display: none; } }
 @media (max-width: 380px) { .top > .btn, .top > .icon-btn, .top > button { width: 36px; height: 36px; } .top .brand .logo { width: 34px; height: 34px; } }
+
+/* ===== botão Atualizar (único, diferente dos demais) e botão de layout ===== */
+.upd-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; border: 0 !important; color: #fff !important; font-weight: 700; background: linear-gradient(135deg, #7c5cff, #19c3b4 85%) !important; box-shadow: 0 6px 18px -6px rgb(124 92 255 / .75), inset 0 1px 0 rgb(255 255 255 / .35); border-radius: 999px !important; }
+.upd-btn::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .38) 50%, transparent 70%); transform: translateX(-120%); animation: updShine 4.5s ease-in-out infinite; }
+@keyframes updShine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.upd-btn:hover { filter: brightness(1.08); } .upd-btn:active { transform: scale(.95); }
+.upd-btn .ic { width: 16px; height: 16px; transition: transform .5s; } .upd-btn:hover .ic { transform: rotate(180deg); }
+.upd-btn.busy .ic { animation: updSpin .8s linear infinite; } @keyframes updSpin { to { transform: rotate(360deg); } }
+:root[data-calm="on"] .upd-btn::after { animation: none; display: none; }
+.lay-btn { position: relative; } .lay-b { position: absolute; right: -3px; bottom: -4px; font: 800 8.5px var(--mono); font-style: normal; line-height: 1; padding: 2px 3px; border-radius: 6px; background: var(--accent); color: var(--accent-ink, #fff); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; } .seg button { border: 1px solid var(--line); background: var(--surface2); color: var(--ink2); border-radius: 10px; padding: 9px 4px; font-weight: 600; cursor: pointer; } .seg button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink, #fff); }
+@media (max-width: 720px) { #btn-calm { display: none; } .top .upd-btn { padding: 0; justify-content: center; } .top .upd-btn span { display: none; } .top > .btn.lay-btn { padding: 0; } }
+@media (max-width: 380px) { .top .upd-btn, .top .lay-btn { width: 34px; height: 34px; } }
+@media (min-width: 721px) and (max-width: 1500px) { .tab-x { display: none; } .top .upd-btn { width: 38px; height: 38px; border-radius: 13px !important; padding: 0; justify-content: center; } .top .upd-btn span { display: none; } .top .search-btn { width: 190px; min-width: 0; } .top .search-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .top .search-btn kbd { display: none; } }
 </style>
 </head>
 <body>
@@ -1000,8 +1014,10 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
   <button class="btn search-btn" data-act="palette" id="btn-search"></button>
   <button class="btn main" data-act="newTask" id="btn-new"></button>
   <button class="btn calm-btn" data-act="calm" id="btn-calm" aria-label="Modo calmo" aria-pressed="false"></button>
+  <button class="btn lay-btn" data-act="layout" id="btn-lay" aria-label="Layout"></button>
   <button class="btn bell" data-act="bell" id="btn-bell" aria-label="Pendências"></button>
   <button class="btn" data-act="settings" id="btn-set" aria-label="Configurações"></button>
+  <button class="btn upd-btn" data-act="appUpdate" id="btn-upd" aria-label="Atualizar app" title="Atualizar app: busca a versão mais nova e recarrega. Seus dados ficam como estão."></button>
 </header>
 <canvas class="motes" id="motes" aria-hidden="true"></canvas>
 <div class="aurora" aria-hidden="true"></div>
@@ -1019,16 +1035,14 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 <input type="file" id="file-in" accept=".json,application/json" hidden>
 
 <script>
-/* Celular em "Site para computador": o navegador finge ter 980 px de largura e o layout de computador aparece.
-   Aqui detectamos isso (tela de toque pequena + janela larga) e forçamos o layout de celular. */
+/* Layout escolhido pelo usuário: "auto" (o navegador decide), "mobile" ou "desktop".
+   Reescreve as regras @media de largura para valerem sempre (celular) ou nunca (computador). */
 (function () {
   try {
-    const sw = Math.min(screen.width, screen.height), touch = navigator.maxTouchPoints > 0;
-    if (!touch || sw > 600 || innerWidth < 760 || innerWidth < sw * 1.4) return;
-    const W = sw, ok = c => { const m = c.match(/max-width:\s*(\d+)px/g); if (!m || /prefers|min-|orientation|hover/.test(c)) return false; return m.every(x => +x.match(/(\d+)/)[1] >= W); };
-    for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch { continue; } for (const r of rules) if (r.type === 4 && r.media && /max-width/.test(r.media.mediaText) && r.media.mediaText.split(",").some(ok)) r.media.mediaText = "all"; }
-    const z = innerWidth / W; document.documentElement.style.zoom = z; document.documentElement.dataset.forceMobile = "1";
-    window.__forceMobile = z;
+    const m = localStorage.getItem("orbita_layout") || "auto"; document.documentElement.dataset.layout = m; if (m === "auto") return;
+    const big = c => { if (/prefers|min-|orientation|hover/.test(c)) return false; const w = c.match(/max-width:\s*(\d+)px/g); return !!w && w.every(x => +x.match(/(\d+)/)[1] >= 640); };
+    for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch { continue; } for (const r of rules) if (r.type === 4 && r.media && /max-width/.test(r.media.mediaText) && r.media.mediaText.split(",").some(big)) r.media.mediaText = m === "mobile" ? "all" : "not all"; }
+    if (m === "desktop" && navigator.maxTouchPoints > 0 && Math.min(screen.width, screen.height) <= 600) { const v = document.querySelector('meta[name="viewport"]'); if (v) v.content = "width=1200, viewport-fit=cover"; }
   } catch (e) {}
 })();
 </script>
@@ -1050,6 +1064,7 @@ const fmtDT = ts => new Date(ts).toLocaleString("pt-BR", { day: "2-digit", month
 function fmtDur(ms) { const m = Math.round(ms / 6e4); if (m < 1) return "0min"; const h = Math.floor(m / 60); return h ? h + "h" + (m % 60 ? " " + (m % 60) + "min" : "") : m + "min"; }
 function fmtClock(ms) { const s = Math.floor(ms / 1000); return pad2(Math.floor(s / 3600)) + ":" + pad2(Math.floor(s / 60) % 60) + ":" + pad2(s % 60); }
 const ICONS = {
+  mob: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.7"/><path d="M7 12.3h2"/>', mon: '<rect x="1.8" y="2.8" width="12.4" height="8.4" rx="1.5"/><path d="M5.5 14h5M8 11.2V14"/>', ref: '<path d="M13.2 8a5.2 5.2 0 1 1-1.7-3.8M13.2 2.4v3.2H10"/>',
   tick: '<path d="m3.5 8.5 3 3 6-7"/>', pin: '<path d="M6 2.2h4l-.7 3.6 2.1 2.2H4.6l2.1-2.2zM8 8.2v5.6"/>', phone: '<path d="M3.2 2.2h2.4l1.1 3-1.6 1.2a8.2 8.2 0 0 0 3.8 3.8l1.2-1.6 3 1.1v2.4a1.3 1.3 0 0 1-1.4 1.3C6.5 13.1 2.9 9.5 1.9 3.6A1.3 1.3 0 0 1 3.2 2.2z"/>',
   leaf: '<path d="M3 13c0-6 3-9.5 10-10 0 6.5-3 10-9 10zM3 13l5-5"/>', book: '<path d="M3 3.5h4.3a1.7 1.7 0 0 1 1.7 1.7V13a1.5 1.5 0 0 0-1.5-1.5H3zM13 3.5H9.7A1.7 1.7 0 0 0 8 5.2V13a1.5 1.5 0 0 1 1.5-1.5H13z"/>',
   search: '<circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/>', plus: '<path d="M8 3v10M3 8h10"/>',
@@ -1536,6 +1551,10 @@ function renderChrome() {
   { const cb = $("#btn-calm"), on = !!state.settings.calm; cb.innerHTML = ic("leaf"); cb.classList.toggle("on", on); cb.setAttribute("aria-pressed", on); cb.title = on ? "Modo calmo ligado: sem animações e sem sons. Clique para desligar" : "Modo calmo: tira todas as animações e todos os sons"; }
   $("#btn-bell").innerHTML = ic("bell") + (n ? `<span class="badge">${n}</span>` : "");
   $("#btn-set").innerHTML = ic("gear");
+  $("#btn-upd").innerHTML = `${ic("ref")}<span>Atualizar</span>`;
+  { const m = localStorage.getItem("orbita_layout") || "auto", lb = $("#btn-lay"), eff = m === "auto" ? (matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop") : m;
+    lb.innerHTML = ic(eff === "mobile" ? "mob" : "mon") + `<i class="lay-b">${m === "auto" ? "A" : m === "mobile" ? "C" : "PC"}</i>`; lb.dataset.m = m;
+    lb.title = { auto: "Layout automático (o navegador decide). Toque para fixar em Celular", mobile: "Layout de celular fixo. Toque para fixar em Computador", desktop: "Layout de computador fixo. Toque para voltar ao automático" }[m]; }
   const nx = nextUp(), f = ui.f, any = f.pri.size || f.tags.size || f.due;
   let h = "";
   if (nx) { const di = dueInfo(nx); h += `<button class="next p${nx.priority}" data-act="open" data-id="${nx.id}" title="Sugestão calculada por prioridade e prazo"><small>Próxima</small><b>${esc(nx.title)}</b>${nx.ticket ? `<span class="tk">#${esc(nx.ticket)}</span>` : ""}${di ? `<span class="due ${di.cls}">${di.label}</span>` : ""}</button>`; }
@@ -2197,7 +2216,8 @@ function openSettings() {
     <button class="btn sm" data-act="tplAdd">${ic("plus")}Novo modelo</button></section>
   <section><h3>Tags</h3>${state.tags.map(g => `<div class="set-row"><span class="tag" style="--h:${g.hue}">●</span><input class="inp" value="${esc(g.name)}" data-in="tagName" data-id="${g.id}" id="tg_${g.id}" aria-label="Nome da tag"><div class="hues">${HUES.map(h => `<button class="hue ${g.hue === h ? "on" : ""}" style="--h:${h}" data-act="tagHue" data-id="${g.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><button class="icon-btn" data-act="tagDel" data-id="${g.id}" aria-label="Apagar tag">${ic("trash")}</button></div>`).join("")}<button class="btn sm" data-act="tagAdd">${ic("plus")}Nova tag</button></section>
   <section><h3>Campos personalizados</h3><p class="meta" style="margin:0 0 6px">Aparecem em todas as tarefas e no CSV.</p>${state.fields.map(f => `<div class="set-row"><input class="inp" value="${esc(f.name)}" data-in="fieldName" data-id="${f.id}" id="fd_${f.id}" aria-label="Nome do campo"><select class="inp" style="flex:none;width:110px" data-in="fieldType" data-id="${f.id}" id="ft_${f.id}" aria-label="Tipo">${[["text", "Texto"], ["number", "Número"], ["date", "Data"], ["url", "Link"]].map(([v, l]) => `<option value="${v}" ${f.type === v ? "selected" : ""}>${l}</option>`).join("")}</select><button class="icon-btn" data-act="fieldDel" data-id="${f.id}" aria-label="Apagar campo">${ic("trash")}</button></div>`).join("")}<button class="btn sm" data-act="fieldAdd">${ic("plus")}Novo campo</button></section>
-  <section><h3>Aplicativo</h3><p class="meta" style="margin:0 0 6px">Busca a versão mais nova do app (a do GitHub) e recarrega. Suas tarefas, quadros, modelos e anexos ficam como estão.</p><div class="set-row"><button class="btn sm main" data-act="appUpdate">↻ Atualizar app</button><button class="btn sm" data-act="appInstall" id="btn-install">⤓ Instalar app</button></div><p class="meta" id="install-msg" style="margin:6px 0 0"></p></section>
+  <section><h3>Aplicativo</h3><p class="meta" style="margin:0 0 6px">Busca a versão mais nova do app (a do GitHub) e recarrega. Suas tarefas, quadros, modelos e anexos ficam como estão.</p><div class="set-row"><button class="btn upd-btn" data-act="appUpdate">${ic("ref")}<span>Atualizar app</span></button><button class="btn sm" data-act="appInstall" id="btn-install">⤓ Instalar app</button></div><p class="meta" id="install-msg" style="margin:6px 0 0"></p>
+    <h3 style="margin-top:14px">Layout da tela</h3><p class="meta" style="margin:0 0 6px">Use <b>Celular</b> ou <b>Computador</b> se o aparelho não for reconhecido sozinho. A página recarrega, seus dados ficam como estão.</p><div class="seg">${[["auto", "Automático"], ["mobile", "Celular"], ["desktop", "Computador"]].map(([v, l]) => `<button class="${(localStorage.getItem("orbita_layout") || "auto") === v ? "on" : ""}" data-act="layoutSet" data-v="${v}">${l}</button>`).join("")}</div></section>
   <section><h3>Sincronizar entre computadores</h3>${gistBox()}</section>
   <section><h3>Dados</h3><p class="meta" style="margin:0 0 6px">${esc(saveInfo()[1])}. ${FS_OK ? "Com um arquivo de dados conectado, cada alteração é gravada nele sozinha (Ctrl+S grava na hora)." : EMBED ? "Aberto pelo Claude, os dados ficam na sua conta. Para gravar em um arquivo .json no computador, abra o arquivo .html no Chrome ou Edge." : "Este navegador não grava direto em arquivo. Use Chrome ou Edge, ou baixe backups."}</p>${FS_OK ? `<div class="set-row">${handle ? `<button class="btn main" data-act="fileSave">Salvar agora</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : pendingHandle ? `<button class="btn main" data-act="fileReconnect">Reconectar arquivo</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : `<button class="btn main" data-act="fileCreate">Criar arquivo de dados</button><button class="btn" data-act="fileOpen">Abrir arquivo existente</button>`}</div>` : ""}<div class="set-row"><button class="btn" data-act="exportJson">Baixar backup (JSON)</button><button class="btn" data-act="importJson">Restaurar backup</button><button class="btn" data-act="csv">Baixar CSV</button></div>
     <div class="set-row">${hasDemo ? `<button class="btn" data-act="clearDemo">Remover tarefas de exemplo</button>` : ""}<button class="btn" data-act="unarchive">Desarquivar tudo (${state.tasks.filter(t => t.archived).length})</button><button class="btn danger" data-act="reset">${ui.armed === "reset" ? "Clique de novo para apagar tudo" : "Apagar tudo e recomeçar"}</button></div></section>
@@ -2415,6 +2435,7 @@ $("#view").addEventListener("scroll", () => { const v = $("#view"); if (ctxId &&
 
 /* ================= ações ================= */
 const cur = () => task(ui.drawer);
+function layoutSet(n) { try { save(); localStorage.setItem("orbita_layout", n); } catch {} toast("Layout: " + { auto: "automático", mobile: "celular", desktop: "computador" }[n] + ". Recarregando…"); setTimeout(() => location.reload(), 450); }
 const acts = {
   soundTest: el => playSound(el.dataset.v, true),
   ics: () => { const t = cur(); if (!t.block) { t.block = blockOf(t); save(); render(); renderDrawer(); } saveFile("tarefa-" + (t.ticket || t.id) + ".ics", icsText(t)); },
@@ -2438,7 +2459,9 @@ const acts = {
     if (installEv) { const e = installEv; installEv = null; e.prompt(); const r = await e.userChoice.catch(() => null); return msg(r && r.outcome === "accepted" ? "Instalando… o ícone vai aparecer na tela inicial." : "Instalação cancelada."); }
     msg(/iPhone|iPad/.test(navigator.userAgent) ? "No Safari: toque em Compartilhar → Adicionar à Tela de Início." : "No Chrome: toque em ⋮ (menu) → Instalar app (ou Adicionar à tela inicial).");
   },
-  appUpdate: async () => { toast("Atualizando…"); try { save(); if (self.caches) for (const k of await caches.keys()) await caches.delete(k); if (navigator.serviceWorker) for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); } catch (_) {}
+  layout: () => { const o = localStorage.getItem("orbita_layout") || "auto", n = { auto: "mobile", mobile: "desktop", desktop: "auto" }[o]; layoutSet(n); },
+  layoutSet: el => layoutSet(el.dataset.v),
+  appUpdate: async el => { if (el && el.classList) el.classList.add("busy"); toast("Atualizando…"); try { save(); if (self.caches) for (const k of await caches.keys()) await caches.delete(k); if (navigator.serviceWorker) for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); } catch (_) {}
     if (location.protocol === "file:" || EMBED) return void location.reload(); const u = new URL(location.href); u.searchParams.set("v", Date.now()); location.replace(u.toString()); },
   tplAdd: () => { const tp = { id: uid(), name: "Novo modelo", tag: "", items: [] }; state.templates.push(tp); save(); openSettings(); const i = $("#tp_" + tp.id); if (i) { i.focus(); i.select(); } },
   tplDel: el => { snapshotUndo("Modelo apagado"); tomb(el.dataset.id); state.templates = state.templates.filter(x => x.id !== el.dataset.id); save(); openSettings(); },
