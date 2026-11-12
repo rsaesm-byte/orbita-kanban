@@ -122,11 +122,11 @@ main { flex: 1; min-height: 0; overflow: auto; position: relative; }
 @property --cx { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --cy { syntax: "<length>"; inherits: true; initial-value: 0px; }
 :root[data-depth="2"] .col, :root[data-depth="2"] .col-list { transform-style: preserve-3d; }
-:root[data-depth="2"] .card { perspective: none; transform-style: preserve-3d; --z: calc(8px + (3 - var(--p, 2)) * 15px); translate: var(--cx) var(--cy) var(--z); transition: transform .18s ease-out, --z .35s cubic-bezier(.2,.8,.2,1), --cx .35s cubic-bezier(.2,.8,.2,1), --cy .35s cubic-bezier(.2,.8,.2,1); animation: bob 6s ease-in-out infinite; animation-delay: calc(var(--j, 0) * -1.3s - var(--i, 0) * .7s); }
+:root[data-depth="2"] .card { perspective: none; transform-style: preserve-3d; --z: calc(8px + (3 - var(--p, 2)) * 15px); translate: var(--cx) var(--cy) var(--z); transition: transform .18s ease-out, --z .35s cubic-bezier(.2,.8,.2,1), --cx .35s cubic-bezier(.2,.8,.2,1), --cy .35s cubic-bezier(.2,.8,.2,1); animation: none; }
 :root[data-depth="2"] .card:hover { --z: 78px; }
 :root[data-depth="2"] .card::before { content: ""; position: absolute; inset: 10px 8px -2px; border-radius: 14px; background: rgb(var(--shadow) / .5); filter: blur(10px); transform: translateZ(calc(1px - var(--z))); pointer-events: none; }
 :root[data-depth="2"] .face, :root[data-depth="2"] .card:hover .face { box-shadow: 0 1px 0 var(--edge); }
-:root[data-depth="2"] .board.enter .card { animation: cardIn .5s cubic-bezier(.2,.8,.2,1) backwards, bob 6s ease-in-out infinite; animation-delay: calc(var(--i) * 80ms + var(--j) * 55ms + 240ms), calc(var(--j, 0) * -1.3s - var(--i, 0) * .7s); }
+:root[data-depth="2"] .board.enter .card { animation: cardIn .5s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i) * 80ms + var(--j) * 55ms + 240ms); }
 @keyframes bob { 50% { translate: var(--cx) var(--cy) calc(var(--z) + 8px); } }
 .ghost { animation: none !important; translate: none !important; perspective: 900px !important; }
 .ghost::before { display: none !important; }
@@ -670,7 +670,7 @@ html:root .board.cine.enter .stage { animation: bdStage 1.9s cubic-bezier(.16,.8
 html:root .board.cine.enter .col { animation: bdCol .9s cubic-bezier(.2,.9,.2,1) calc(.2s + var(--i) * .1s) backwards; }
 @keyframes bdCol { from { opacity: 0; transform: translateY(100px) rotateX(-40deg) scale(.93); } 65% { opacity: 1; } }
 html:root .board.cine.enter .card { animation: bdDeal .72s cubic-bezier(.2,1.1,.3,1) calc(.55s + var(--i) * .1s + var(--j) * .08s) backwards; }
-html:root[data-depth="2"] .board.cine.enter .card { animation: bdDeal .72s cubic-bezier(.2,1.1,.3,1) calc(.55s + var(--i) * .1s + var(--j) * .08s) backwards, bob 6s ease-in-out infinite; animation-delay: calc(.55s + var(--i) * .1s + var(--j) * .08s), calc(var(--j, 0) * -1.3s - var(--i, 0) * .7s); }
+html:root[data-depth="2"] .board.cine.enter .card { animation: bdDeal .72s cubic-bezier(.2,1.1,.3,1) calc(.55s + var(--i) * .1s + var(--j) * .08s) backwards; animation-delay: calc(.55s + var(--i) * .1s + var(--j) * .08s); }
 @keyframes bdDeal { 0% { opacity: 0; transform: translate3d(-130px, -90px, 0) rotate(-11deg) scale(.7); } 55% { opacity: 1; } 80% { transform: translate3d(0, 5px, 0) rotate(1deg) scale(1.03); } 100% { transform: none; } }
 .board.cine .col-dot { animation: bdDot .8s cubic-bezier(.2,1.6,.4,1) calc(.5s + var(--i) * .1s) backwards; }
 @keyframes bdDot { from { transform: scale(0); } 60% { transform: scale(1.8); box-shadow: 0 0 0 6px color-mix(in oklab, oklch(0.62 0.13 var(--ch)) 30%, transparent); } }
@@ -1027,6 +1027,31 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 .ck-icons { display: grid !important; gap: 6px; } .ck-ih { display: flex; gap: 6px; align-items: center; } .ck-ih .inp { flex: 1; min-width: 0; padding: 6px 10px; }
 .ck-scroll { max-height: 190px; overflow-y: auto; display: grid; gap: 4px; padding-right: 2px; overscroll-behavior: contain; }
 .ck-gl { font: 700 10.5px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); margin-top: 4px; } .ck-gi { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* ===== Spotlight (busca no estilo do macOS) ===== */
+.scrim.spl-scrim { background: rgb(0 0 0 / .3); backdrop-filter: blur(8px) saturate(1.15); -webkit-backdrop-filter: blur(8px) saturate(1.15); animation: splFade .2s ease-out; }
+@keyframes splFade { from { opacity: 0; } }
+.modal.spl { top: 14vh; width: min(700px, calc(100% - 20px)); max-height: 72vh; border-radius: 22px; border: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  background: color-mix(in oklab, var(--surface) 76%, transparent); backdrop-filter: blur(46px) saturate(1.9); -webkit-backdrop-filter: blur(46px) saturate(1.9);
+  box-shadow: 0 34px 90px -22px rgb(0 0 0 / .65), 0 0 0 .5px rgb(0 0 0 / .4), inset 0 1px 0 rgb(255 255 255 / .16); overflow: hidden; animation: splIn .24s cubic-bezier(.2, .9, .3, 1.15); }
+@keyframes splIn { from { opacity: 0; transform: translateX(-50%) scale(.93) translateY(-10px); } }
+.spl-bar { display: flex; align-items: center; gap: 12px; padding: 0 18px; } .spl-bar .ic { width: 24px; height: 24px; flex: none; color: var(--ink2); stroke-width: 1.7; }
+.spl-bar .pal-in { flex: 1; border: 0; background: none; font-size: 24px; font-weight: 300; letter-spacing: -.01em; padding: 18px 0; color: var(--ink); border-radius: 0; min-width: 0; } .spl-bar .pal-in::placeholder { color: var(--ink3); }
+.spl-bar kbd { flex: none; font: 600 11px var(--mono); color: var(--ink3); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; }
+.spl .pal-list { border-top: 1px solid color-mix(in oklab, var(--ink) 10%, transparent); padding: 6px 8px 8px; }
+.spl .pal-sec { padding: 10px 12px 4px; font-size: 11px; letter-spacing: .04em; text-transform: none; color: var(--ink3); font-weight: 600; }
+.spl .pal-item { gap: 12px; padding: 7px 10px; border-radius: 11px; align-items: center; transition: background .08s; }
+.spl .pal-item .pi-t { width: 32px; height: 32px; border-radius: 9px; flex: none; display: grid; place-items: center; color: #fff; background: var(--tc, var(--ink3)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .25); font-weight: 800; font-size: 16px; } .spl .pal-item .pi-t .ic { width: 17px; height: 17px; stroke-width: 2; }
+.spl .pal-item .pi-b { display: grid; min-width: 0; flex: 1; text-align: left; } .spl .pal-item .pi-b b { font-weight: 600; font-size: 14.5px; } .spl .pal-item .pi-b small { margin: 0; color: var(--ink3); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.spl .pal-item .tk { font: 500 11.5px var(--mono); color: var(--ink3); }
+.spl .pal-item .pi-k { flex: none; font: 600 11px var(--mono); color: var(--ink3); background: none; border: 0; opacity: 0; } .spl .pal-item.on .pi-k { opacity: .9; }
+.spl .pal-item.on { background: var(--accent); color: var(--accent-ink, #fff); } .spl .pal-item.on .pi-b small, .spl .pal-item.on .tk, .spl .pal-item.on .pi-k { color: inherit; opacity: .85; }
+.spl .pal-item.on .pi-t { background: rgb(255 255 255 / .22); }
+.spl .pal-item .pi-t.eq { font-size: 20px; }
+.spl .pal-foot { border-top: 1px solid color-mix(in oklab, var(--ink) 10%, transparent); background: transparent; padding: 8px 16px; }
+:root[data-calm="on"] .modal.spl, :root[data-calm="on"] .scrim.spl-scrim { animation: none; }
+@media (max-width: 720px) { .modal.spl { top: calc(10px + env(safe-area-inset-top)); } .spl-bar .pal-in { font-size: 19px; padding: 15px 0; } .spl .pal-foot { display: none; } }
+body:has(.modal.spl) .toasts { display: none; }
 </style>
 </head>
 <body>
@@ -2211,22 +2236,26 @@ const COMMANDS = () => [
 function fuzzy(q, s) { if (!q) return 1; const i = s.indexOf(q); if (i === 0) return 100; if (i > 0) return 60 - Math.min(i, 30); let j = 0; for (const ch of s) if (ch === q[j]) j++; return j === q.length ? 10 : 0; }
 function palItems(q) {
   const k = norm(q.replace(/^#/, "")), out = [];
+  if (/^[\d\s+\-*/().,%^]+$/.test(q) && /[+\-*/^%]/.test(q.replace(/^\s*-/, "")) && /\d/.test(q)) { try { const v = Function('"use strict";return (' + q.replace(/,/g, ".").replace(/\^/g, "**").replace(/(\d+(?:\.\d+)?)%/g, "($1/100)") + ')')(); if (typeof v === "number" && isFinite(v)) out.push({ sec: "Calculadora", calc: String(+v.toFixed(10)).replace(".", ",") }); } catch (e) {} }
   const ts = state.tasks.map(t => { const tg = t.tags.map(tag).filter(Boolean).map(g => g.name).join(" "); const s = Math.max(norm(t.ticket) === k && k ? 200 : 0, fuzzy(k, norm(t.ticket)) * 1.2, fuzzy(k, norm(t.title)), fuzzy(k, norm(tg)) * .7, k.length > 2 && norm(t.desc + " " + plain(t.notes) + " " + t.extra.map(x => x.k + " " + x.v).join(" ")).includes(k) ? 20 : 0, k.length > 1 && norm(Object.values(t.info || {}).map(x => typeof x === "string" && x.includes("<") ? plain(x) : x).join(" ") + " " + (t.diary || []).map(e => (e.theme || "") + " " + plain(e.html)).join(" ")).includes(k) ? 60 : 0); return { t, s: s - (t.archived ? 5 : 0) }; }).filter(x => x.s > 0).sort((a, b) => b.s - a.s || score(b.t) - score(a.t)).slice(0, k ? 8 : 5);
   ts.forEach(({ t }) => out.push({ sec: "Tarefas", t }));
   COMMANDS().map(c => ({ c, s: fuzzy(k, norm(c.n)) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, k ? 6 : 20).forEach(({ c }) => out.push({ sec: "Ações", c }));
   if (k) out.push({ sec: "Criar", c: { n: `Criar tarefa “${q}”`, run: () => { const p = parseQuick(q); if (p.title) { const t = addTask(null, p); render(); openTask(t.id); } } } });
   return out;
 }
-function openPalette() { ui.overlay = "pal"; ui.drawer = null; ui.pal = { q: "", i: 0, items: [] }; $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Buscar"><input class="pal-in" id="pal-in" placeholder="Buscar por título, nº do chamado, tag… ou digitar um comando" autocomplete="off" data-in="pal"><div class="pal-list" id="pal-list"></div><div class="pal-foot"><span><kbd>↑</kbd> <kbd>↓</kbd> navegar</span><span><kbd>Enter</kbd> abrir</span><span><kbd>Esc</kbd> fechar</span></div></div>`; renderPal(); $("#pal-in").focus(); }
+function openPalette() { ui.overlay = "pal"; ui.drawer = null; ui.pal = { q: "", i: 0, items: [] }; $("#layer").innerHTML = `<div class="scrim spl-scrim" data-act="close"></div><div class="modal spl" role="dialog" aria-label="Buscar"><div class="spl-bar">${ic("search")}<input class="pal-in" id="pal-in" placeholder="Buscar tarefas, chamados, tags ou comandos" autocomplete="off" spellcheck="false" data-in="pal"><kbd>esc</kbd></div><div class="pal-list" id="pal-list"></div><div class="pal-foot"><span><kbd>↑</kbd> <kbd>↓</kbd> navegar</span><span><kbd>↩</kbd> abrir</span><span>Dica: digite uma conta, como 12*8+4</span></div></div>`; renderPal(); $("#pal-in").focus(); }
 function renderPal() {
   const p = ui.pal; p.items = palItems(p.q); p.i = clamp(p.i, 0, p.items.length - 1); let sec = "";
-  $("#pal-list").innerHTML = p.items.map((it, i) => { let h = ""; if (it.sec !== sec) { sec = it.sec; h += `<div class="pal-sec">${sec}</div>`; }
-    if (it.t) { const di = dueInfo(it.t); h += `<button class="pal-item p${it.t.priority} ${i === p.i ? "on" : ""}" data-act="palRun" data-v="${i}"><i></i>${it.t.ticket ? `<span class="tk">#${esc(it.t.ticket)}</span>` : ""}<b>${esc(it.t.title)}</b><small>${state.boards.length > 1 ? esc(bname(it.t)) + " · " : ""}${esc(col(it.t.col).name)}${di && !isDone(it.t) ? " · " + di.label : ""}${it.t.archived ? " · arquivada" : ""}</small></button>`; }
-    else h += `<button class="pal-item ${i === p.i ? "on" : ""}" data-act="palRun" data-v="${i}"><b>${esc(it.c.n)}</b>${it.c.k ? `<small><kbd>${it.c.k}</kbd></small>` : ""}</button>`;
+  const tile = (n, c) => `<span class="pi-t"${c ? ` style="--tc:${c}"` : ""}>${ic(n)}</span>`;
+  $("#pal-list").innerHTML = p.items.map((it, i) => { let h = "", lab = (i === 0 && p.q.trim() && !it.calc) ? "Melhor resultado" : it.sec; if (lab !== sec) { sec = lab; h += `<div class="pal-sec">${sec}</div>`; }
+    const on = i === p.i ? "on" : "";
+    if (it.calc) h += `<button class="pal-item ${on}" data-act="palRun" data-v="${i}">${`<span class="pi-t eq" style="--tc:var(--accent)">=</span>`}<span class="pi-b"><b>${esc(it.calc)}</b><small>Resultado · Enter para copiar</small></span><kbd class="pi-k">↩</kbd></button>`;
+    else if (it.t) { const di = dueInfo(it.t); h += `<button class="pal-item p${it.t.priority} ${on}" data-act="palRun" data-v="${i}">${tile("check", "var(--pc, var(--accent))")}<span class="pi-b"><b>${it.t.ticket ? `<span class="tk">#${esc(it.t.ticket)}</span> ` : ""}${esc(it.t.title)}</b><small>${state.boards.length > 1 ? esc(bname(it.t)) + " · " : ""}${esc(col(it.t.col).name)}${di && !isDone(it.t) ? " · " + di.label : ""}${it.t.archived ? " · arquivada" : ""}</small></span><kbd class="pi-k">↩</kbd></button>`; }
+    else h += `<button class="pal-item ${on}" data-act="palRun" data-v="${i}">${tile(it.sec === "Criar" ? "plus" : "gear", it.sec === "Criar" ? "var(--accent)" : "")}<span class="pi-b"><b>${esc(it.c.n)}</b><small>${it.sec === "Criar" ? "Criar nova tarefa" : "Ação"}</small></span>${it.c.k ? `<kbd class="pi-k">${it.c.k}</kbd>` : `<kbd class="pi-k">↩</kbd>`}</button>`;
     return h; }).join("") || `<div class="pal-sec">Nada encontrado</div>`;
   const on = $(".pal-item.on"); if (on) on.scrollIntoView({ block: "nearest" });
 }
-function palRun(i) { const it = ui.pal.items[i]; if (!it) return; closeLayer(); if (it.t) { if (it.t.archived) { it.t.archived = false; save(); render(); } openTask(it.t.id); } else it.c.run(); }
+function palRun(i) { const it = ui.pal.items[i]; if (!it) return; if (it.calc) { try { navigator.clipboard.writeText(it.calc); } catch {} closeLayer(); return toast("Copiado: " + it.calc); } closeLayer(); if (it.t) { if (it.t.archived) { it.t.archived = false; save(); render(); } openTask(it.t.id); } else it.c.run(); }
 
 /* ---------- configurações, ajuda, pendências ---------- */
 function openSettings() {
@@ -2264,7 +2293,7 @@ function openSettings() {
 function openHelp() {
   ui.overlay = "help"; const row = (k, d) => `<div class="set-row"><span style="width:150px">${k.split(" ").map(x => `<kbd>${x}</kbd>`).join(" ")}</span><span>${d}</span></div>`;
   $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Atalhos"><div class="d-head" style="border-top:0"><h2>Atalhos e truques</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body"><section>
-  ${row("Ctrl K", "Buscar tarefas e executar comandos")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4 5", "Quadro, Órbita, Lista, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
+  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4 5", "Quadro, Órbita, Lista, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
   <section><h3>Captura rápida</h3><p style="margin:0">No campo no fim de cada coluna, ou no Ctrl K, escreva tudo em uma linha:</p><p class="mono" style="margin:6px 0">Trocar toner #CH-48300 !alta @amanha +Hardware</p>
   ${row("#texto", "número do chamado")}${row("!alta", "prioridade: critica, alta, media, baixa ou 1 a 4")}${row("@hoje", "prazo: hoje, amanha, +3 (dias) ou 25/12")}${row("+tag", "adiciona a tag e cria se não existir")}</section></div></div>`;
 }
@@ -2689,6 +2718,7 @@ document.addEventListener("keydown", e => {
   const tg = e.target, typing = /INPUT|TEXTAREA|SELECT/.test(tg.tagName) || tg.isContentEditable;
   if (e.ctrlKey && e.shiftKey && !e.altKey && e.code === "KeyD") { e.preventDefault(); const m = localStorage.getItem("orbita_layout") || "auto", eff = m === "auto" ? (matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop") : m; return layoutSet(eff === "mobile" ? "desktop" : "mobile"); }
   if (e.ctrlKey && e.altKey && !e.shiftKey && e.code === "KeyR") { e.preventDefault(); return acts.appUpdate($("#btn-upd")); }
+  if (e.ctrlKey && !e.shiftKey && !e.altKey && e.code === "Space") { e.preventDefault(); return ui.overlay === "pal" ? closeLayer() : openPalette(); }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); return ui.overlay === "pal" ? closeLayer() : openPalette(); }
   if (e.key === "Escape") { if (!$("#lb").hidden) return acts.lbClose(); if (ctxId) return closeCtx(); if (ui.overlay) { closeLayer(); return; } if (typing) tg.blur(); return; }
   if (ui.overlay === "pal") { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const n = ui.pal.items.length; ui.pal.i = (ui.pal.i + (e.key === "ArrowDown" ? 1 : n - 1)) % Math.max(n, 1); renderPal(); } else if (e.key === "Enter") { e.preventDefault(); palRun(ui.pal.i); } return; }
