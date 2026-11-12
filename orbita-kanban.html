@@ -931,7 +931,9 @@ html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px da
 .repb { color: var(--accent); font-weight: 600; font-size: 11.5px; }
 .rep-days { display: flex; gap: 5px; margin-top: 8px; } .rep-days button { flex: 1; height: 34px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface2); color: var(--ink2); font-weight: 700; font-size: 13px; cursor: pointer; transition: background .15s, color .15s, transform .12s; } .rep-days button:active { transform: scale(.94); } .rep-days button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .rep-n { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: var(--ink2); } .rep-n .inp { width: 84px; }
-.rep-hint { margin: 8px 0 0; } .rep-hint b { color: var(--accent); }
+.rep-hint { margin: 8px 0 0; } .rep-sub { margin: 8px 0 0; font-size: 12px; } .rep-end { margin-top: 10px; display: grid; gap: 4px; } .rep-end label { font-size: 12px; color: var(--ink2); }
+.rep-n select.inp { width: auto; flex: 1; } .rep-dates { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .rep-dates .rep-n { flex-basis: 100%; margin-top: 2px; } .rep-dates .rep-n .inp { flex: 1; width: auto; }
+.rep-d { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 12.5px; } .rep-d button { border: 0; background: none; color: inherit; font-size: 16px; line-height: 1; cursor: pointer; padding: 0 5px; border-radius: 50%; } .rep-hint b { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -1375,22 +1377,42 @@ function passes(t) {
 }
 function stopTimer() { if (!state.timer) return; const t = task(state.timer.id); if (t) t.timeMs += Date.now() - state.timer.start; state.timer = null; }
 function toggleTimer(id) { const was = state.timer && state.timer.id; stopTimer(); if (was !== id) state.timer = { id, start: Date.now() }; playSound("timer"); save(); render(); if (ui.drawer) renderDrawer(); }
-const REPS = [["", "Não repetir"], ["daily", "Todos os dias"], ["weekdays", "Dias úteis (seg a sex)"], ["days", "Dias da semana que eu escolher"], ["weekly", "Toda semana"], ["biweekly", "A cada 2 semanas (quinzenal)"], ["monthly", "Todo mês"], ["yearly", "Todo ano"], ["every", "A cada N dias"]];
+const REPS = [["", "Não repetir"], ["custom", "Personalizado…"], ["dates", "Em datas que eu escolher"], ["daily", "Todos os dias"], ["weekdays", "Dias úteis (seg a sex)"], ["days", "Dias da semana que eu escolher"], ["weekly", "Toda semana"], ["biweekly", "A cada 2 semanas (quinzenal)"], ["monthly", "Todo mês"], ["yearly", "Todo ano"], ["every", "A cada N dias"]];
 const WD = ["D", "S", "T", "Q", "Q", "S", "S"], WDN = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
-function repLabel(r) { if (!r) return ""; if (r.k === "days") return (r.days || []).length ? r.days.slice().sort((a, b) => (a || 7) - (b || 7)).map(d => WDN[d]).join(" ") : "Dias da semana"; if (r.k === "every") return "A cada " + (r.n || 2) + " dias"; return { daily: "Todo dia", weekdays: "Dias úteis", weekly: "Toda semana", biweekly: "Quinzenal", monthly: "Todo mês", yearly: "Todo ano" }[r.k] || ""; }
-function repNext(r, due) {                         // próxima data (aaaa-mm-dd[Thh:mm]) depois do prazo atual e depois de hoje
+const UNITS = [["d", "dias"], ["w", "semanas"], ["m", "meses"], ["y", "anos"]];
+function repLabel(r) {
+  if (!r) return "";
+  const dn = a => a.slice().sort((x, y) => (x || 7) - (y || 7)).map(d => WDN[d]).join(" ");
+  if (r.k === "days") return (r.days || []).length ? dn(r.days) : "Dias da semana";
+  if (r.k === "every") return "A cada " + (r.n || 2) + " dias";
+  if (r.k === "dates") return "Em " + (r.dates || []).length + " data" + ((r.dates || []).length === 1 ? "" : "s");
+  if (r.k === "custom") { const n = r.n || 1, u = r.u || "w", nm = { d: ["dia", "dias"], w: ["semana", "semanas"], m: ["mês", "meses"], y: ["ano", "anos"] }[u]; return "A cada " + (n > 1 ? n + " " + nm[1] : nm[0]) + (u === "w" && (r.days || []).length ? " (" + dn(r.days) + ")" : ""); }
+  return { daily: "Todo dia", weekdays: "Dias úteis", weekly: "Toda semana", biweekly: "Quinzenal", monthly: "Todo mês", yearly: "Todo ano" }[r.k] || "";
+}
+function repNext(r, due) {                         // próxima data (aaaa-mm-dd[Thh:mm]) depois do prazo atual e depois de hoje; null = acabou
   const today = sod(Date.now()), base = due ? new Date(due.slice(0, 10) + "T12:00:00") : new Date(today + 12 * 36e5), tm = due && due.length > 10 ? due.slice(10) : "";
   const thr = Math.max(sod(base), today); let d = new Date(base);
+  const monthly = (n, mo) => { const day = base.getDate(); let i = 0; do { i++; d = new Date(base.getFullYear() + (mo ? 0 : i * n), base.getMonth() + (mo ? i * n : 0), 1, 12); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); } while (sod(d) <= thr); };
   const step = { daily: 1, weekly: 7, biweekly: 14, every: Math.max(1, Math.min(365, +r.n || 2)) }[r.k];
-  if (step) { do d.setDate(d.getDate() + step); while (sod(d) <= thr); }
+  if (r.k === "dates") { const nx = (r.dates || []).filter(x => sod(x + "T12:00:00") > thr).sort()[0]; if (!nx) return null; d = new Date(nx + "T12:00:00"); }
+  else if (r.k === "custom") {
+    const n = Math.max(1, Math.min(365, +r.n || 1)), u = r.u || "w", set = r.days || [];
+    if (u === "d") { do d.setDate(d.getDate() + n); while (sod(d) <= thr); }
+    else if (u === "w" && !set.length) { do d.setDate(d.getDate() + 7 * n); while (sod(d) <= thr); }
+    else if (u === "w") { const ws = x => { const y = new Date(x); y.setHours(12, 0, 0, 0); y.setDate(y.getDate() - (y.getDay() + 6) % 7); return y.getTime(); }, b0 = ws(base); let g = 0; do { d.setDate(d.getDate() + 1); g++; } while ((sod(d) <= thr || !set.includes(d.getDay()) || Math.round((ws(d) - b0) / (7 * DAY)) % n !== 0) && g < 3000); }
+    else monthly(n, u === "m");
+  }
+  else if (step) { do d.setDate(d.getDate() + step); while (sod(d) <= thr); }
   else if (r.k === "weekdays" || r.k === "days") { const set = r.k === "weekdays" ? [1, 2, 3, 4, 5] : (r.days && r.days.length ? r.days : [base.getDay()]); do d.setDate(d.getDate() + 1); while (sod(d) <= thr || !set.includes(d.getDay())); }
-  else { const mo = r.k === "monthly", day = base.getDate(); let i = 0; do { i++; d = new Date(base.getFullYear() + (mo ? 0 : i), base.getMonth() + (mo ? i : 0), 1, 12); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); } while (sod(d) <= thr); }
+  else monthly(1, r.k === "monthly");
+  if (r.end && dkey(d) > r.end) return null;
   return dkey(d) + tm;
 }
 function repSpawn(t) {                              // ao concluir uma tarefa que repete, nasce a próxima
   const r = t.rep; if (!r) return;
+  const nd = repNext(r, t.due); if (!nd) { t.repSaved = r; t.rep = null; toast("Fim da repetição: não há próxima data"); return; }
   const k = JSON.parse(JSON.stringify(t)), cs = cols(boardOf(t)), c0 = cs.find(c => !c.done) || cs[0];
-  k.id = uid(); k.due = repNext(r, t.due); k.rep = r; k.repNext = null; k.repSaved = null; k.doneAt = null; k.timeMs = 0; k.block = null; k.createdAt = Date.now(); k.archived = false; k.demo = false; k.diary = []; k.files = []; k.col = c0.id;
+  k.id = uid(); k.due = nd; k.rep = r; k.repNext = null; k.repSaved = null; k.doneAt = null; k.timeMs = 0; k.block = null; k.createdAt = Date.now(); k.archived = false; k.demo = false; k.diary = []; k.files = []; k.col = c0.id;
   (k.check || []).forEach(c => { c.id = uid(); c.d = false; });
   state.tasks.push(k); t.repNext = k.id; t.repSaved = r; t.rep = null;
   toast("Repete: próxima em " + fmtD(k.due.slice(0, 10)));
@@ -1492,12 +1514,17 @@ function infoField(t, f) {
     <div class="info-side"><select class="ftype" data-in="infoType" data-v="${ek}" aria-label="Tipo do campo" title="Tipo do campo">${FTYPES.map(([x, l]) => `<option value="${x}" ${x === f.type ? "selected" : ""}>${l}</option>`).join("")}</select><button class="info-pin${f.pin ? " on" : ""}" data-act="infoPin" data-v="${ek}" title="${f.pin ? "Aparece no cartão do quadro (clique para tirar)" : "Mostrar no cartão do quadro"}" aria-pressed="${!!f.pin}">${ic("pin")}</button><button class="info-del" data-act="infoDel" data-v="${ek}" title="Apagar este campo" aria-label="Apagar campo ${nm}">${ic("x")}</button></div></div>`;
 }
 function fitName(el) { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; }
+function renderDrawerRepHint(t) { const h = $(".rep-hint"); if (!h || !t.rep) return; const nx = repNext(t.rep, t.due); h.innerHTML = nx ? `Ao concluir, a próxima aparece em <b>${fmtD(nx.slice(0, 10))}</b>, na primeira coluna e com o checklist zerado.` : `Não há próxima data: esta é a <b>última</b> vez.`; }
 function repBlock(t) {
-  const r = t.rep || {};
+  const r = t.rep || {}, days = r.k === "days" || (r.k === "custom" && r.u === "w"), nx = t.rep ? repNext(t.rep, t.due) : "";
+  const chips = `<div class="rep-days" role="group" aria-label="Dias da semana">${[1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" class="${(r.days || []).includes(d) ? "on" : ""}" data-act="repDay" data-v="${d}" aria-pressed="${(r.days || []).includes(d)}" title="${WDN[d]}">${WD[d]}</button>`).join("")}</div>`;
   return `<div class="field rep-f"><label for="d_rep">Repetir</label><select class="inp" id="d_rep" data-in="tRep">${REPS.map(([v, l]) => `<option value="${v}" ${v === (r.k || "") ? "selected" : ""}>${l}</option>`).join("")}</select>
-    ${r.k === "days" ? `<div class="rep-days" role="group" aria-label="Dias da semana">${[1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" class="${(r.days || []).includes(d) ? "on" : ""}" data-act="repDay" data-v="${d}" aria-pressed="${(r.days || []).includes(d)}" title="${WDN[d]}">${WD[d]}</button>`).join("")}</div>` : ""}
+    ${r.k === "custom" ? `<div class="rep-n"><span>A cada</span><input class="inp" type="number" min="1" max="365" inputmode="numeric" value="${r.n || 1}" data-in="repCn" aria-label="Quantidade"><select class="inp" data-in="repU" aria-label="Unidade">${UNITS.map(([v, l]) => `<option value="${v}" ${v === (r.u || "w") ? "selected" : ""}>${l}</option>`).join("")}</select></div>${(r.u || "w") === "w" ? `<p class="meta rep-sub">Em quais dias da semana? (vazio = no mesmo dia do prazo)</p>` : ""}` : ""}
+    ${days ? chips : ""}
     ${r.k === "every" ? `<div class="rep-n"><span>A cada</span><input class="inp" type="number" min="1" max="365" inputmode="numeric" value="${r.n || 2}" data-in="repN" aria-label="Número de dias"><span>dias</span></div>` : ""}
-    ${t.rep ? `<p class="meta rep-hint">Ao concluir, a próxima aparece em <b>${fmtD(repNext(t.rep, t.due).slice(0, 10))}</b>, na primeira coluna e com o checklist zerado.</p>` : ""}</div>`;
+    ${r.k === "dates" ? `<div class="rep-dates">${(r.dates || []).slice().sort().map(x => `<span class="rep-d">${fmtD(x)}<button type="button" data-act="repDateDel" data-v="${x}" aria-label="Remover ${fmtD(x)}">×</button></span>`).join("")}<div class="rep-n"><input class="inp" type="date" id="rep_date" aria-label="Nova data"><button class="btn sm" data-act="repDateAdd">+ Adicionar data</button></div></div>` : ""}
+    ${t.rep ? `<div class="rep-end"><label for="rep_end">Repetir até (opcional)</label><input class="inp" type="date" id="rep_end" data-in="repEnd" value="${esc(r.end || "")}"></div>
+    <p class="meta rep-hint">${nx ? `Ao concluir, a próxima aparece em <b>${fmtD(nx.slice(0, 10))}</b>, na primeira coluna e com o checklist zerado.` : `Não há próxima data: esta é a <b>última</b> vez.`}</p>` : ""}</div>`;
 }
 function modelBlock(t) {
   const m = modelOf(t);
@@ -1878,7 +1905,7 @@ const MANUAL = () => {
     + tip("Em <b>Relatórios</b> você vê o tempo total cronometrado e o tempo médio até concluir."),
     "Tem tarefa que volta todo dia ou toda semana? Veja como repetir.");
   add("O dia a dia", "repetir", "cal", "Tarefas que se repetem", "Rotinas como preventivo, relatório semanal ou pagamento mensal voltam sozinhas. Você define uma vez.",
-    step(`Abra a tarefa e, em <b>Repetir</b>, escolha: todo dia, dias úteis, dias da semana que você marcar, toda semana, quinzenal, todo mês, todo ano ou a cada N dias.`, `Se a tarefa ainda não tinha prazo, o sistema usa hoje como ponto de partida.`, `Ao <b>concluir</b> (marcar o ✓ ou arrastar para Concluído), a próxima nasce na primeira coluna, com o prazo certo e o checklist zerado.`)
+    step(`Abra a tarefa e, em <b>Repetir</b>, escolha: todo dia, dias úteis, dias da semana que você marcar, toda semana, quinzenal, todo mês, todo ano a cada N dias, <b>Personalizado</b> (a cada 2 semanas, 3 meses… com os dias da semana que quiser) ou <b>Em datas que eu escolher</b>. Em todas dá para definir <b>Repetir até</b>.`, `Se a tarefa ainda não tinha prazo, o sistema usa hoje como ponto de partida.`, `Ao <b>concluir</b> (marcar o ✓ ou arrastar para Concluído), a próxima nasce na primeira coluna, com o prazo certo e o checklist zerado.`)
     + grid(["Cartão com ↻", "Mostra a regra de repetição, por exemplo <i>Toda semana</i> ou <i>seg qua sex</i>."], ["Concluiu sem querer?", "Reabra a tarefa: a cópia criada é removida e a repetição volta ao cartão original."], ["Atrasada?", "A próxima data é sempre depois de hoje: o sistema não cria o acúmulo de tarefas perdidas."])
     + tip("Para parar a repetição, abra o cartão e escolha <b>Não repetir</b>."),
     "Com muitas tarefas, filtros e busca poupam tempo.");
@@ -2369,6 +2396,8 @@ const acts = {
   timeReset: () => { cur().timeMs = 0; save(); render(); renderDrawer(); },
   del: el => { const t = task(el.dataset.id); snapshotUndo("Tarefa apagada"); tomb(t.id); if (state.timer && state.timer.id === t.id) state.timer = null; state.tasks.splice(state.tasks.indexOf(t), 1); save(); closeLayer(); render(); },
   dup: el => { const t = task(el.dataset.id), c = JSON.parse(JSON.stringify(t)); c.id = uid(); c.title += " (cópia)"; c.createdAt = Date.now(); c.timeMs = 0; c.demo = false; c.check.forEach(k => k.id = uid()); state.tasks.splice(state.tasks.indexOf(t) + 1, 0, c); save(); render(); openTask(c.id); },
+  repDateAdd: () => { const t = cur(), i = $("#rep_date"); if (!t || !t.rep || !i || !i.value) return; t.rep.dates = [...new Set([...(t.rep.dates || []), i.value])]; save(); render(); renderDrawer(); },
+  repDateDel: el => { const t = cur(); if (!t || !t.rep) return; t.rep.dates = (t.rep.dates || []).filter(x => x !== el.dataset.v); save(); render(); renderDrawer(); },
   repDay: el => { const t = cur(); if (!t || !t.rep) return; const d = +el.dataset.v, a = t.rep.days || []; t.rep.days = a.includes(d) ? a.filter(x => x !== d) : [...a, d]; save(); render(); renderDrawer(); },
   tPri: el => { cur().priority = +el.dataset.v; save(); render(); renderDrawer(); },
   tTag: el => { const t = cur(), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); renderDrawer(); if (i < 0) suggestTpl(t, v); },
@@ -2468,7 +2497,8 @@ const ins = {
   dHtml: el => { const t = cur(), e = t && (t.diary || []).find(x => x.id === el.dataset.e); if (!e) return; const h = cleanHTML(el.innerHTML); e.html = plain(h) ? h : ""; save(); },
   boardName: (el) => { board().name = el.value; save(); },
   colName: (el) => { col(el.dataset.id).name = el.value || "Sem nome"; save(); },
-  repN: el => { const t = cur(); if (t && t.rep) { t.rep.n = clamp(parseInt(el.value) || 2, 1, 365); save(); render(); const h = $(".rep-hint b"); if (h) h.textContent = fmtD(repNext(t.rep, t.due).slice(0, 10)); } },
+  repCn: el => chg.repCn(el),
+  repN: el => { const t = cur(); if (t && t.rep) { t.rep.n = clamp(parseInt(el.value) || 2, 1, 365); save(); render(); renderDrawerRepHint(t); } },
   tTitle: el => { cur().title = el.value; cur().demo = false; save(); render(); },
   tInfo: el => { const t = cur(); t.info = t.info || {}; t.info[el.dataset.v] = el.value.trim(); save(); clearTimeout(tInfo_t); tInfo_t = setTimeout(render, 250); },
   tTicket: el => { cur().ticket = el.value.replace(/^#/, "").trim(); save(); render(); },
@@ -2486,7 +2516,10 @@ const ins = {
   pal: el => { ui.pal.q = el.value; ui.pal.i = 0; renderPal(); }
 };
 const chg = {
-  tRep: el => { const t = cur(); if (!el.value) t.rep = null; else { t.rep = { k: el.value, days: (t.rep && t.rep.days) || (el.value === "days" ? [1, 3, 5] : []), n: (t.rep && t.rep.n) || 2 }; if (!t.due) t.due = dkey(Date.now()); } save(); render(); renderDrawer(); },
+  tRep: el => { const t = cur(), o = t.rep || {}; if (!el.value) t.rep = null; else { t.rep = { k: el.value, days: o.days || (el.value === "days" ? [1, 3, 5] : []), n: o.n || (el.value === "custom" ? 1 : 2), u: o.u || "w", dates: o.dates || [], end: o.end || "" }; if (!t.due) t.due = dkey(Date.now()); } save(); render(); renderDrawer(); },
+  repCn: el => { const t = cur(); if (t && t.rep) { t.rep.n = clamp(parseInt(el.value) || 1, 1, 365); save(); render(); const h = $(".rep-hint"); if (h) { renderDrawerRepHint(t); } } },
+  repU: el => { const t = cur(); if (t && t.rep) { t.rep.u = el.value; save(); render(); renderDrawer(); } },
+  repEnd: el => { const t = cur(); if (t && t.rep) { t.rep.end = el.value || ""; save(); render(); renderDrawerRepHint(t); } },
   tModel: el => { cur().model = el.value; save(); render(); renderDrawer(); },
   tInfoCk: el => { const t = cur(); t.info = t.info || {}; t.info[el.dataset.v] = el.checked ? 1 : ""; save(); render(); },
   infoType: el => { const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (!f) return; f.type = el.value; if (f.type === "select" && !f.opts) f.opts = ["Opção 1", "Opção 2"]; save(); render(); renderDrawer(); },
