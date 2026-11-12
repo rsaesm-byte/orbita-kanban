@@ -913,7 +913,7 @@ html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px da
 .info-list { gap: 6px; }
 .info-row { display: grid; grid-template-columns: 20px minmax(0, .85fr) minmax(0, 1.3fr) auto; gap: 6px; align-items: center; }
 .info-row .grip { align-self: center; margin: 0; height: 36px; width: 20px; }
-.info-row .lbl-inp { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 500; color: var(--ink); background: var(--surface2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; min-width: 0; text-overflow: ellipsis; transition: border-color .15s, box-shadow .15s; }
+.info-row .lbl-inp { resize: none; overflow: hidden; line-height: 1.25; display: block; text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 500; color: var(--ink); background: var(--surface2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; min-width: 0; transition: border-color .15s, box-shadow .15s; }
 .info-row .lbl-inp:hover, .info-row .lbl-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .info-val { min-width: 0; display: grid; gap: 4px; }
 .info-side { display: flex; flex-direction: row; align-items: center; gap: 2px; margin: 0; align-self: center; }
@@ -1458,9 +1458,10 @@ function infoField(t, f) {
   else if (f.type === "rich") ctl = rtBar() + `<div class="rt rt-sm" id="i_${ek}" contenteditable="true" role="textbox" aria-multiline="true" aria-label="${nm}" data-in="tRich" data-v="${ek}" data-ph="Escreva aqui…">${cleanHTML(v || "")}</div>`;
   else ctl = `<input class="inp" id="i_${ek}" type="${f.type === "number" ? "number" : f.type === "date" ? "date" : f.type === "email" ? "email" : f.type === "url" ? "url" : "text"}"${f.type === "number" ? ' step="any" inputmode="decimal"' : ""}${f.type === "tel" ? ' inputmode="tel"' : ""} autocomplete="off" data-in="tInfo" data-v="${ek}" aria-label="${nm}" value="${esc(v ?? "")}"${k === "celular" ? ' placeholder="(15) 99999-0000"' : k === "ramal" ? ' placeholder="4700"' : ""}>`;
   const wide = f.type === "rich" ? " wide" : "";
-  return `<div class="field info-row${wide}" data-k="${ek}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar ${nm}">⋮⋮</span><input class="lbl-inp" value="${nm}" data-in="infoName" data-v="${ek}" placeholder="Nome do campo" aria-label="Nome do campo" title="Toque para renomear o campo" autocomplete="off"><div class="info-val">${f.type === "select" ? `<input class="inp opts" data-in="infoOpts" data-v="${ek}" value="${esc((f.opts || []).join(", "))}" placeholder="Opções separadas por vírgula" aria-label="Opções da lista">` : ""}${ctl}</div>
+  return `<div class="field info-row${wide}" data-k="${ek}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar ${nm}">⋮⋮</span><textarea class="lbl-inp" rows="1" spellcheck="false" data-in="infoName" data-v="${ek}" placeholder="Nome do campo" aria-label="Nome do campo" title="${nm} (toque para renomear)" autocomplete="off">${nm}</textarea><div class="info-val">${f.type === "select" ? `<input class="inp opts" data-in="infoOpts" data-v="${ek}" value="${esc((f.opts || []).join(", "))}" placeholder="Opções separadas por vírgula" aria-label="Opções da lista">` : ""}${ctl}</div>
     <div class="info-side"><select class="ftype" data-in="infoType" data-v="${ek}" aria-label="Tipo do campo" title="Tipo do campo">${FTYPES.map(([x, l]) => `<option value="${x}" ${x === f.type ? "selected" : ""}>${l}</option>`).join("")}</select><button class="info-pin${f.pin ? " on" : ""}" data-act="infoPin" data-v="${ek}" title="${f.pin ? "Aparece no cartão do quadro (clique para tirar)" : "Mostrar no cartão do quadro"}" aria-pressed="${!!f.pin}">${ic("pin")}</button><button class="info-del" data-act="infoDel" data-v="${ek}" title="Apagar este campo" aria-label="Apagar campo ${nm}">${ic("x")}</button></div></div>`;
 }
+function fitName(el) { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; }
 function modelBlock(t) {
   const m = modelOf(t);
   return `<div class="field info-grp"><div class="model-head"><span class="lbl">Modelo</span><select class="inp" id="d_model" data-in="tModel" aria-label="Modelo do cartão">${state.models.map(x => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><button class="btn sm" data-act="modelPanel" aria-expanded="${!!ui.modelPanel}">⚙ Modelo</button></div>
@@ -1982,7 +1983,7 @@ function renderDrawer() {
     ${state.fields.map(f => `<div class="field"><label for="cf_${f.id}">${esc(f.name)}</label><input class="inp" id="cf_${f.id}" type="${f.type}" data-in="tCustom" data-v="${f.id}" value="${esc(t.custom[f.id] ?? "")}"></div>`).join("")}
     ${filesBlock(t)}
     <div class="field"><span class="lbl">Informações adicionais</span>
-      ${t.extra.map(x => `<div class="xrow"><input class="inp" id="xk_${x.id}" data-in="xKey" data-x="${x.id}" placeholder="Nome do campo" value="${esc(x.k)}" aria-label="Nome do campo"><input class="inp" id="xv_${x.id}" data-in="xVal" data-x="${x.id}" placeholder="Informação" value="${esc(x.v)}" aria-label="Informação"><button class="icon-btn" data-act="xDel" data-v="${x.id}" aria-label="Apagar campo">${ic("x")}</button></div>`).join("")}
+      ${t.extra.map(x => `<div class="xrow"><input class="inp" id="xk_${x.id}" data-in="xKey" data-x="${x.id}" placeholder="Nome do campo" value="${esc(x.k)}" title="${esc(x.k)}" aria-label="Nome do campo"><input class="inp" id="xv_${x.id}" data-in="xVal" data-x="${x.id}" placeholder="Informação" value="${esc(x.v)}" aria-label="Informação"><button class="icon-btn" data-act="xDel" data-v="${x.id}" aria-label="Apagar campo">${ic("x")}</button></div>`).join("")}
       <div><button class="btn sm" data-act="xAdd">${ic("plus")}Adicionar campo</button></div></div>
     <div class="field"><span class="lbl">Tempo</span><div class="timer"><b data-timer="${t.id}" data-clock="1">${fmtClock(spent(t))}</b><button class="btn" data-act="timer" data-id="${t.id}">${ic(run ? "pause" : "play")}${run ? "Pausar" : "Iniciar"}</button>${t.timeMs && !run ? `<button class="btn ghost sm" data-act="timeReset">Zerar</button>` : ""}</div></div>
     <div class="field"><span class="lbl">Bloco de tempo no calendário${t.block ? " · reservado" : ""}</span>
@@ -1993,7 +1994,7 @@ function renderDrawer() {
   </div></aside>`;
   if (st) { const nb = $("#layer .d-body"); if (nb) nb.scrollTop = st; }
   if (keep) { const el = document.getElementById(keep); if (el) el.focus(); }
-  fillThumbs();
+  fillThumbs(); $$(".lbl-inp").forEach(fitName);
 }
 
 /* ---------- paleta de comandos ---------- */
@@ -2417,7 +2418,7 @@ document.addEventListener("click", e => {
 /* entradas */
 const ins = {
   manQ: el => { const q = norm(el.value.trim()), man = $(".man"); if (!man) return; let n = 0; $$(".man-sec", man).forEach(s => { const hit = !q || norm(s.textContent).includes(q); s.hidden = !hit; if (hit) { n++; s.classList.add("in"); } }); $$(".man-toc a[data-sec]", man).forEach(a => { const s = $("#m-" + a.dataset.sec, man); a.hidden = !!s && s.hidden; }); $(".man-empty", man).hidden = n > 0; $(".man-hero", man).hidden = !!q; },
-  infoName: el => { const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (f) { f.name = el.value.trim() || "Campo"; save(); } },
+  infoName: el => { el.value = el.value.replace(/\n/g, " "); fitName(el); el.title = (el.value || "Campo") + " (toque para renomear)"; const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (f) { f.name = el.value.trim() || "Campo"; save(); } },
   mName: el => { const m = modelOf(cur()); m.name = el.value.trim() || "Modelo"; save(); const o = $("#d_model option:checked"); if (o) o.textContent = m.name; },
   tRich: el => { const t = cur(); if (!t) return; t.info = t.info || {}; const h = cleanHTML(el.innerHTML); t.info[el.dataset.v] = plain(h) ? h : ""; save(); },
   dHtml: el => { const t = cur(), e = t && (t.diary || []).find(x => x.id === el.dataset.e); if (!e) return; const h = cleanHTML(el.innerHTML); e.html = plain(h) ? h : ""; save(); },
@@ -2429,7 +2430,7 @@ const ins = {
   tDesc: el => { cur().desc = el.value; save(); },
   tplName: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.name = el.value; save(); } },
   tNotes: el => { const t = cur(); if (!t) return; const h = cleanHTML(el.innerHTML); t.notes = plain(h) ? h : ""; save(); },
-  xKey: el => { const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.k = el.value; save(); } },
+  xKey: el => { el.title = el.value; const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.k = el.value; save(); } },
   xVal: el => { const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.v = el.value; save(); } },
   tCustom: el => { cur().custom[el.dataset.v] = el.value; save(); },
   ckText: el => { const c = cur().check.find(c => c.id === el.dataset.ck); if (c) { c.t = el.value; save(); } },
@@ -2463,6 +2464,7 @@ const chg = {
   colDone: el => { const c = col(el.dataset.id); c.done = el.checked; state.tasks.forEach(t => { if (t.col === c.id) t.doneAt = c.done ? (t.doneAt || Date.now()) : null; }); save(); render(); },
   fieldType: el => { state.fields.find(f => f.id === el.dataset.id).type = el.value; save(); }
 };
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.classList && e.target.classList.contains("lbl-inp")) { e.preventDefault(); e.target.blur(); } });
 document.addEventListener("input", e => { const k = e.target.dataset && e.target.dataset.in; if (k && ins[k]) ins[k](e.target); });
 document.addEventListener("change", e => { const k = e.target.dataset && e.target.dataset.in; if (k && chg[k]) chg[k](e.target); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && e.target.matches && e.target.matches(".qa-box input")) { e.stopPropagation(); const f = e.target.closest(".quick"); e.target.value = ""; f.classList.remove("open"); } }, true);
