@@ -868,7 +868,8 @@ html:root:not([data-theme]) .menu-body, html:root:not([data-theme]) .d-body, htm
 html:root[data-theme="light"] body { background: linear-gradient(180deg, #f7f8fb 0%, #f1f3f8 100%); }
 html:root[data-theme="light"] body::before { content: ""; position: fixed; inset: -20%; z-index: -1; pointer-events: none; background: radial-gradient(36% 40% at 14% 12%, oklch(0.9 0.07 var(--ah) / .55), transparent 70%), radial-gradient(32% 38% at 88% 8%, oklch(0.91 0.06 calc(var(--ah) + 90) / .45), transparent 70%), radial-gradient(40% 40% at 70% 100%, oklch(0.92 0.05 calc(var(--ah) - 70) / .4), transparent 70%); animation: lifeDrift 38s ease-in-out infinite alternate; }
 @keyframes lifeDrift { to { transform: translate3d(3%, 2%, 0) scale(1.06); } }
-html:root[data-theme="light"] .top { background: rgb(255 255 255 / .82); backdrop-filter: blur(10px); }
+html:root[data-theme="light"] .top { background: transparent; }
+html:root[data-theme="light"] .top::before { content: ""; position: absolute; inset: 0; z-index: -1; background: rgb(255 255 255 / .82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 html:root[data-theme="light"] .col { background: oklch(0.962 0.012 var(--ch)); border-color: oklch(0.91 0.03 var(--ch)); border-top: 3px solid oklch(0.72 0.13 var(--ch)); }
 html:root[data-theme="light"] .col-h { background: linear-gradient(180deg, oklch(0.94 0.035 var(--ch)), transparent); border-radius: 12px 12px 0 0; }
 html:root[data-theme="light"] .col-dot { box-shadow: 0 0 0 3px oklch(0.62 0.13 var(--ch) / .18); }
@@ -890,7 +891,8 @@ html:root[data-theme="light"] .col-add { background: transparent; border: 1.5px 
 html:root:not([data-theme]) body { background: linear-gradient(180deg, #f7f8fb 0%, #f1f3f8 100%); }
 html:root:not([data-theme]) body::before { content: ""; position: fixed; inset: -20%; z-index: -1; pointer-events: none; background: radial-gradient(36% 40% at 14% 12%, oklch(0.9 0.07 var(--ah) / .55), transparent 70%), radial-gradient(32% 38% at 88% 8%, oklch(0.91 0.06 calc(var(--ah) + 90) / .45), transparent 70%), radial-gradient(40% 40% at 70% 100%, oklch(0.92 0.05 calc(var(--ah) - 70) / .4), transparent 70%); animation: lifeDrift 38s ease-in-out infinite alternate; }
 @keyframes lifeDrift { to { transform: translate3d(3%, 2%, 0) scale(1.06); } }
-html:root:not([data-theme]) .top { background: rgb(255 255 255 / .82); backdrop-filter: blur(10px); }
+html:root:not([data-theme]) .top { background: transparent; }
+html:root:not([data-theme]) .top::before { content: ""; position: absolute; inset: 0; z-index: -1; background: rgb(255 255 255 / .82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 html:root:not([data-theme]) .col { background: oklch(0.962 0.012 var(--ch)); border-color: oklch(0.91 0.03 var(--ch)); border-top: 3px solid oklch(0.72 0.13 var(--ch)); }
 html:root:not([data-theme]) .col-h { background: linear-gradient(180deg, oklch(0.94 0.035 var(--ch)), transparent); border-radius: 12px 12px 0 0; }
 html:root:not([data-theme]) .col-dot { box-shadow: 0 0 0 3px oklch(0.62 0.13 var(--ch) / .18); }
@@ -1002,6 +1004,8 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 @media (max-width: 720px) { #btn-calm { display: none; } .top .upd-btn { padding: 0; justify-content: center; } .top .upd-btn span { display: none; } .top > .btn.lay-btn { padding: 0; } }
 @media (max-width: 380px) { .top .upd-btn, .top .lay-btn { width: 34px; height: 34px; } }
 @media (min-width: 721px) and (max-width: 1500px) { .tab-x { display: none; } .top .upd-btn { width: 38px; height: 38px; border-radius: 13px !important; padding: 0; justify-content: center; } .top .upd-btn span { display: none; } .top .search-btn { width: 190px; min-width: 0; } .top .search-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .top .search-btn kbd { display: none; } }
+@media (max-width: 720px) { .top > .btn.search-btn, .top > .btn.lay-btn, .top > .btn.bell, .top > #btn-set, .top > .upd-btn { width: 38px; min-width: 38px; height: 38px; padding: 0; flex: none; justify-content: center; } }
+@media (max-width: 360px) { .top > .btn.search-btn, .top > .btn.lay-btn, .top > .btn.bell, .top > #btn-set, .top > .upd-btn { width: 34px; min-width: 34px; height: 34px; } }
 </style>
 </head>
 <body>
