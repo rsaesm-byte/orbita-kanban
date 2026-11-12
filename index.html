@@ -2289,16 +2289,16 @@ function burnCard(id) {
       const url = `url(${mk.toDataURL()})`; paper.style.webkitMaskImage = paper.style.maskImage = url; paper.style.webkitMaskSize = paper.style.maskSize = "100% 100%";
       fc.clearRect(0, 0, W + PAD * 2, H + PAD * 2); fc.save(); fc.translate(PAD, PAD);
       // faixa chamuscada e brasa na borda
-      for (let x = 0; x < W; x += 3) { const y = front + noise(x, tt); if (y > H + 6 || y < -20) continue;
-        const g = fc.createLinearGradient(0, y - 16, 0, y + 5); g.addColorStop(0, "rgba(40,20,5,0)"); g.addColorStop(.55, "rgba(70,28,6,.85)"); g.addColorStop(.8, "rgba(255,120,20,.95)"); g.addColorStop(1, "rgba(255,230,120,.0)");
+      const inten = Math.max(0, Math.min(1, (front - 2) / 34)); for (let x = 0; x < W; x += 3) { const y = front + noise(x, tt); if (y > H + 6 || y < -4 || inten <= 0) continue;
+        const g = fc.createLinearGradient(0, y - 16, 0, y + 5); g.addColorStop(0, "rgba(40,20,5,0)"); g.addColorStop(.55, `rgba(70,28,6,${.85 * inten})`); g.addColorStop(.8, `rgba(255,120,20,${.95 * inten})`); g.addColorStop(1, "rgba(255,230,120,.0)");
         fc.fillStyle = g; fc.fillRect(x, y - 16, 3.4, 21);
-        if (Math.random() < .5) parts.push({ x, y, vx: (Math.random() - .5) * .8, vy: -(.6 + Math.random() * 1.9), l: 0, m: 28 + Math.random() * 36, s: 1 + Math.random() * 2.4, ash: Math.random() < .35 });
-        if (Math.random() < .025) parts.push({ x, y, vx: (Math.random() - .5) * .3, vy: -(1 + Math.random() * 1), l: 0, m: 14 + Math.random() * 12, s: 3 + Math.random() * 4, fl: true }); }
-      for (let i = parts.length - 1; i >= 0; i--) { const q = parts[i]; q.l++; q.x += q.vx + Math.sin(q.l * .2 + q.y) * .3; q.y += q.vy; q.vy *= .985; const a = 1 - q.l / q.m; if (a <= 0) { parts.splice(i, 1); continue; }
+        if (Math.random() < .5 * inten) parts.push({ x, y, vx: (Math.random() - .5) * .8, vy: -(.6 + Math.random() * 1.9), l: 0, m: 22 + Math.random() * 22, s: 1 + Math.random() * 2.4, ash: Math.random() < .35 });
+        if (Math.random() < .025 * inten) parts.push({ x, y, vx: (Math.random() - .5) * .3, vy: -(1 + Math.random() * 1), l: 0, m: 14 + Math.random() * 12, s: 3 + Math.random() * 4, fl: true }); }
+      for (let i = parts.length - 1; i >= 0; i--) { const q = parts[i]; q.l++; q.x += q.vx + Math.sin(q.l * .2 + q.y) * .3; q.y += q.vy; q.vy *= .985; const edge = Math.max(0, Math.min(1, (q.y + PAD - 6) / 40)); const a = (1 - q.l / q.m) * edge; if (a <= 0 || q.l > q.m) { parts.splice(i, 1); continue; }
         if (q.fl) { const g = fc.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.s * 2); g.addColorStop(0, `rgba(255,220,100,${a * .7})`); g.addColorStop(.5, `rgba(255,110,20,${a * .35})`); g.addColorStop(1, "rgba(255,60,0,0)"); fc.fillStyle = g; fc.beginPath(); fc.arc(q.x, q.y, q.s * 2, 0, 7); fc.fill(); }
         else { fc.fillStyle = q.ash ? `rgba(60,55,50,${a * .8})` : `rgba(255,${120 + a * 120 | 0},40,${a})`; fc.fillRect(q.x, q.y, q.s, q.s); } }
       fc.restore();
-      if (k < 1 || parts.length) { if (now - t0 < DUR + 900) return requestAnimationFrame(frame); }
+      if (k < 1 || parts.length) { if (now - t0 < DUR + 900) { if (k >= 1) fx.style.opacity = Math.max(0, parts.length / 40).toFixed(2); return requestAnimationFrame(frame); } }
       box.remove();
     };
     requestAnimationFrame(frame);
