@@ -1006,6 +1006,23 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 @media (min-width: 721px) and (max-width: 1500px) { .tab-x { display: none; } .top .upd-btn { width: 38px; height: 38px; border-radius: 13px !important; padding: 0; justify-content: center; } .top .upd-btn span { display: none; } .top .search-btn { width: 190px; min-width: 0; } .top .search-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .top .search-btn kbd { display: none; } }
 @media (max-width: 720px) { .top > .btn.search-btn, .top > .btn.lay-btn, .top > .btn.bell, .top > #btn-set, .top > .upd-btn { width: 38px; min-width: 38px; height: 38px; padding: 0; flex: none; justify-content: center; } }
 @media (max-width: 360px) { .top > .btn.search-btn, .top > .btn.lay-btn, .top > .btn.bell, .top > #btn-set, .top > .upd-btn { width: 34px; min-width: 34px; height: 34px; } }
+
+/* ===== checklist: ordem, cor e ícone por item ===== */
+.chk-list { display: grid; gap: 3px; }
+.chk-wrap.dragging { z-index: 5; position: relative; box-shadow: 0 10px 28px rgba(0,0,0,.22); border-radius: 12px; background: var(--surface, #fff); transform: scale(1.02); transition: none; }
+.chk-row { padding: 2px 4px 2px 2px; border-radius: 10px; border-left: 3px solid transparent; transition: background .2s; }
+.chk-row .grip { cursor: grab; color: var(--ink3); font-size: 12px; letter-spacing: -3px; padding: 8px 3px 8px 0; touch-action: none; user-select: none; -webkit-user-select: none; opacity: .5; line-height: 1; } .chk-row .grip:hover { opacity: 1; color: var(--accent); }
+.chk-row.hasc { border-left-color: var(--ckc); background: color-mix(in oklab, var(--ckc) 10%, transparent); }
+.chk-row input[type=checkbox] { accent-color: var(--ckc, var(--accent)); }
+.ck-ic { flex: none; width: 28px; height: 28px; border-radius: 8px; border: 1px dashed var(--line); background: transparent; color: var(--ink3); font-size: 15px; line-height: 1; cursor: pointer; display: grid; place-items: center; } .ck-ic.has { border-style: solid; background: var(--surface2); } .ck-ic:hover, .ck-ic[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.ck-style { margin: 3px 0 6px 26px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface2); display: grid; gap: 8px; animation: foldIn .18s ease-out; }
+.ck-sw, .ck-icons { display: flex; flex-wrap: wrap; gap: 6px; }
+.ck-sw button { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; background: oklch(.68 .14 var(--h)); cursor: pointer; } .ck-sw button.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--surface2) inset; }
+.ck-icons button { width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); font-size: 17px; cursor: pointer; line-height: 1; } .ck-icons button.on { border-color: var(--accent); background: var(--accent-soft); }
+.ck-sw button.none, .ck-icons button.none { background: var(--surface); border: 1px dashed var(--line); color: var(--ink3); font-size: 14px; } .ck-sw button.none.on, .ck-icons button.none.on { border-style: solid; border-color: var(--accent); color: var(--accent); }
+.ckl-i { --ckc: var(--accent); } .ckl-i.d b { background: var(--ckc); border-color: var(--ckc); } .ckl-i[style*="--ckc"] b { border-color: var(--ckc); } .ckl-i.d em { color: var(--ckc); }
+.ckl-dots i { --ckc: var(--accent); } .ckl-dots i.d { background: var(--ckc); border-color: var(--ckc); } .ckl-dots i[style*="--ckc"] { border-color: var(--ckc); }
+.face.back li[style*="--ckc"] { border-left: 3px solid var(--ckc); padding-left: 6px; }
 </style>
 </head>
 <body>
@@ -1619,6 +1636,12 @@ function repBlock(t) {
 }
 const FOLD = (() => { try { return JSON.parse(localStorage.getItem("orbita_fold")) || {}; } catch { return {}; } })();
 const foldHead = (k, title, n, hint) => `<button type="button" class="fold-h" data-act="fold" data-v="${k}" aria-expanded="${!FOLD[k]}"><span class="fold-ch">${ic("chev")}</span><span class="fold-t">${title}</span><span class="fold-n">${n}</span>${hint ? `<em class="hint">${hint}</em>` : ""}</button>`;
+const CK_ICONS = ["⭐", "🔥", "❗", "⚠️", "✅", "📞", "📧", "📎", "💻", "🖨️", "🔑", "🔧", "📦", "🛒", "💡", "📅", "💬", "🔒"];
+const ckHue = c => (c.color != null && c.color !== "") ? `--ckc:oklch(.68 .14 ${+c.color})` : "";
+function ckRow(t, c) {
+  const open = ui.ckStyle === c.id, st = ckHue(c);
+  return `<div class="chk-wrap" data-ck="${c.id}"><div class="chk-row ${c.d ? "dn" : ""}${st ? " hasc" : ""}" data-ck="${c.id}" style="${st}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar item">⋮⋮</span><input type="checkbox" data-in="ck" data-id="${t.id}" data-ck="${c.id}" ${c.d ? "checked" : ""} aria-label="Concluir item"><button type="button" class="ck-ic ${c.icon ? "has" : ""}" data-act="ckStyle" data-v="${c.id}" aria-expanded="${open}" title="Cor e ícone deste item">${c.icon || "◍"}</button><input type="text" id="ck_${c.id}" value="${esc(c.t)}" data-in="ckText" data-ck="${c.id}" aria-label="Item"><button class="icon-btn" data-act="ckDel" data-v="${c.id}" aria-label="Apagar item">${ic("x")}</button></div>${open ? `<div class="ck-style"><div class="ck-sw" role="group" aria-label="Cor do item"><button type="button" class="none ${c.color == null || c.color === "" ? "on" : ""}" data-act="ckColor" data-id="${c.id}" data-v="" title="Sem cor" aria-label="Sem cor">∅</button>${HUES.map(h => `<button type="button" class="${c.color === h ? "on" : ""}" style="--h:${h}" data-act="ckColor" data-id="${c.id}" data-v="${h}" aria-label="Cor ${h}"></button>`).join("")}</div><div class="ck-icons" role="group" aria-label="Ícone do item"><button type="button" class="none ${c.icon ? "" : "on"}" data-act="ckIcon" data-id="${c.id}" data-v="" title="Sem ícone" aria-label="Sem ícone">∅</button>${CK_ICONS.map(i => `<button type="button" class="${c.icon === i ? "on" : ""}" data-act="ckIcon" data-id="${c.id}" data-v="${i}">${i}</button>`).join("")}</div></div>` : ""}</div>`;
+}
 function modelBlock(t) {
   const m = modelOf(t);
   return `<div class="field info-grp"><div class="model-head"><span class="lbl">Modelo</span><select class="inp" id="d_model" data-in="tModel" aria-label="Modelo do cartão">${state.models.map(x => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><button class="btn sm" data-act="modelPanel" aria-expanded="${!!ui.modelPanel}">⚙ Modelo</button></div>
@@ -1692,11 +1715,11 @@ function cardHTML(t, j) {
   <div class="card-in"><div class="face front">
     <div class="c-head"><button class="c-done" data-act="toggleDone" data-id="${t.id}" aria-label="${done ? "Reabrir tarefa" : "Concluir tarefa"}">${ic("tick")}</button><h3>${esc(t.title)}</h3><button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></div>${tags ? `<div class="tags">${tags}</div>` : ""}${infoLine(t)}
     ${meta.trim() ? `<div class="c-meta">${meta}</div>` : ""}
-    ${ck ? `<div class="ckl"><div class="ckl-dots" aria-hidden="true">${t.check.map(c => `<i class="${c.d ? "d" : ""}"></i>`).join("")}</div><div class="ckl-view">${t.check.map(c => `<button type="button" class="ckl-i ${c.d ? "d" : ""}" data-act="ckTap" data-id="${t.id}" data-ck="${c.id}" title="${c.d ? "Desmarcar" : "Marcar como feito"}" aria-label="${c.d ? "Desmarcar" : "Marcar"}: ${esc(c.t)}"><b>${c.d ? ic("tick") : ""}</b><span>${esc(c.t)}</span><em>${c.d ? "feito" : "falta"}</em></button>`).join("")}</div></div>` : ""}
+    ${ck ? `<div class="ckl"><div class="ckl-dots" aria-hidden="true">${t.check.map(c => `<i class="${c.d ? "d" : ""}" style="${ckHue(c)}"></i>`).join("")}</div><div class="ckl-view">${t.check.map(c => `<button type="button" class="ckl-i ${c.d ? "d" : ""}" style="${ckHue(c)}" data-act="ckTap" data-id="${t.id}" data-ck="${c.id}" title="${c.d ? "Desmarcar" : "Marcar como feito"}" aria-label="${c.d ? "Desmarcar" : "Marcar"}: ${esc(c.t)}"><b>${c.d ? ic("tick") : ""}</b><span>${c.icon ? c.icon + " " : ""}${esc(c.t)}</span><em>${c.d ? "feito" : "falta"}</em></button>`).join("")}</div></div>` : ""}
     ${ck ? `<div class="bar"><i style="width:${Math.round(ckd / ck * 100)}%"></i></div>` : ""}
   </div><div class="face back">
     <div class="c-top"><span class="lbl">${ck ? "Checklist" : "Detalhes"}</span><button class="icon-btn" data-act="flip" data-id="${t.id}" title="Desvirar" aria-label="Desvirar">${ic("flip")}</button></div>
-    ${ck ? `<ul>${t.check.map(c => `<li><label><input type="checkbox" data-in="ck" data-id="${t.id}" data-ck="${c.id}" ${c.d ? "checked" : ""}> <span>${esc(c.t)}</span></label></li>`).join("")}</ul>` : ""}
+    ${ck ? `<ul>${t.check.map(c => `<li style="${ckHue(c)}"><label><input type="checkbox" data-in="ck" data-id="${t.id}" data-ck="${c.id}" ${c.d ? "checked" : ""}> <span>${c.icon ? c.icon + " " : ""}${esc(c.t)}</span></label></li>`).join("")}</ul>` : ""}
     ${t.desc ? `<p>${esc(t.desc.slice(0, 220))}</p>` : (!ck ? `<p>Sem descrição nem checklist. Clique no cartão para adicionar.</p>` : "")}
     <div class="c-meta"><button class="btn sm" data-act="timer" data-id="${t.id}">${ic(run ? "pause" : "play")}${run ? "Pausar" : "Cronometrar"}</button></div>
   </div></div></article>`;
@@ -2140,7 +2163,7 @@ function renderDrawer() {
       ${rtBar()}
       <div class="rt" id="d_notes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Observações" data-in="tNotes" data-ph="Anote o andamento, o que foi tentado, com quem falou… Use Agora para carimbar data e hora.">${cleanHTML(t.notes)}</div></div>
     <div class="field"><span class="lbl">Checklist ${t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : ""}</span>
-      ${t.check.map(c => `<div class="chk-row ${c.d ? "dn" : ""}"><input type="checkbox" data-in="ck" data-id="${t.id}" data-ck="${c.id}" ${c.d ? "checked" : ""} aria-label="Concluir item"><input type="text" id="ck_${c.id}" value="${esc(c.t)}" data-in="ckText" data-ck="${c.id}" aria-label="Item"><button class="icon-btn" data-act="ckDel" data-v="${c.id}" aria-label="Apagar item">${ic("x")}</button></div>`).join("")}
+      <div class="chk-list">${t.check.map(c => ckRow(t, c)).join("")}</div>
       <input class="inp" id="d_newck" placeholder="+ Adicionar item e pressionar Enter" data-in="ckNew">${tplRow(t)}</div>
     ${state.fields.map(f => `<div class="field"><label for="cf_${f.id}">${esc(f.name)}</label><input class="inp" id="cf_${f.id}" type="${f.type}" data-in="tCustom" data-v="${f.id}" value="${esc(t.custom[f.id] ?? "")}"></div>`).join("")}
     ${filesBlock(t)}
@@ -2498,6 +2521,9 @@ const acts = {
   repDay: el => { const t = cur(); if (!t || !t.rep) return; const d = +el.dataset.v, a = t.rep.days || []; t.rep.days = a.includes(d) ? a.filter(x => x !== d) : [...a, d]; save(); render(); renderDrawer(); },
   tPri: el => { cur().priority = +el.dataset.v; save(); render(); renderDrawer(); },
   tTag: el => { const t = cur(), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); renderDrawer(); if (i < 0) suggestTpl(t, v); },
+  ckStyle: el => { ui.ckStyle = ui.ckStyle === el.dataset.v ? null : el.dataset.v; renderDrawer(); },
+  ckColor: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; if (el.dataset.v === "") delete c.color; else c.color = +el.dataset.v; save(); render(); renderDrawer(); },
+  ckIcon: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; if (el.dataset.v === "") delete c.icon; else c.icon = el.dataset.v; save(); render(); renderDrawer(); },
   ckDel: el => { const t = cur(); t.check = t.check.filter(c => c.id !== el.dataset.v); save(); render(); renderDrawer(); },
   fPri: el => { const v = +el.dataset.v, s = ui.f.pri; s.has(v) ? s.delete(v) : s.add(v); render(); },
   fTag: el => { const v = el.dataset.v, s = ui.f.tags; s.has(v) ? s.delete(v) : s.add(v); render(); },
@@ -2911,8 +2937,8 @@ iniciarSalvamento();
 (function () {
   let d = null;
   document.addEventListener("pointerdown", e => {
-    const g = e.target.closest && e.target.closest(".info-row .grip"); if (!g) return;
-    const row = g.closest(".info-row"), list = row.parentElement; e.preventDefault();
+    const g = e.target.closest && e.target.closest(".info-row .grip, .chk-row .grip"); if (!g) return;
+    const row = g.closest(".info-row, .chk-wrap") || g.closest(".chk-row"), list = row.parentElement; e.preventDefault();
     d = { row, list, id: e.pointerId, y0: e.clientY, grip: g }; row.classList.add("dragging");
     try { g.setPointerCapture(e.pointerId); } catch {}
   });
@@ -2931,9 +2957,10 @@ iniciarSalvamento();
   const end = e => {
     if (!d || (e && e.pointerId !== d.id)) return;
     const { row, list } = d; d = null; row.classList.remove("dragging"); row.style.transform = "";
-    { const m = modelOf(cur()), by = Object.fromEntries(m.fields.map(f => [f.id, f])); m.fields = [...list.children].map(x => by[x.dataset.k]).filter(Boolean); } save(); render(); renderDrawer();
+    if (row.classList.contains("chk-wrap")) { const t = cur(), by = Object.fromEntries(t.check.map(c => [c.id, c])); t.check = [...list.children].map(x => by[x.dataset.ck]).filter(Boolean); }
+    else { const m = modelOf(cur()), by = Object.fromEntries(m.fields.map(f => [f.id, f])); m.fields = [...list.children].map(x => by[x.dataset.k]).filter(Boolean); } save(); render(); renderDrawer();
   };
-  document.addEventListener("mousedown", e => { if (e.target.closest && e.target.closest(".info-row .grip")) e.preventDefault(); });
+  document.addEventListener("mousedown", e => { if (e.target.closest && e.target.closest(".info-row .grip, .chk-row .grip")) e.preventDefault(); });
   document.addEventListener("selectstart", e => { if (d) e.preventDefault(); });
   document.addEventListener("pointerup", end); document.addEventListener("pointercancel", end);
 })();
