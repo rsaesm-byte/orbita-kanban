@@ -977,6 +977,17 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
   .top #board-list { position: fixed; left: 10px; right: 10px; top: calc(62px + env(safe-area-inset-top)); width: auto; max-width: none; max-height: calc(100dvh - 150px); overflow-y: auto; z-index: 400; }
   .top #board-list button, .top #board-list .bm-sel { min-height: 42px; }
 }
+
+/* ===== cabeçalho do celular: nada cobre a setinha dos quadros em telas estreitas (320 a 412) ===== */
+@media (max-width: 720px) {
+  .top { flex-wrap: nowrap; gap: 6px; padding-inline: 10px; }
+  .top .spacer { display: none; } .top .brand { flex: 1 1 0; min-width: 0; gap: 8px; } .top .brand .logo { flex: none; }
+  .top .board-name { flex: 1 1 0; width: 0; min-width: 40px; } .top #board-menu { flex: none; }
+  .top #board-sum { width: 30px; height: 30px; }
+  .top > .btn, .top > .icon-btn, .top > button { flex: none; }
+}
+@media (max-width: 420px) { .top .brand .logo { display: none; } }
+@media (max-width: 380px) { .top > .btn, .top > .icon-btn, .top > button { width: 36px; height: 36px; } .top .brand .logo { width: 34px; height: 34px; } }
 </style>
 </head>
 <body>
