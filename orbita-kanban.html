@@ -1023,6 +1023,10 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 .ckl-i { --ckc: var(--accent); } .ckl-i.d b { background: var(--ckc); border-color: var(--ckc); } .ckl-i[style*="--ckc"] b { border-color: var(--ckc); } .ckl-i.d em { color: var(--ckc); }
 .ckl-dots i { --ckc: var(--accent); } .ckl-dots i.d { background: var(--ckc); border-color: var(--ckc); } .ckl-dots i[style*="--ckc"] { border-color: var(--ckc); }
 .face.back li[style*="--ckc"] { border-left: 3px solid var(--ckc); padding-left: 6px; }
+
+.ck-icons { display: grid !important; gap: 6px; } .ck-ih { display: flex; gap: 6px; align-items: center; } .ck-ih .inp { flex: 1; min-width: 0; padding: 6px 10px; }
+.ck-scroll { max-height: 190px; overflow-y: auto; display: grid; gap: 4px; padding-right: 2px; overscroll-behavior: contain; }
+.ck-gl { font: 700 10.5px var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); margin-top: 4px; } .ck-gi { display: flex; flex-wrap: wrap; gap: 5px; }
 </style>
 </head>
 <body>
@@ -1636,11 +1640,18 @@ function repBlock(t) {
 }
 const FOLD = (() => { try { return JSON.parse(localStorage.getItem("orbita_fold")) || {}; } catch { return {}; } })();
 const foldHead = (k, title, n, hint) => `<button type="button" class="fold-h" data-act="fold" data-v="${k}" aria-expanded="${!FOLD[k]}"><span class="fold-ch">${ic("chev")}</span><span class="fold-t">${title}</span><span class="fold-n">${n}</span>${hint ? `<em class="hint">${hint}</em>` : ""}</button>`;
-const CK_ICONS = ["⭐", "🔥", "❗", "⚠️", "✅", "📞", "📧", "📎", "💻", "🖨️", "🔑", "🔧", "📦", "🛒", "💡", "📅", "💬", "🔒"];
+const CK_GROUPS = [
+  ["Destaque", ["⭐", "🔥", "❗", "⚠️", "✅", "❌", "❓", "💡", "🚩", "📌", "🎯", "⏰", "⏳", "🏁", "🆗", "🔔"]],
+  ["Contato", ["📞", "📧", "💬", "📱", "🗣️", "👤", "👥", "🤝", "📣", "✉️", "📨", "🎧"]],
+  ["TI", ["💻", "🖥️", "🖨️", "⌨️", "🖱️", "🔑", "🔒", "🔓", "🔧", "🛠️", "⚙️", "🔌", "🔋", "📶", "📡", "💾", "☁️", "🌐", "🧩", "🐞", "🛡️", "📷", "📺", "🎤"]],
+  ["Documentos", ["📎", "📄", "📝", "📋", "📁", "🗂️", "📅", "📆", "🧾", "📊", "📈", "📦", "🏷️", "🔍", "📖", "✏️"]],
+  ["Dia a dia", ["🛒", "💰", "💳", "🏠", "🚗", "✈️", "🍽️", "☕", "🧹", "🛏️", "🏥", "💊", "📚", "🎓", "🏃", "🎁", "🎉", "❤️", "🌱", "☀️"]]
+];
+const CK_ICONS = CK_GROUPS.flatMap(g => g[1]);
 const ckHue = c => (c.color != null && c.color !== "") ? `--ckc:oklch(.68 .14 ${+c.color})` : "";
 function ckRow(t, c) {
   const open = ui.ckStyle === c.id, st = ckHue(c);
-  return `<div class="chk-wrap" data-ck="${c.id}"><div class="chk-row ${c.d ? "dn" : ""}${st ? " hasc" : ""}" data-ck="${c.id}" style="${st}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar item">⋮⋮</span><input type="checkbox" data-in="ck" data-id="${t.id}" data-ck="${c.id}" ${c.d ? "checked" : ""} aria-label="Concluir item"><button type="button" class="ck-ic ${c.icon ? "has" : ""}" data-act="ckStyle" data-v="${c.id}" aria-expanded="${open}" title="Cor e ícone deste item">${c.icon || "◍"}</button><input type="text" id="ck_${c.id}" value="${esc(c.t)}" data-in="ckText" data-ck="${c.id}" aria-label="Item"><button class="icon-btn" data-act="ckDel" data-v="${c.id}" aria-label="Apagar item">${ic("x")}</button></div>${open ? `<div class="ck-style"><div class="ck-sw" role="group" aria-label="Cor do item"><button type="button" class="none ${c.color == null || c.color === "" ? "on" : ""}" data-act="ckColor" data-id="${c.id}" data-v="" title="Sem cor" aria-label="Sem cor">∅</button>${HUES.map(h => `<button type="button" class="${c.color === h ? "on" : ""}" style="--h:${h}" data-act="ckColor" data-id="${c.id}" data-v="${h}" aria-label="Cor ${h}"></button>`).join("")}</div><div class="ck-icons" role="group" aria-label="Ícone do item"><button type="button" class="none ${c.icon ? "" : "on"}" data-act="ckIcon" data-id="${c.id}" data-v="" title="Sem ícone" aria-label="Sem ícone">∅</button>${CK_ICONS.map(i => `<button type="button" class="${c.icon === i ? "on" : ""}" data-act="ckIcon" data-id="${c.id}" data-v="${i}">${i}</button>`).join("")}</div></div>` : ""}</div>`;
+  return `<div class="chk-wrap" data-ck="${c.id}"><div class="chk-row ${c.d ? "dn" : ""}${st ? " hasc" : ""}" data-ck="${c.id}" style="${st}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar item">⋮⋮</span><input type="checkbox" data-in="ck" data-id="${t.id}" data-ck="${c.id}" ${c.d ? "checked" : ""} aria-label="Concluir item"><button type="button" class="ck-ic ${c.icon ? "has" : ""}" data-act="ckStyle" data-v="${c.id}" aria-expanded="${open}" title="Cor e ícone deste item">${c.icon || "◍"}</button><input type="text" id="ck_${c.id}" value="${esc(c.t)}" data-in="ckText" data-ck="${c.id}" aria-label="Item"><button class="icon-btn" data-act="ckDel" data-v="${c.id}" aria-label="Apagar item">${ic("x")}</button></div>${open ? `<div class="ck-style"><div class="ck-sw" role="group" aria-label="Cor do item"><button type="button" class="none ${c.color == null || c.color === "" ? "on" : ""}" data-act="ckColor" data-id="${c.id}" data-v="" title="Sem cor" aria-label="Sem cor">∅</button>${HUES.map(h => `<button type="button" class="${c.color === h ? "on" : ""}" style="--h:${h}" data-act="ckColor" data-id="${c.id}" data-v="${h}" aria-label="Cor ${h}"></button>`).join("")}</div><div class="ck-icons" role="group" aria-label="Ícone do item"><div class="ck-ih"><button type="button" class="none ${c.icon ? "" : "on"}" data-act="ckIcon" data-id="${c.id}" data-v="" title="Sem ícone" aria-label="Sem ícone">∅</button><input class="inp" maxlength="12" placeholder="Outro emoji: cole ou digite aqui" data-in="ckIconCustom" data-id="${c.id}" aria-label="Outro emoji" value="${c.icon && !CK_ICONS.includes(c.icon) ? esc(c.icon) : ""}"></div><div class="ck-scroll">${CK_GROUPS.map(([g, l]) => `<div class="ck-gl">${g}</div><div class="ck-gi">${l.map(i => `<button type="button" class="${c.icon === i ? "on" : ""}" data-act="ckIcon" data-id="${c.id}" data-v="${i}">${i}</button>`).join("")}</div>`).join("")}</div></div></div>` : ""}</div>`;
 }
 function modelBlock(t) {
   const m = modelOf(t);
@@ -2631,6 +2642,7 @@ const ins = {
   xKey: el => { el.title = el.value; const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.k = el.value; save(); } },
   xVal: el => { const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.v = el.value; save(); } },
   tCustom: el => { cur().custom[el.dataset.v] = el.value; save(); },
+  ckIconCustom: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; const v = el.value.trim(); const f = v ? ((window.Intl && Intl.Segmenter) ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(v)][0].segment : Array.from(v)[0]) : ""; if (f) c.icon = f; else delete c.icon; save(); render(); },
   ckText: el => { const c = cur().check.find(c => c.id === el.dataset.ck); if (c) { c.t = el.value; save(); } },
   setVol: el => { state.settings.volume = +el.value; save(); },
   setHours: el => { state.settings.notifyHours = clamp(+el.value || 24, 1, 168); save(); renderChrome(); },
