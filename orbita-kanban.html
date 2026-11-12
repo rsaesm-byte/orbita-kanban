@@ -908,6 +908,20 @@ html:root:not([data-theme]) .chip:hover { background: var(--surface2); border-co
 html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px dashed var(--edge); }
 
 }
+
+/* ===== Campos do modelo: linha compacta (nome | valor | tipo, alfinete, apagar) ===== */
+.info-list { gap: 6px; }
+.info-row { display: grid; grid-template-columns: 20px minmax(0, .85fr) minmax(0, 1.3fr) auto; gap: 6px; align-items: center; }
+.info-row .grip { align-self: center; margin: 0; height: 36px; width: 20px; }
+.info-row .lbl-inp { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 500; color: var(--ink); background: var(--surface2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; min-width: 0; text-overflow: ellipsis; transition: border-color .15s, box-shadow .15s; }
+.info-row .lbl-inp:hover, .info-row .lbl-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.info-val { min-width: 0; display: grid; gap: 4px; }
+.info-side { display: flex; flex-direction: row; align-items: center; gap: 2px; margin: 0; align-self: center; }
+.info-side .ftype { width: 58px; max-width: 58px; font-size: 10.5px; padding: 6px 2px; text-overflow: ellipsis; }
+.info-pin { width: 26px; height: 32px; } .info-del { width: 26px; height: 32px; align-self: center; }
+.info-row.wide .info-val { grid-column: 2 / -1; grid-row: 2; }
+.info-row.wide .grip { grid-row: 1; }
+@media (max-width: 520px) { .info-row .lbl-inp { padding: 9px 8px; font-size: 13px; } .info-side .ftype { width: 52px; max-width: 52px; } }
 </style>
 </head>
 <body>
@@ -1443,8 +1457,9 @@ function infoField(t, f) {
   else if (f.type === "check") ctl = `<label class="chk"><input type="checkbox" id="i_${ek}" data-in="tInfoCk" data-v="${ek}" ${v ? "checked" : ""}> Sim</label>`;
   else if (f.type === "rich") ctl = rtBar() + `<div class="rt rt-sm" id="i_${ek}" contenteditable="true" role="textbox" aria-multiline="true" aria-label="${nm}" data-in="tRich" data-v="${ek}" data-ph="Escreva aqui…">${cleanHTML(v || "")}</div>`;
   else ctl = `<input class="inp" id="i_${ek}" type="${f.type === "number" ? "number" : f.type === "date" ? "date" : f.type === "email" ? "email" : f.type === "url" ? "url" : "text"}"${f.type === "number" ? ' step="any" inputmode="decimal"' : ""}${f.type === "tel" ? ' inputmode="tel"' : ""} autocomplete="off" data-in="tInfo" data-v="${ek}" aria-label="${nm}" value="${esc(v ?? "")}"${k === "celular" ? ' placeholder="(15) 99999-0000"' : k === "ramal" ? ' placeholder="4700"' : ""}>`;
-  return `<div class="field info-row" data-k="${ek}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar ${nm}">⋮⋮</span><div class="info-in"><div class="info-top"><input class="lbl-inp" value="${nm}" data-in="infoName" data-v="${ek}" aria-label="Nome do campo" title="Toque para renomear o campo" autocomplete="off"><select class="ftype" data-in="infoType" data-v="${ek}" aria-label="Tipo do campo" title="Tipo do campo">${FTYPES.map(([x, l]) => `<option value="${x}" ${x === f.type ? "selected" : ""}>${l}</option>`).join("")}</select></div>${f.type === "select" ? `<input class="inp opts" data-in="infoOpts" data-v="${ek}" value="${esc((f.opts || []).join(", "))}" placeholder="Opções separadas por vírgula" aria-label="Opções da lista">` : ""}${ctl}</div>
-    <div class="info-side"><button class="info-pin${f.pin ? " on" : ""}" data-act="infoPin" data-v="${ek}" title="${f.pin ? "Aparece no cartão do quadro (clique para tirar)" : "Mostrar no cartão do quadro"}" aria-pressed="${!!f.pin}">${ic("pin")}</button><button class="info-del" data-act="infoDel" data-v="${ek}" title="Apagar este campo" aria-label="Apagar campo ${nm}">${ic("x")}</button></div></div>`;
+  const wide = f.type === "rich" ? " wide" : "";
+  return `<div class="field info-row${wide}" data-k="${ek}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar ${nm}">⋮⋮</span><input class="lbl-inp" value="${nm}" data-in="infoName" data-v="${ek}" placeholder="Nome do campo" aria-label="Nome do campo" title="Toque para renomear o campo" autocomplete="off"><div class="info-val">${f.type === "select" ? `<input class="inp opts" data-in="infoOpts" data-v="${ek}" value="${esc((f.opts || []).join(", "))}" placeholder="Opções separadas por vírgula" aria-label="Opções da lista">` : ""}${ctl}</div>
+    <div class="info-side"><select class="ftype" data-in="infoType" data-v="${ek}" aria-label="Tipo do campo" title="Tipo do campo">${FTYPES.map(([x, l]) => `<option value="${x}" ${x === f.type ? "selected" : ""}>${l}</option>`).join("")}</select><button class="info-pin${f.pin ? " on" : ""}" data-act="infoPin" data-v="${ek}" title="${f.pin ? "Aparece no cartão do quadro (clique para tirar)" : "Mostrar no cartão do quadro"}" aria-pressed="${!!f.pin}">${ic("pin")}</button><button class="info-del" data-act="infoDel" data-v="${ek}" title="Apagar este campo" aria-label="Apagar campo ${nm}">${ic("x")}</button></div></div>`;
 }
 function modelBlock(t) {
   const m = modelOf(t);
@@ -1454,7 +1469,7 @@ function modelBlock(t) {
       <label class="chk"><input type="checkbox" data-in="mDefault" ${board().model === m.id ? "checked" : ""}> Usar como padrão nas novas tarefas deste quadro</label>
       <div class="set-row"><button class="btn sm" data-act="modelAdd">+ Modelo em branco</button><button class="btn sm" data-act="modelDup">Duplicar</button><button class="btn sm danger" data-act="modelDel" ${state.models.length < 2 ? "disabled" : ""}>Apagar modelo</button></div>
       <p class="meta" style="margin:0">Alterar os campos vale para todos os cartões deste modelo.</p></div>` : ""}
-    <span class="lbl" style="margin-top:4px">Campos <em class="hint">toque no nome para renomear · arraste ⋮⋮ para ordenar · o alfinete mostra no cartão</em></span>
+    <span class="lbl" style="margin-top:4px">Campos <em class="hint">toque no nome para renomear · ⋮⋮ ordena · alfinete mostra no cartão</em></span>
     <div class="info-list">${m.fields.map(f => infoField(t, f)).join("") || `<p class="meta" style="margin:0">Modelo sem campos. Adicione abaixo.</p>`}</div>
     <div class="add-field"><select class="inp" id="nf_type" aria-label="Tipo do novo campo">${FTYPES.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select><button class="btn sm" data-act="infoAdd">+ Novo campo</button></div></div>`;
 }
