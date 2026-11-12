@@ -922,6 +922,16 @@ html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px da
 .info-row.wide .info-val { grid-column: 2 / -1; grid-row: 2; }
 .info-row.wide .grip { grid-row: 1; }
 @media (max-width: 520px) { .info-row .lbl-inp { padding: 9px 8px; font-size: 13px; } .info-side .ftype { width: 52px; max-width: 52px; } }
+
+/* ===== cartões mais compactos + repetição ===== */
+:root { --pad: 9px; --gap: 8px; } :root[data-density="compact"] { --pad: 7px; --gap: 5px; }
+.face { gap: 5px; } .card h3 { font-size: 13.5px; line-height: 1.28; }
+.c-r { display: inline-flex; align-items: center; gap: 4px; } .c-top .icon-btn { width: 20px; height: 20px; margin: -2px -3px -2px 0; }
+.c-meta { gap: 8px; margin-top: 1px; }
+.repb { color: var(--accent); font-weight: 600; font-size: 11.5px; }
+.rep-days { display: flex; gap: 5px; margin-top: 8px; } .rep-days button { flex: 1; height: 34px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface2); color: var(--ink2); font-weight: 700; font-size: 13px; cursor: pointer; transition: background .15s, color .15s, transform .12s; } .rep-days button:active { transform: scale(.94); } .rep-days button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.rep-n { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: var(--ink2); } .rep-n .inp { width: 84px; }
+.rep-hint { margin: 8px 0 0; } .rep-hint b { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -1365,7 +1375,27 @@ function passes(t) {
 }
 function stopTimer() { if (!state.timer) return; const t = task(state.timer.id); if (t) t.timeMs += Date.now() - state.timer.start; state.timer = null; }
 function toggleTimer(id) { const was = state.timer && state.timer.id; stopTimer(); if (was !== id) state.timer = { id, start: Date.now() }; playSound("timer"); save(); render(); if (ui.drawer) renderDrawer(); }
-function setCol(t, colId) { const was = isDone(t); t.col = colId; const now = isDone(t); if (now && !was) { t.doneAt = Date.now(); playSound("done"); if (state.timer && state.timer.id === t.id) stopTimer(); } if (!now) t.doneAt = null; }
+const REPS = [["", "Não repetir"], ["daily", "Todos os dias"], ["weekdays", "Dias úteis (seg a sex)"], ["days", "Dias da semana que eu escolher"], ["weekly", "Toda semana"], ["biweekly", "A cada 2 semanas (quinzenal)"], ["monthly", "Todo mês"], ["yearly", "Todo ano"], ["every", "A cada N dias"]];
+const WD = ["D", "S", "T", "Q", "Q", "S", "S"], WDN = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+function repLabel(r) { if (!r) return ""; if (r.k === "days") return (r.days || []).length ? r.days.slice().sort((a, b) => (a || 7) - (b || 7)).map(d => WDN[d]).join(" ") : "Dias da semana"; if (r.k === "every") return "A cada " + (r.n || 2) + " dias"; return { daily: "Todo dia", weekdays: "Dias úteis", weekly: "Toda semana", biweekly: "Quinzenal", monthly: "Todo mês", yearly: "Todo ano" }[r.k] || ""; }
+function repNext(r, due) {                         // próxima data (aaaa-mm-dd[Thh:mm]) depois do prazo atual e depois de hoje
+  const today = sod(Date.now()), base = due ? new Date(due.slice(0, 10) + "T12:00:00") : new Date(today + 12 * 36e5), tm = due && due.length > 10 ? due.slice(10) : "";
+  const thr = Math.max(sod(base), today); let d = new Date(base);
+  const step = { daily: 1, weekly: 7, biweekly: 14, every: Math.max(1, Math.min(365, +r.n || 2)) }[r.k];
+  if (step) { do d.setDate(d.getDate() + step); while (sod(d) <= thr); }
+  else if (r.k === "weekdays" || r.k === "days") { const set = r.k === "weekdays" ? [1, 2, 3, 4, 5] : (r.days && r.days.length ? r.days : [base.getDay()]); do d.setDate(d.getDate() + 1); while (sod(d) <= thr || !set.includes(d.getDay())); }
+  else { const mo = r.k === "monthly", day = base.getDate(); let i = 0; do { i++; d = new Date(base.getFullYear() + (mo ? 0 : i), base.getMonth() + (mo ? i : 0), 1, 12); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); } while (sod(d) <= thr); }
+  return dkey(d) + tm;
+}
+function repSpawn(t) {                              // ao concluir uma tarefa que repete, nasce a próxima
+  const r = t.rep; if (!r) return;
+  const k = JSON.parse(JSON.stringify(t)), cs = cols(boardOf(t)), c0 = cs.find(c => !c.done) || cs[0];
+  k.id = uid(); k.due = repNext(r, t.due); k.rep = r; k.repNext = null; k.repSaved = null; k.doneAt = null; k.timeMs = 0; k.block = null; k.createdAt = Date.now(); k.archived = false; k.demo = false; k.diary = []; k.files = []; k.col = c0.id;
+  (k.check || []).forEach(c => { c.id = uid(); c.d = false; });
+  state.tasks.push(k); t.repNext = k.id; t.repSaved = r; t.rep = null;
+  toast("Repete: próxima em " + fmtD(k.due.slice(0, 10)));
+}
+function setCol(t, colId) { const was = isDone(t); t.col = colId; const now = isDone(t); if (now && !was) { t.doneAt = Date.now(); playSound("done"); if (t.rep) repSpawn(t); if (state.timer && state.timer.id === t.id) stopTimer(); } if (!now) { t.doneAt = null; if (was && t.repNext) { const n = state.tasks.find(x => x.id === t.repNext); if (n && !isDone(n)) state.tasks.splice(state.tasks.indexOf(n), 1); t.rep = t.repSaved || null; t.repNext = null; t.repSaved = null; } } }
 function moveTask(id, colId, beforeId) {
   const t = task(id); if (!t) return;
   state.tasks.splice(state.tasks.indexOf(t), 1); setCol(t, colId);
@@ -1462,6 +1492,13 @@ function infoField(t, f) {
     <div class="info-side"><select class="ftype" data-in="infoType" data-v="${ek}" aria-label="Tipo do campo" title="Tipo do campo">${FTYPES.map(([x, l]) => `<option value="${x}" ${x === f.type ? "selected" : ""}>${l}</option>`).join("")}</select><button class="info-pin${f.pin ? " on" : ""}" data-act="infoPin" data-v="${ek}" title="${f.pin ? "Aparece no cartão do quadro (clique para tirar)" : "Mostrar no cartão do quadro"}" aria-pressed="${!!f.pin}">${ic("pin")}</button><button class="info-del" data-act="infoDel" data-v="${ek}" title="Apagar este campo" aria-label="Apagar campo ${nm}">${ic("x")}</button></div></div>`;
 }
 function fitName(el) { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; }
+function repBlock(t) {
+  const r = t.rep || {};
+  return `<div class="field rep-f"><label for="d_rep">Repetir</label><select class="inp" id="d_rep" data-in="tRep">${REPS.map(([v, l]) => `<option value="${v}" ${v === (r.k || "") ? "selected" : ""}>${l}</option>`).join("")}</select>
+    ${r.k === "days" ? `<div class="rep-days" role="group" aria-label="Dias da semana">${[1, 2, 3, 4, 5, 6, 0].map(d => `<button type="button" class="${(r.days || []).includes(d) ? "on" : ""}" data-act="repDay" data-v="${d}" aria-pressed="${(r.days || []).includes(d)}" title="${WDN[d]}">${WD[d]}</button>`).join("")}</div>` : ""}
+    ${r.k === "every" ? `<div class="rep-n"><span>A cada</span><input class="inp" type="number" min="1" max="365" inputmode="numeric" value="${r.n || 2}" data-in="repN" aria-label="Número de dias"><span>dias</span></div>` : ""}
+    ${t.rep ? `<p class="meta rep-hint">Ao concluir, a próxima aparece em <b>${fmtD(repNext(t.rep, t.due).slice(0, 10))}</b>, na primeira coluna e com o checklist zerado.</p>` : ""}</div>`;
+}
 function modelBlock(t) {
   const m = modelOf(t);
   return `<div class="field info-grp"><div class="model-head"><span class="lbl">Modelo</span><select class="inp" id="d_model" data-in="tModel" aria-label="Modelo do cartão">${state.models.map(x => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><button class="btn sm" data-act="modelPanel" aria-expanded="${!!ui.modelPanel}">⚙ Modelo</button></div>
@@ -1529,13 +1566,13 @@ function bdPlay() {
 function cardHTML(t, j) {
   const di = dueInfo(t), done = isDone(t), ck = t.check.length, ckd = t.check.filter(c => c.d).length, run = state.timer && state.timer.id === t.id, sp = spent(t);
   const tags = t.tags.map(tag).filter(Boolean).map(g => `<span class="tag" style="--h:${g.hue}">${esc(g.name)}</span>`).join("");
+  const meta = `${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${pinChips(t)}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || (t.diary || []).length || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
+      ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}${t.rep && !done ? `<span class="repb" title="Repete: ${esc(repLabel(t.rep))}">↻ ${esc(repLabel(t.rep))}</span>` : ""}`;
   return `<article class="card p${t.priority}${ui.flipped.has(t.id) ? " flipped" : ""}${done ? " done" : ""}${run ? " running" : ""}${di && di.ms < 0 && !done ? " late" : ""}" data-id="${t.id}" style="--j:${j || 0};--p:${t.priority}" tabindex="0" aria-label="${esc(t.title)}">
   <div class="card-in"><div class="face front">
-    <div class="c-top"><span class="tk">${t.ticket ? "#" + esc(t.ticket) : ""}</span><span class="pri">${PRI[t.priority]}</span></div>
+    <div class="c-top"><span class="tk">${t.ticket ? "#" + esc(t.ticket) : ""}</span><span class="c-r"><span class="pri">${PRI[t.priority]}</span><button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></span></div>
     <div class="c-head"><button class="c-done" data-act="toggleDone" data-id="${t.id}" aria-label="${done ? "Reabrir tarefa" : "Concluir tarefa"}">${ic("tick")}</button><h3>${esc(t.title)}</h3></div>${tags ? `<div class="tags">${tags}</div>` : ""}${infoLine(t)}
-    <div class="c-meta">${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${pinChips(t)}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || (t.diary || []).length || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
-      ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}
-      <button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></div>
+    ${meta.trim() ? `<div class="c-meta">${meta}</div>` : ""}
     ${ck ? `<div class="ckl"><div class="ckl-dots" aria-hidden="true">${t.check.map(c => `<i class="${c.d ? "d" : ""}"></i>`).join("")}</div><div class="ckl-view">${t.check.map(c => `<button type="button" class="ckl-i ${c.d ? "d" : ""}" data-act="ckTap" data-id="${t.id}" data-ck="${c.id}" title="${c.d ? "Desmarcar" : "Marcar como feito"}" aria-label="${c.d ? "Desmarcar" : "Marcar"}: ${esc(c.t)}"><b>${c.d ? ic("tick") : ""}</b><span>${esc(c.t)}</span><em>${c.d ? "feito" : "falta"}</em></button>`).join("")}</div></div>` : ""}
     ${ck ? `<div class="bar"><i style="width:${Math.round(ckd / ck * 100)}%"></i></div>` : ""}
   </div><div class="face back">
@@ -1839,6 +1876,11 @@ const MANUAL = () => {
     step(`No verso do cartão ou na gaveta, clique em <b>Cronometrar</b>. O contador aparece no cartão e só uma tarefa por vez fica correndo.`, `Clique em <b>Pausar</b> para parar. O tempo acumula entre as sessões.`, `Defina o <b>prazo</b> (e a hora, se quiser). O cartão muda de cor conforme o prazo chega.`)
     + grid(["Sino de pendências", "Lista as tarefas atrasadas e as que vencem nas próximas horas. A janela de aviso (24 h por padrão) é ajustável em Configurações."], ["Avisos do navegador", "Em Configurações → Avisos de prazo, ative para receber notificações com o app aberto."], ["Sons dos alertas", "Tocam em eventos como tarefa atrasada ou concluída. Dá para ajustar o volume ou desligar tudo no modo calmo."])
     + tip("Em <b>Relatórios</b> você vê o tempo total cronometrado e o tempo médio até concluir."),
+    "Tem tarefa que volta todo dia ou toda semana? Veja como repetir.");
+  add("O dia a dia", "repetir", "cal", "Tarefas que se repetem", "Rotinas como preventivo, relatório semanal ou pagamento mensal voltam sozinhas. Você define uma vez.",
+    step(`Abra a tarefa e, em <b>Repetir</b>, escolha: todo dia, dias úteis, dias da semana que você marcar, toda semana, quinzenal, todo mês, todo ano ou a cada N dias.`, `Se a tarefa ainda não tinha prazo, o sistema usa hoje como ponto de partida.`, `Ao <b>concluir</b> (marcar o ✓ ou arrastar para Concluído), a próxima nasce na primeira coluna, com o prazo certo e o checklist zerado.`)
+    + grid(["Cartão com ↻", "Mostra a regra de repetição, por exemplo <i>Toda semana</i> ou <i>seg qua sex</i>."], ["Concluiu sem querer?", "Reabra a tarefa: a cópia criada é removida e a repetição volta ao cartão original."], ["Atrasada?", "A próxima data é sempre depois de hoje: o sistema não cria o acúmulo de tarefas perdidas."])
+    + tip("Para parar a repetição, abra o cartão e escolha <b>Não repetir</b>."),
     "Com muitas tarefas, filtros e busca poupam tempo.");
 
   add("O dia a dia", "busca", "search", "Filtros, busca e comandos", "Achar rápido é metade da produtividade.",
@@ -1972,6 +2014,7 @@ function renderDrawer() {
     <div class="field"><span class="lbl">Prioridade</span><div class="pri-seg">${PRI.map((p, i) => `<button class="p${i} ${t.priority === i ? "on" : ""}" data-act="tPri" data-v="${i}">${p}</button>`).join("")}</div></div>
     <div class="row"><div class="field"><label for="d_due">Prazo</label><input class="inp" type="date" id="d_due" data-in="tDue" value="${dd}"></div>
       <div class="field"><label for="d_time">Hora (opcional)</label><input class="inp" type="time" id="d_time" data-in="tDueTime" value="${dt}" ${dd ? "" : "disabled"}></div></div>
+    ${repBlock(t)}
     <div class="field"><span class="lbl">Tags</span><div class="tags">${state.tags.map(g => `<button class="tag ${t.tags.includes(g.id) ? "on" : ""}" style="--h:${g.hue}" data-act="tTag" data-v="${g.id}">${esc(g.name)}</button>`).join("")}<input class="inp" id="d_newtag" style="width:130px;padding:2px 8px" placeholder="+ nova tag" data-in="tNewTag"></div></div>
     <div class="field"><label for="d_desc">Descrição</label><textarea class="inp" id="d_desc" data-in="tDesc" placeholder="Contexto, passos, observações…">${esc(t.desc)}</textarea></div>
     <div class="field"><span class="lbl">Observações e diário</span>
@@ -2326,6 +2369,7 @@ const acts = {
   timeReset: () => { cur().timeMs = 0; save(); render(); renderDrawer(); },
   del: el => { const t = task(el.dataset.id); snapshotUndo("Tarefa apagada"); tomb(t.id); if (state.timer && state.timer.id === t.id) state.timer = null; state.tasks.splice(state.tasks.indexOf(t), 1); save(); closeLayer(); render(); },
   dup: el => { const t = task(el.dataset.id), c = JSON.parse(JSON.stringify(t)); c.id = uid(); c.title += " (cópia)"; c.createdAt = Date.now(); c.timeMs = 0; c.demo = false; c.check.forEach(k => k.id = uid()); state.tasks.splice(state.tasks.indexOf(t) + 1, 0, c); save(); render(); openTask(c.id); },
+  repDay: el => { const t = cur(); if (!t || !t.rep) return; const d = +el.dataset.v, a = t.rep.days || []; t.rep.days = a.includes(d) ? a.filter(x => x !== d) : [...a, d]; save(); render(); renderDrawer(); },
   tPri: el => { cur().priority = +el.dataset.v; save(); render(); renderDrawer(); },
   tTag: el => { const t = cur(), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); renderDrawer(); if (i < 0) suggestTpl(t, v); },
   ckDel: el => { const t = cur(); t.check = t.check.filter(c => c.id !== el.dataset.v); save(); render(); renderDrawer(); },
@@ -2424,6 +2468,7 @@ const ins = {
   dHtml: el => { const t = cur(), e = t && (t.diary || []).find(x => x.id === el.dataset.e); if (!e) return; const h = cleanHTML(el.innerHTML); e.html = plain(h) ? h : ""; save(); },
   boardName: (el) => { board().name = el.value; save(); },
   colName: (el) => { col(el.dataset.id).name = el.value || "Sem nome"; save(); },
+  repN: el => { const t = cur(); if (t && t.rep) { t.rep.n = clamp(parseInt(el.value) || 2, 1, 365); save(); render(); const h = $(".rep-hint b"); if (h) h.textContent = fmtD(repNext(t.rep, t.due).slice(0, 10)); } },
   tTitle: el => { cur().title = el.value; cur().demo = false; save(); render(); },
   tInfo: el => { const t = cur(); t.info = t.info || {}; t.info[el.dataset.v] = el.value.trim(); save(); clearTimeout(tInfo_t); tInfo_t = setTimeout(render, 250); },
   tTicket: el => { cur().ticket = el.value.replace(/^#/, "").trim(); save(); render(); },
@@ -2441,6 +2486,7 @@ const ins = {
   pal: el => { ui.pal.q = el.value; ui.pal.i = 0; renderPal(); }
 };
 const chg = {
+  tRep: el => { const t = cur(); if (!el.value) t.rep = null; else { t.rep = { k: el.value, days: (t.rep && t.rep.days) || (el.value === "days" ? [1, 3, 5] : []), n: (t.rep && t.rep.n) || 2 }; if (!t.due) t.due = dkey(Date.now()); } save(); render(); renderDrawer(); },
   tModel: el => { cur().model = el.value; save(); render(); renderDrawer(); },
   tInfoCk: el => { const t = cur(); t.info = t.info || {}; t.info[el.dataset.v] = el.checked ? 1 : ""; save(); render(); },
   infoType: el => { const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (!f) return; f.type = el.value; if (f.type === "select" && !f.opts) f.opts = ["Opção 1", "Opção 2"]; save(); render(); renderDrawer(); },
