@@ -1052,6 +1052,13 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 :root[data-calm="on"] .modal.spl, :root[data-calm="on"] .scrim.spl-scrim { animation: none; }
 @media (max-width: 720px) { .modal.spl { top: calc(10px + env(safe-area-inset-top)); } .spl-bar .pal-in { font-size: 19px; padding: 15px 0; } .spl .pal-foot { display: none; } }
 body:has(.modal.spl) .toasts { display: none; }
+
+.burn-box { position: fixed; z-index: 400; pointer-events: none; }
+.burn-paper { position: absolute; inset: 0; border-radius: 6px; padding: 10px 12px 10px 30px; color: #2b3a67; font: 600 14px/22px "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive; overflow: hidden; box-sizing: border-box;
+  background: linear-gradient(#fdfbf3, #fdfbf3) padding-box; background-image: repeating-linear-gradient(transparent 0 21px, #a9c4e8 21px 22px), linear-gradient(#fdfbf3, #fdfbf3); box-shadow: 0 6px 18px rgb(0 0 0 / .35); }
+.burn-paper .bp-m { position: absolute; left: 22px; top: 0; bottom: 0; width: 1px; background: #e58c8c; }
+.burn-paper span { display: block; word-break: break-word; }
+.burn-fx { position: absolute; pointer-events: none; mix-blend-mode: normal; }
 </style>
 </head>
 <body>
@@ -2258,6 +2265,45 @@ function renderPal() {
 function palRun(i) { const it = ui.pal.items[i]; if (!it) return; if (it.calc) { try { navigator.clipboard.writeText(it.calc); } catch {} closeLayer(); return toast("Copiado: " + it.calc); } closeLayer(); if (it.t) { if (it.t.archived) { it.t.archived = false; save(); render(); } openTask(it.t.id); } else it.c.run(); }
 
 /* ---------- configurações, ajuda, pendências ---------- */
+
+/* ===== Queimar cartão: folha de caderno pegando fogo e virando cinza ===== */
+function burnCard(id) {
+  try {
+    if (state.settings.calm || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const el = document.querySelector('.card[data-id="' + id + '"]'); const t = task(id); if (!el || !t) return;
+    const r = el.getBoundingClientRect(); if (r.width < 40 || r.height < 20 || r.bottom < 0 || r.top > innerHeight) return;
+    const W = Math.round(r.width), H = Math.round(r.height), PAD = 70, dpr = Math.min(2, devicePixelRatio || 1);
+    const box = document.createElement("div"); box.className = "burn-box"; box.style.cssText = `left:${r.left}px;top:${r.top}px;width:${W}px;height:${H}px`;
+    const paper = document.createElement("div"); paper.className = "burn-paper"; paper.innerHTML = `<i class="bp-m"></i><span>${esc(t.title)}</span>`;
+    const fx = document.createElement("canvas"); fx.className = "burn-fx"; fx.width = (W + PAD * 2) * dpr; fx.height = (H + PAD * 2) * dpr; fx.style.cssText = `left:${-PAD}px;top:${-PAD}px;width:${W + PAD * 2}px;height:${H + PAD * 2}px`;
+    box.append(paper, fx); document.body.append(box);
+    const mk = document.createElement("canvas"); mk.width = Math.ceil(W / 2); mk.height = Math.ceil(H / 2); const mc = mk.getContext("2d");
+    const fc = fx.getContext("2d"); fc.scale(dpr, dpr);
+    const seed = Math.random() * 100, DUR = 1500, parts = []; let t0 = 0;
+    const noise = (x, tt) => Math.sin(x * .09 + seed) * 7 + Math.sin(x * .23 + seed * 2 + tt * 5) * 4 + Math.sin(x * .55 + tt * 11) * 2;
+    const frame = now => {
+      if (!t0) t0 = now; const k = Math.min(1, (now - t0) / DUR), e = k * k * (3 - 2 * k), tt = k;
+      const front = H + 14 - e * (H + 44); // frente do fogo sobe de baixo para cima
+      mc.clearRect(0, 0, mk.width, mk.height); mc.fillStyle = "#000";
+      mc.beginPath(); mc.moveTo(0, 0); for (let x = 0; x <= W; x += 4) mc.lineTo(x / 2, (front + noise(x, tt)) / 2); mc.lineTo(W / 2, 0); mc.closePath(); mc.fill();
+      const url = `url(${mk.toDataURL()})`; paper.style.webkitMaskImage = paper.style.maskImage = url; paper.style.webkitMaskSize = paper.style.maskSize = "100% 100%";
+      fc.clearRect(0, 0, W + PAD * 2, H + PAD * 2); fc.save(); fc.translate(PAD, PAD);
+      // faixa chamuscada e brasa na borda
+      for (let x = 0; x < W; x += 3) { const y = front + noise(x, tt); if (y > H + 6 || y < -20) continue;
+        const g = fc.createLinearGradient(0, y - 16, 0, y + 5); g.addColorStop(0, "rgba(40,20,5,0)"); g.addColorStop(.55, "rgba(70,28,6,.85)"); g.addColorStop(.8, "rgba(255,120,20,.95)"); g.addColorStop(1, "rgba(255,230,120,.0)");
+        fc.fillStyle = g; fc.fillRect(x, y - 16, 3.4, 21);
+        if (Math.random() < .5) parts.push({ x, y, vx: (Math.random() - .5) * .8, vy: -(.6 + Math.random() * 1.9), l: 0, m: 28 + Math.random() * 36, s: 1 + Math.random() * 2.4, ash: Math.random() < .35 });
+        if (Math.random() < .025) parts.push({ x, y, vx: (Math.random() - .5) * .3, vy: -(1 + Math.random() * 1), l: 0, m: 14 + Math.random() * 12, s: 3 + Math.random() * 4, fl: true }); }
+      for (let i = parts.length - 1; i >= 0; i--) { const q = parts[i]; q.l++; q.x += q.vx + Math.sin(q.l * .2 + q.y) * .3; q.y += q.vy; q.vy *= .985; const a = 1 - q.l / q.m; if (a <= 0) { parts.splice(i, 1); continue; }
+        if (q.fl) { const g = fc.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.s * 2); g.addColorStop(0, `rgba(255,220,100,${a * .7})`); g.addColorStop(.5, `rgba(255,110,20,${a * .35})`); g.addColorStop(1, "rgba(255,60,0,0)"); fc.fillStyle = g; fc.beginPath(); fc.arc(q.x, q.y, q.s * 2, 0, 7); fc.fill(); }
+        else { fc.fillStyle = q.ash ? `rgba(60,55,50,${a * .8})` : `rgba(255,${120 + a * 120 | 0},40,${a})`; fc.fillRect(q.x, q.y, q.s, q.s); } }
+      fc.restore();
+      if (k < 1 || parts.length) { if (now - t0 < DUR + 900) return requestAnimationFrame(frame); }
+      box.remove();
+    };
+    requestAnimationFrame(frame);
+  } catch (e) {}
+}
 function openSettings() {
   ui.overlay = "set"; ui.drawer = null; const s = state.settings, seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(s[key]) === String(v) ? "on" : ""}" data-act="setOpt" data-k="${key}" data-v="${v}">${l}</button>`).join("")}</div>`;
   const hasDemo = state.tasks.some(t => t.demo);
@@ -2553,7 +2599,7 @@ const acts = {
   flip: el => { const id = el.dataset.id; ui.flipped.has(id) ? ui.flipped.delete(id) : ui.flipped.add(id); el.closest(".card").classList.toggle("flipped"); },
   timer: el => toggleTimer(el.dataset.id),
   timeReset: () => { cur().timeMs = 0; save(); render(); renderDrawer(); },
-  del: el => { const t = task(el.dataset.id); snapshotUndo("Tarefa apagada"); tomb(t.id); if (state.timer && state.timer.id === t.id) state.timer = null; state.tasks.splice(state.tasks.indexOf(t), 1); save(); closeLayer(); render(); },
+  del: el => { const t = task(el.dataset.id); burnCard(t.id); snapshotUndo("Tarefa apagada"); tomb(t.id); if (state.timer && state.timer.id === t.id) state.timer = null; state.tasks.splice(state.tasks.indexOf(t), 1); save(); closeLayer(); render(); },
   dup: el => { const t = task(el.dataset.id), c = JSON.parse(JSON.stringify(t)); c.id = uid(); c.title += " (cópia)"; c.createdAt = Date.now(); c.timeMs = 0; c.demo = false; c.check.forEach(k => k.id = uid()); state.tasks.splice(state.tasks.indexOf(t) + 1, 0, c); save(); render(); openTask(c.id); },
   repDateAdd: () => { const t = cur(), i = $("#rep_date"); if (!t || !t.rep || !i || !i.value) return; t.rep.dates = [...new Set([...(t.rep.dates || []), i.value])]; save(); render(); renderDrawer(); },
   repDateDel: el => { const t = cur(); if (!t || !t.rep) return; t.rep.dates = (t.rep.dates || []).filter(x => x !== el.dataset.v); save(); render(); renderDrawer(); },
