@@ -934,6 +934,29 @@ html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px da
 .rep-hint { margin: 8px 0 0; } .rep-sub { margin: 8px 0 0; font-size: 12px; } .rep-end { margin-top: 10px; display: grid; gap: 4px; } .rep-end label { font-size: 12px; color: var(--ink2); }
 .rep-n select.inp { width: auto; flex: 1; } .rep-dates { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .rep-dates .rep-n { flex-basis: 100%; margin-top: 2px; } .rep-dates .rep-n .inp { flex: 1; width: auto; }
 .rep-d { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 12.5px; } .rep-d button { border: 0; background: none; color: inherit; font-size: 16px; line-height: 1; cursor: pointer; padding: 0 5px; border-radius: 50%; } .rep-hint b { color: var(--accent); }
+
+/* ===== cartão ainda mais enxuto + arrastar listas ===== */
+.c-head { display: flex; align-items: flex-start; gap: 6px; } .c-head h3 { flex: 1; min-width: 0; } .c-head .icon-btn { width: 20px; height: 20px; margin: -1px -3px 0 0; flex: none; }
+.face { padding: 8px 10px 8px 11px; gap: 4px; }
+.c-meta { gap: 6px 8px; } .c-meta .tk { font-size: 11px; } .c-meta .pri { font-size: 10.5px; }
+.c-meta .pri { text-transform: none; letter-spacing: 0; }
+.col-grip { cursor: grab; color: var(--ink3); font-size: 13px; letter-spacing: -3px; padding: 6px 4px 6px 0; margin-right: 1px; touch-action: none; user-select: none; -webkit-user-select: none; opacity: .55; line-height: 1; } .col-grip:hover { opacity: 1; color: var(--accent); }
+.col-h { cursor: grab; } .col-h input { cursor: text; } body.dragging .col-h { cursor: grabbing; }
+.col.lifted { display: none; }
+.col-ph { flex: none; border: 2px dashed var(--accent); border-radius: 14px; background: color-mix(in oklab, var(--accent) 8%, transparent); }
+.ghost-col { position: fixed !important; left: 0; top: 0; z-index: 1000; pointer-events: none; animation: none !important; background: var(--surface); box-shadow: 0 0 0 2px var(--accent), 0 28px 40px -14px rgb(var(--shadow) / .65); opacity: .97; }
+.ghost-col .menu, .ghost-col .col-grip { visibility: hidden; } .gc-n { padding: 0 14px 10px; color: var(--ink2); font-size: 12px; }
+@media (max-width: 720px), (pointer: coarse) and (max-width: 1000px) {
+  .face { padding: 9px 10px 8px 15px; gap: 5px; border-radius: 16px; } .card { border-radius: 16px; }
+  .face.front::before { top: 10px; bottom: 10px; width: 4px; }
+  .card h3 { font-size: 15px; line-height: 1.28; padding-top: 1px; } .c-head { gap: 9px; }
+  .c-done { width: 24px; height: 24px; } .c-done svg { width: 13px; height: 13px; }
+  .c-head .icon-btn[data-act="flip"] { display: none; }
+  .tags .tag, .face .tag { padding: 2px 9px; font-size: 11.5px; } .tags { gap: 5px; }
+  .c-meta { gap: 5px; font-size: 12px; } .c-meta > span:not([data-timer]) { padding: 2px 8px; border-radius: 8px; }
+  .col-list { gap: 8px; } .bar { height: 5px; }
+  .col-grip { padding: 10px 6px 10px 0; font-size: 15px; }
+}
 </style>
 </head>
 <body>
@@ -1593,12 +1616,11 @@ function bdPlay() {
 function cardHTML(t, j) {
   const di = dueInfo(t), done = isDone(t), ck = t.check.length, ckd = t.check.filter(c => c.d).length, run = state.timer && state.timer.id === t.id, sp = spent(t);
   const tags = t.tags.map(tag).filter(Boolean).map(g => `<span class="tag" style="--h:${g.hue}">${esc(g.name)}</span>`).join("");
-  const meta = `${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${pinChips(t)}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || (t.diary || []).length || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
+  const meta = `${t.ticket ? `<span class="tk">#${esc(t.ticket)}</span>` : ""}${t.priority !== 2 ? `<span class="pri">${PRI[t.priority]}</span>` : ""}${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${pinChips(t)}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || (t.diary || []).length || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
       ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}${t.rep && !done ? `<span class="repb" title="Repete: ${esc(repLabel(t.rep))}">↻ ${esc(repLabel(t.rep))}</span>` : ""}`;
   return `<article class="card p${t.priority}${ui.flipped.has(t.id) ? " flipped" : ""}${done ? " done" : ""}${run ? " running" : ""}${di && di.ms < 0 && !done ? " late" : ""}" data-id="${t.id}" style="--j:${j || 0};--p:${t.priority}" tabindex="0" aria-label="${esc(t.title)}">
   <div class="card-in"><div class="face front">
-    <div class="c-top"><span class="tk">${t.ticket ? "#" + esc(t.ticket) : ""}</span><span class="c-r"><span class="pri">${PRI[t.priority]}</span><button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></span></div>
-    <div class="c-head"><button class="c-done" data-act="toggleDone" data-id="${t.id}" aria-label="${done ? "Reabrir tarefa" : "Concluir tarefa"}">${ic("tick")}</button><h3>${esc(t.title)}</h3></div>${tags ? `<div class="tags">${tags}</div>` : ""}${infoLine(t)}
+    <div class="c-head"><button class="c-done" data-act="toggleDone" data-id="${t.id}" aria-label="${done ? "Reabrir tarefa" : "Concluir tarefa"}">${ic("tick")}</button><h3>${esc(t.title)}</h3><button class="icon-btn" data-act="flip" data-id="${t.id}" title="Virar o cartão" aria-label="Virar o cartão">${ic("flip")}</button></div>${tags ? `<div class="tags">${tags}</div>` : ""}${infoLine(t)}
     ${meta.trim() ? `<div class="c-meta">${meta}</div>` : ""}
     ${ck ? `<div class="ckl"><div class="ckl-dots" aria-hidden="true">${t.check.map(c => `<i class="${c.d ? "d" : ""}"></i>`).join("")}</div><div class="ckl-view">${t.check.map(c => `<button type="button" class="ckl-i ${c.d ? "d" : ""}" data-act="ckTap" data-id="${t.id}" data-ck="${c.id}" title="${c.d ? "Desmarcar" : "Marcar como feito"}" aria-label="${c.d ? "Desmarcar" : "Marcar"}: ${esc(c.t)}"><b>${c.d ? ic("tick") : ""}</b><span>${esc(c.t)}</span><em>${c.d ? "feito" : "falta"}</em></button>`).join("")}</div></div>` : ""}
     ${ck ? `<div class="bar"><i style="width:${Math.round(ckd / ck * 100)}%"></i></div>` : ""}
@@ -1616,7 +1638,7 @@ function renderBoard() {
   $("#view").innerHTML = `<div class="board${ui.en}${cine && !ui.en ? " enter" : ""}${cine ? " cine" : ""}"><div class="stage" style="--bx:${ui.bx || 0}deg;--by:${ui.by || 0}deg">` + cs.map((c, i) => {
     const all = tasks.filter(t => t.col === c.id), list = all.filter(passes);
     return `<section class="col" data-col="${c.id}" style="--ch:${c.hue};--i:${i}">
-    <header class="col-h"><span class="col-dot"></span><input class="col-name" value="${esc(c.name)}" data-in="colName" data-id="${c.id}" aria-label="Nome da coluna">
+    <header class="col-h"><span class="col-grip" title="Arraste para mudar a posição desta lista" aria-label="Arrastar lista" role="img">⋮⋮</span><span class="col-dot"></span><input class="col-name" value="${esc(c.name)}" data-in="colName" data-id="${c.id}" aria-label="Nome da coluna">
       <span class="count ${c.wip && all.length > c.wip ? "warn" : ""}" title="${c.wip ? "Limite de tarefas em andamento" : "Tarefas"}">${all.length}${c.wip ? "/" + c.wip : ""}</span>
       <details class="menu"><summary aria-label="Opções da coluna">${ic("dots")}</summary><div class="menu-body">
         <div class="hues">${HUES.map(h => `<button class="hue ${c.hue === h ? "on" : ""}" style="--h:${h}" data-act="colHue" data-id="${c.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div>
@@ -1835,7 +1857,7 @@ const MANUAL = () => {
     "Dentro de cada quadro, as colunas contam a história do seu fluxo.");
 
   add("O dia a dia", "colunas", "chev", "Colunas", "As colunas são as etapas do seu fluxo. Você pode ter quantas quiser, com o nome e a cor que fizer sentido.",
-    step(`Clique nos <b>três pontinhos</b> do cabeçalho da coluna.`, `Escolha uma <b>cor</b>, defina um <b>Limite (WIP)</b>, marque <b>Coluna de concluídas</b>, mova para a esquerda ou direita, ou apague.`, `Para criar outra, use <b>+ Nova coluna</b> no fim do quadro.`)
+    step(`Clique nos <b>três pontinhos</b> do cabeçalho da coluna.`, `Escolha uma <b>cor</b>, defina um <b>Limite (WIP)</b>, marque <b>Coluna de concluídas</b> ou apague.`, `Para <b>mudar a ordem</b>, segure a alça <b>⋮⋮</b> no início do cabeçalho e arraste a lista para onde quiser (o menu também tem Mover para a esquerda/direita).`, `Para criar outra, use <b>+ Nova coluna</b> no fim do quadro.`)
     + grid(["Limite (WIP)", "É o máximo de tarefas que você aceita ter ao mesmo tempo naquela etapa. Passou do limite, o contador fica em alerta. Serve para não começar mil coisas e não terminar nenhuma."],
       ["Coluna de concluídas", "Tudo o que cai nela conta como feito (aparece riscado e entra nos relatórios). Pode haver mais de uma."],
       ["Arquivar", "Na coluna de concluídas, o menu tem <b>Arquivar tarefas desta coluna</b>: elas saem do quadro, mas continuam na busca e nos relatórios."])
@@ -2585,7 +2607,7 @@ $("#view").addEventListener("pointerdown", e => {
   }
   drag = { id: card.dataset.id, card, sx: e.clientX, sy: e.clientY, lx: e.clientX, started: false };
 });
-$("#view").addEventListener("touchmove", e => { if (touchDrag) e.preventDefault(); }, { passive: false });
+$("#view").addEventListener("touchmove", e => { if (touchDrag || (cd && cd.started)) e.preventDefault(); }, { passive: false });
 function dragPlace(x, y, touch) {
   const d = drag; if (!d || !d.started) return; d.px = x; d.py = y;
   const c = document.elementFromPoint(x, y), colEl = c && c.closest(".col");
@@ -2609,6 +2631,40 @@ window.addEventListener("pointermove", e => {
   const inn = $(".card-in", d.ghost); inn.style.setProperty("--ry", vx + "deg"); inn.style.setProperty("--rx", "8deg");
   dragPlace(e.clientX, e.clientY, d.touch);
 });
+/* arrastar listas (colunas) pela alça ⋮⋮ do cabeçalho */
+let cd = null;
+$("#view").addEventListener("pointerdown", e => {
+  if (e.button !== 0 || ui.view !== "quadro" || drag) return;
+  const h = e.target.closest(".col-grip, .col-h"); if (!h || e.target.closest("input,button,details,summary,a,label")) return;
+  if (!h.classList.contains("col-grip") && e.pointerType === "touch") return;      // no toque, só pela alça
+  const el = h.closest(".col"); if (!el) return; e.preventDefault();
+  cd = { id: el.dataset.col, el, sx: e.clientX, sy: e.clientY, x: e.clientX, started: false };
+});
+function cdPlace() {
+  const c = cd; if (!c || !c.started) return; const st = $(".stage"); if (!st) return;
+  const before = $$(".stage > .col:not(.lifted)").find(k => { const r = k.getBoundingClientRect(); return c.x < r.left + r.width / 2; });
+  const ref = before || $(".col-add", st); if (c.ph.nextElementSibling !== ref) st.insertBefore(c.ph, ref || null);
+}
+window.addEventListener("pointermove", e => {
+  const c = cd; if (!c) return; c.x = e.clientX;
+  if (!c.started) {
+    if (Math.hypot(e.clientX - c.sx, e.clientY - c.sy) < 6) return;
+    const r = c.el.getBoundingClientRect(), gw = Math.min(r.width, 270); c.started = true; c.ox = clamp(c.sx - r.left, 24, gw - 24); c.oy = clamp(c.sy - r.top, 10, 40);
+    c.ghost = document.createElement("div"); c.ghost.className = "col ghost-col"; c.ghost.style.width = gw + "px"; c.ghost.style.setProperty("--ch", c.el.style.getPropertyValue("--ch")); c.ghost.innerHTML = c.el.querySelector(".col-h").outerHTML + `<div class="gc-n">${$$(".card", c.el).length} tarefa(s)</div>`; document.body.append(c.ghost);
+    c.ph = document.createElement("div"); c.ph.className = "col-ph"; c.ph.style.width = r.width + "px"; c.ph.style.height = Math.min(r.height, 520) + "px"; c.el.after(c.ph); c.el.classList.add("lifted"); document.body.classList.add("dragging"); haptic(8);
+    c.timer = setInterval(() => { const m = $("#view"), mr = m.getBoundingClientRect(); if (c.x > mr.right - 70) m.scrollLeft += 16; else if (c.x < mr.left + 70) m.scrollLeft -= 16; cdPlace(); }, 40);
+  }
+  c.ghost.style.transform = `translate(${e.clientX - c.ox}px,${e.clientY - c.oy}px) rotate(-1.5deg)`; cdPlace();
+});
+function cdEnd() {
+  const c = cd; cd = null; if (!c || !c.started) return; clearInterval(c.timer);
+  const ids = [...$(".stage").children].filter(n => n === c.ph || (n.classList.contains("col") && !n.classList.contains("lifted"))).map(n => n === c.ph ? c.id : n.dataset.col);
+  c.ghost.remove(); c.ph.remove(); document.body.classList.remove("dragging"); suppressClick = true; setTimeout(() => suppressClick = false, 50);
+  const bid = board().id, slots = state.columns.map((x, i) => x.board === bid ? i : -1).filter(i => i >= 0), by = Object.fromEntries(state.columns.map(x => [x.id, x]));
+  if (ids.length === slots.length && ids.every(i => by[i])) { slots.forEach((si, k) => state.columns[si] = by[ids[k]]); save(); haptic(10); }
+  render();
+}
+window.addEventListener("pointerup", cdEnd); window.addEventListener("pointercancel", cdEnd);
 function endDrag() {
   const d = drag; drag = null; touchDrag = false; clearInterval(dragTimer);
   if (hold) { const hd = hold; clearTimeout(hd.t); hold = null; hd.card.classList.remove("holding"); holdGuard = Date.now() + 700; if (hd.fired) { suppressClick = true; setTimeout(() => suppressClick = false, 450); } if (hd.fired && upOk && d && !d.started) openCtx(hd.id, hd.x, hd.y); }
