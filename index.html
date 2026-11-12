@@ -970,6 +970,13 @@ html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px da
 .fold-body { display: grid; gap: 8px; padding-top: 4px; animation: foldIn .2s ease-out; } .fold-body[hidden] { display: none; }
 @keyframes foldIn { from { opacity: 0; transform: translateY(-4px); } }
 :root[data-calm="on"] .fold-body { animation: none; }
+
+/* ===== menu de quadros no celular: ocupa a largura da tela e fica na frente dos avisos ===== */
+body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
+@media (max-width: 720px), (pointer: coarse) and (max-width: 1000px) {
+  .top #board-list { position: fixed; left: 10px; right: 10px; top: calc(62px + env(safe-area-inset-top)); width: auto; max-width: none; max-height: calc(100dvh - 150px); overflow-y: auto; z-index: 400; }
+  .top #board-list button, .top #board-list .bm-sel { min-height: 42px; }
+}
 </style>
 </head>
 <body>
