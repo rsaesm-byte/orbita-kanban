@@ -957,6 +957,19 @@ html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px da
   .col-list { gap: 8px; } .bar { height: 5px; }
   .col-grip { padding: 10px 6px 10px 0; font-size: 15px; }
 }
+
+/* ===== seções que abrem e fecham ===== */
+.fold-h { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; background: none; padding: 6px 2px; margin-top: 2px; color: var(--ink); font: inherit; text-align: left; cursor: pointer; border-radius: 8px; }
+.fold-h:hover { background: var(--surface2); }
+.fold-t { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2); }
+.fold-n { min-width: 20px; padding: 1px 7px; border-radius: 99px; background: var(--surface2); color: var(--ink2); font: 600 11px var(--mono); text-align: center; }
+.fold-ch { display: grid; place-items: center; width: 18px; height: 18px; transition: transform .2s; transform: rotate(90deg); color: var(--ink3); } .fold-ch svg { width: 14px; height: 14px; }
+.fold-h[aria-expanded="false"] .fold-ch { transform: rotate(0deg); }
+.fold-h[aria-expanded="false"] .hint { display: none; }
+.fold-h .hint { margin-left: auto; font-size: 11px; color: var(--ink3); font-style: normal; text-transform: none; letter-spacing: 0; font-weight: 500; text-align: right; }
+.fold-body { display: grid; gap: 8px; padding-top: 4px; animation: foldIn .2s ease-out; } .fold-body[hidden] { display: none; }
+@keyframes foldIn { from { opacity: 0; transform: translateY(-4px); } }
+:root[data-calm="on"] .fold-body { animation: none; }
 </style>
 </head>
 <body>
@@ -1549,6 +1562,8 @@ function repBlock(t) {
     ${t.rep ? `<div class="rep-end"><label for="rep_end">Repetir até (opcional)</label><input class="inp" type="date" id="rep_end" data-in="repEnd" value="${esc(r.end || "")}"></div>
     <p class="meta rep-hint">${nx ? `Ao concluir, a próxima aparece em <b>${fmtD(nx.slice(0, 10))}</b>, na primeira coluna e com o checklist zerado.` : `Não há próxima data: esta é a <b>última</b> vez.`}</p>` : ""}</div>`;
 }
+const FOLD = (() => { try { return JSON.parse(localStorage.getItem("orbita_fold")) || {}; } catch { return {}; } })();
+const foldHead = (k, title, n, hint) => `<button type="button" class="fold-h" data-act="fold" data-v="${k}" aria-expanded="${!FOLD[k]}"><span class="fold-ch">${ic("chev")}</span><span class="fold-t">${title}</span><span class="fold-n">${n}</span>${hint ? `<em class="hint">${hint}</em>` : ""}</button>`;
 function modelBlock(t) {
   const m = modelOf(t);
   return `<div class="field info-grp"><div class="model-head"><span class="lbl">Modelo</span><select class="inp" id="d_model" data-in="tModel" aria-label="Modelo do cartão">${state.models.map(x => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><button class="btn sm" data-act="modelPanel" aria-expanded="${!!ui.modelPanel}">⚙ Modelo</button></div>
@@ -1557,9 +1572,9 @@ function modelBlock(t) {
       <label class="chk"><input type="checkbox" data-in="mDefault" ${board().model === m.id ? "checked" : ""}> Usar como padrão nas novas tarefas deste quadro</label>
       <div class="set-row"><button class="btn sm" data-act="modelAdd">+ Modelo em branco</button><button class="btn sm" data-act="modelDup">Duplicar</button><button class="btn sm danger" data-act="modelDel" ${state.models.length < 2 ? "disabled" : ""}>Apagar modelo</button></div>
       <p class="meta" style="margin:0">Alterar os campos vale para todos os cartões deste modelo.</p></div>` : ""}
-    <span class="lbl" style="margin-top:4px">Campos <em class="hint">toque no nome para renomear · ⋮⋮ ordena · alfinete mostra no cartão</em></span>
-    <div class="info-list">${m.fields.map(f => infoField(t, f)).join("") || `<p class="meta" style="margin:0">Modelo sem campos. Adicione abaixo.</p>`}</div>
-    <div class="add-field"><select class="inp" id="nf_type" aria-label="Tipo do novo campo">${FTYPES.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select><button class="btn sm" data-act="infoAdd">+ Novo campo</button></div></div>`;
+    ${foldHead("campos", "Campos", m.fields.length, "toque no nome para renomear · ⋮⋮ ordena · alfinete mostra no cartão")}
+    <div class="fold-body" ${FOLD.campos ? "hidden" : ""}><div class="info-list">${m.fields.map(f => infoField(t, f)).join("") || `<p class="meta" style="margin:0">Modelo sem campos. Adicione abaixo.</p>`}</div>
+    <div class="add-field"><select class="inp" id="nf_type" aria-label="Tipo do novo campo">${FTYPES.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select><button class="btn sm" data-act="infoAdd">+ Novo campo</button></div></div></div>`;
 }
 function entryHTML(e) {
   return `<div class="dentry" data-e="${e.id}"><div class="dhead"><input class="inp" type="date" value="${esc(e.date || "")}" data-in="dDate" data-e="${e.id}" aria-label="Dia da anotação"><input class="inp" list="d_themes" value="${esc(e.theme || "")}" placeholder="Tema" data-in="dTheme" data-e="${e.id}" aria-label="Tema da anotação"><button class="icon-btn" data-act="dDel" data-e="${e.id}" aria-label="Apagar anotação">${ic("x")}</button></div>${rtBar()}<div class="rt rt-sm" id="de_${e.id}" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Anotação" data-in="dHtml" data-e="${e.id}" data-ph="Escreva aqui o que viu, dúvidas, ideias…">${cleanHTML(e.html || "")}</div></div>`;
@@ -2074,9 +2089,9 @@ function renderDrawer() {
       <input class="inp" id="d_newck" placeholder="+ Adicionar item e pressionar Enter" data-in="ckNew">${tplRow(t)}</div>
     ${state.fields.map(f => `<div class="field"><label for="cf_${f.id}">${esc(f.name)}</label><input class="inp" id="cf_${f.id}" type="${f.type}" data-in="tCustom" data-v="${f.id}" value="${esc(t.custom[f.id] ?? "")}"></div>`).join("")}
     ${filesBlock(t)}
-    <div class="field"><span class="lbl">Informações adicionais</span>
+    <div class="field">${foldHead("extra", "Informações adicionais", t.extra.length)}<div class="fold-body" ${FOLD.extra ? "hidden" : ""}>
       ${t.extra.map(x => `<div class="xrow"><input class="inp" id="xk_${x.id}" data-in="xKey" data-x="${x.id}" placeholder="Nome do campo" value="${esc(x.k)}" title="${esc(x.k)}" aria-label="Nome do campo"><input class="inp" id="xv_${x.id}" data-in="xVal" data-x="${x.id}" placeholder="Informação" value="${esc(x.v)}" aria-label="Informação"><button class="icon-btn" data-act="xDel" data-v="${x.id}" aria-label="Apagar campo">${ic("x")}</button></div>`).join("")}
-      <div><button class="btn sm" data-act="xAdd">${ic("plus")}Adicionar campo</button></div></div>
+      <div><button class="btn sm" data-act="xAdd">${ic("plus")}Adicionar campo</button></div></div></div>
     <div class="field"><span class="lbl">Tempo</span><div class="timer"><b data-timer="${t.id}" data-clock="1">${fmtClock(spent(t))}</b><button class="btn" data-act="timer" data-id="${t.id}">${ic(run ? "pause" : "play")}${run ? "Pausar" : "Iniciar"}</button>${t.timeMs && !run ? `<button class="btn ghost sm" data-act="timeReset">Zerar</button>` : ""}</div></div>
     <div class="field"><span class="lbl">Bloco de tempo no calendário${t.block ? " · reservado" : ""}</span>
       <div class="row3"><input class="inp" type="date" id="d_bd" data-in="tBlock" data-k="d" value="${bk.d}" aria-label="Dia do bloco"><input class="inp" type="time" id="d_bs" data-in="tBlock" data-k="s" value="${bk.s}" aria-label="Início"><select class="inp" id="d_bm" data-in="tBlock" data-k="m" aria-label="Duração">${[15, 30, 45, 60, 90, 120, 180, 240].map(m => `<option value="${m}" ${bk.m === m ? "selected" : ""}>${m < 60 ? m + " min" : (m / 60 + " h").replace(".", ",")}</option>`).join("")}</select></div>
@@ -2420,6 +2435,7 @@ const acts = {
   dup: el => { const t = task(el.dataset.id), c = JSON.parse(JSON.stringify(t)); c.id = uid(); c.title += " (cópia)"; c.createdAt = Date.now(); c.timeMs = 0; c.demo = false; c.check.forEach(k => k.id = uid()); state.tasks.splice(state.tasks.indexOf(t) + 1, 0, c); save(); render(); openTask(c.id); },
   repDateAdd: () => { const t = cur(), i = $("#rep_date"); if (!t || !t.rep || !i || !i.value) return; t.rep.dates = [...new Set([...(t.rep.dates || []), i.value])]; save(); render(); renderDrawer(); },
   repDateDel: el => { const t = cur(); if (!t || !t.rep) return; t.rep.dates = (t.rep.dates || []).filter(x => x !== el.dataset.v); save(); render(); renderDrawer(); },
+  fold: el => { const k = el.dataset.v; FOLD[k] = !FOLD[k]; try { localStorage.setItem("orbita_fold", JSON.stringify(FOLD)); } catch {} const h = el, b = h.nextElementSibling; h.setAttribute("aria-expanded", !FOLD[k]); if (b && b.classList.contains("fold-body")) b.hidden = !!FOLD[k]; },
   repDay: el => { const t = cur(); if (!t || !t.rep) return; const d = +el.dataset.v, a = t.rep.days || []; t.rep.days = a.includes(d) ? a.filter(x => x !== d) : [...a, d]; save(); render(); renderDrawer(); },
   tPri: el => { cur().priority = +el.dataset.v; save(); render(); renderDrawer(); },
   tTag: el => { const t = cur(), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); renderDrawer(); if (i < 0) suggestTpl(t, v); },
