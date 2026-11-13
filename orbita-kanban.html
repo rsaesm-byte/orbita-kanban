@@ -1078,6 +1078,11 @@ body:has(.modal.spl) .toasts { display: none; }
 .d-body .row > :only-child { grid-column: 1 / -1; }
 .bf-restore .tags { margin-top: 6px; }
 @media (pointer: coarse) { .bf-x { opacity: .6; width: 28px; height: 28px; } }
+
+/* o verso (lista do checklist) não pode esticar o cartão: só ocupa altura quando virado */
+.card .face.back { align-self: start; overflow: auto; max-height: 0; padding-top: 0; padding-bottom: 0; border-width: 0; transition: max-height .3s ease; }
+.card.flipped .face.back { max-height: 460px; padding-top: var(--pad); padding-bottom: var(--pad); border-width: 1px; border-left-width: 4px; }
+.card.flipped .face.front { align-self: start; }
 </style>
 </head>
 <body>
