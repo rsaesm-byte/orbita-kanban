@@ -25,6 +25,7 @@ function skinApply(id) {
     r.setAttribute("data-skin", id); r.setAttribute("data-theme", d.base); skinFont(id); if (m) m.setAttribute("content", d.bg); return true; } catch (e) { return false; }
 }
 try { var _sk = localStorage.getItem("orbita_skin"); if (_sk) skinApply(_sk); } catch (e) {}
+try { var _lk = JSON.parse(localStorage.getItem("orbita_lock") || "null"); if (_lk && _lk.h) document.documentElement.setAttribute("data-locked", "1"); } catch (e) {}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1161,9 +1162,55 @@ html:root[data-skin="aurora"][data-theme] .col { background: color-mix(in oklab,
 .skin-hint { margin: 0 0 8px; }
 html:root[data-skin][data-theme] .spl .pal-item.on .pi-t { background: color-mix(in oklab, var(--sel-ink) 16%, transparent); color: var(--sel-ink); box-shadow: none; }
 html:root[data-skin][data-theme] .spl .pal-item.on .pi-k { color: var(--sel-ink); }
+
+/* ===== Bloqueio do app ===== */
+#lockscreen { position: fixed; inset: 0; z-index: 100000; display: none; place-items: center; background: #05070b; color: #e6eef0; overflow: hidden; user-select: none; -webkit-user-select: none; }
+html[data-locked="1"] #lockscreen { display: grid; }
+html[data-locked="1"] body > *:not(#lockscreen):not(#crtfx) { visibility: hidden !important; }
+#lockscreen::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(rgb(255 255 255 / .03) 0 1px, transparent 1px 3px), radial-gradient(90% 70% at 50% 45%, transparent 55%, rgb(0 0 0 / .65)); }
+#lockscreen::after { content: ""; position: absolute; left: 50%; top: 38%; width: 520px; height: 520px; transform: translate(-50%, -50%); pointer-events: none; background: radial-gradient(closest-side, rgb(80 200 190 / .16), transparent); }
+#lockscreen.ok::after { background: radial-gradient(closest-side, rgb(120 240 160 / .28), transparent); }
+.ls-in { position: relative; z-index: 1; display: grid; justify-items: center; gap: 12px; padding: 24px; width: min(340px, 94vw); text-align: center; }
+.ls-in h2 { margin: 0; font: 700 22px var(--display, sans-serif); letter-spacing: -.01em; }
+.ls-msg { margin: 0; min-height: 20px; color: #9fb4b8; font-size: 14px; } .ls-msg.bad { color: #ff8a8a; } #lockscreen.ok .ls-msg { color: #7ef0a8; }
+.padlock { width: 84px; height: 84px; color: #5fd6cb; filter: drop-shadow(0 0 14px rgb(95 214 203 / .55)); overflow: visible; transition: color .3s, filter .3s; }
+.padlock .shackle { transform-origin: 44px 30px; transition: transform .55s cubic-bezier(.3, 1.6, .5, 1); }
+.padlock.open .shackle { transform: translateY(-9px) rotate(-32deg); } .padlock.open { color: #7ef0a8; filter: drop-shadow(0 0 18px rgb(126 240 168 / .7)); }
+.padlock.clack { animation: lkClack .35s ease-out; }
+@keyframes lkClack { 30% { transform: translateY(3px) scale(.96, 1.03); } 60% { transform: translateY(-1px); } }
+#lockscreen.closing .ls-in > :not(.padlock) { animation: lsFade .6s .55s both; }
+#lockscreen.boot { animation: crtBoot .95s cubic-bezier(.2, .75, .25, 1) both; } #lockscreen.boot .ls-in { animation: lsFade .55s .6s both; }
+@keyframes lsFade { from { opacity: 0; transform: translateY(6px); } }
+@keyframes crtBoot { 0% { transform: scale(.012, .004); background: #fff; } 28% { transform: scale(1, .004); background: #fff; } 62% { transform: scale(1, 1.03); background: #9fdad2; } 100% { transform: none; background: #05070b; } }
+.ls-form { display: grid; gap: 10px; width: 100%; } .ls-form .inp { text-align: center; font-size: 18px; letter-spacing: .2em; padding: 12px; } .ls-form.shake, .lk-modal.shake { animation: lkShake .45s; }
+@keyframes lkShake { 20%, 60% { transform: translateX(-9px); } 40%, 80% { transform: translateX(9px); } }
+.pat { width: min(260px, 70vw); aspect-ratio: 1; margin: 4px 0; } .pat-svg { width: 100%; height: 100%; touch-action: none; cursor: pointer; display: block; }
+.pat-dot { fill: #7d9296; transition: fill .12s, r .12s; } .pat-dot.on { fill: #5fd6cb; r: 12; } .pat-hit { fill: transparent; }
+.pat-line { fill: none; stroke: #5fd6cb; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+.pat-svg.bad .pat-dot.on { fill: #ff6b6b; } .pat-svg.bad .pat-line { stroke: #ff6b6b; } .pat-svg.bad { animation: lkShake .45s; }
+#lockscreen.ok .pat-dot.on { fill: #7ef0a8; } #lockscreen.ok .pat-line { stroke: #7ef0a8; }
+.lk-modal .pat-dot { fill: var(--ink3); } .lk-modal .pat-dot.on { fill: var(--accent); } .lk-modal .pat-line { stroke: var(--accent); }
+.lk-modal .ls-msg { color: var(--ink3); } .lk-modal .ls-msg.bad { color: #e5484d; } .lk-modal .ls-form { max-width: 280px; }
+.lk-state { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--accent); }
+.lock-btn .ic { width: 16px; height: 16px; }
+/* TV de tubo: o app encolhe numa linha e vira um ponto; ao ligar, faz o caminho inverso */
+html.crt { background: #000; }
+body.crt-off { animation: crtOff .75s cubic-bezier(.55, 0, .75, .4) forwards; transform-origin: 50% 50%; }
+body.crt-on { animation: crtOnBody .8s cubic-bezier(.2, .8, .3, 1) both; transform-origin: 50% 50%; }
+@keyframes crtOff { 0% { transform: none; filter: none; } 55% { transform: scale(1, .006); filter: brightness(3.2) contrast(1.3); } 88% { transform: scale(.012, .006); filter: brightness(6); opacity: 1; } 100% { transform: scale(0, 0); opacity: 0; } }
+@keyframes crtOnBody { 0% { transform: scale(.012, .006); filter: brightness(6); } 35% { transform: scale(1, .006); filter: brightness(4); } 100% { transform: none; filter: none; } }
+#crtfx { position: fixed; left: 0; right: 0; top: 50%; height: 3px; margin-top: -1.5px; z-index: 100001; pointer-events: none; opacity: 0; background: #fff; box-shadow: 0 0 16px 5px rgb(255 255 255 / .85), 0 0 60px 18px rgb(120 210 255 / .4); transform-origin: 50% 50%; }
+#crtfx.off { animation: crtLineOff .8s linear forwards; } #crtfx.on { animation: crtLineOn .85s linear forwards; }
+@keyframes crtLineOff { 0%, 45% { opacity: 0; transform: scaleX(1); } 62% { opacity: 1; transform: scaleX(1); } 92% { opacity: 1; transform: scaleX(.012); } 100% { opacity: 0; transform: scaleX(.012); } }
+@keyframes crtLineOn { 0% { opacity: 1; transform: scaleX(.012); } 28% { opacity: 1; transform: scaleX(1); } 55% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1); } }
+@media (max-width: 720px) { .top .lock-btn { width: 34px; padding: 0; } }
+body:has(.modal.lk-modal) .toasts { display: none; }
+#lockscreen .ls-form .inp { background: #0c1518; color: #e6eef0; border: 1px solid #2c4348; border-radius: 12px; } #lockscreen .ls-form .inp:focus { outline: 2px solid #5fd6cb; } #lockscreen .ls-form .btn { justify-content: center; text-align: center; color: #02201d; background: #5fd6cb; border: 0; font-weight: 700; }
 </style>
 </head>
 <body>
+<div id="lockscreen" role="dialog" aria-modal="true" aria-label="App bloqueado"></div>
+<div id="crtfx" aria-hidden="true"></div>
 <header class="top">
   <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#d4961f"/></linearGradient><linearGradient id="lgB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f7bff"/><stop offset="1" stop-color="#7cc4ff"/></linearGradient><clipPath id="lgC"><circle cx="50" cy="50" r="28"/></clipPath></defs><circle class="lg-orb" cx="50" cy="50" r="44" fill="none" stroke="url(#lgG)" stroke-width="1.2" stroke-dasharray="1 5" stroke-linecap="round" opacity=".7"/><g clip-path="url(#lgC)" fill="none" stroke="url(#lgB)" stroke-width="3.2" stroke-linecap="round"><path d="M20 36q15-4 30 0t30 0"/><path d="M20 46q15 4 30 0t30 0"/><path d="M20 57q15-4 30 0t30 0"/><path d="M20 67q15 4 30 0t30 0"/></g><circle cx="50" cy="50" r="28" fill="none" stroke="url(#lgG)" stroke-width="4"/><ellipse cx="62" cy="52" rx="5" ry="2.8" fill="none" stroke="url(#lgG)" stroke-width="2"/><g class="lg-moon"><circle cx="50" cy="6" r="4.2" fill="#050a18" stroke="url(#lgB)" stroke-width="2.4"/></g></svg></span>
     <input class="board-name" id="board-name" aria-label="Nome do quadro" data-in="boardName">
@@ -1175,6 +1222,7 @@ html:root[data-skin][data-theme] .spl .pal-item.on .pi-k { color: var(--sel-ink)
   <button class="btn calm-btn" data-act="calm" id="btn-calm" aria-label="Modo calmo" aria-pressed="false"></button>
   <button class="btn lay-btn" data-act="layout" id="btn-lay" aria-label="Layout"></button>
   <button class="btn bell" data-act="bell" id="btn-bell" aria-label="Pendências"></button>
+  <button class="btn lock-btn" data-act="lock" id="btn-lock" aria-label="Bloquear o app" title="Bloquear o app (Alt+L)"></button>
   <button class="btn" data-act="settings" id="btn-set" aria-label="Configurações"></button>
   <button class="btn upd-btn" data-act="appUpdate" id="btn-upd" aria-label="Atualizar app" title="Atualizar app: busca a versão mais nova e recarrega. Seus dados ficam como estão."></button>
 </header>
@@ -1224,6 +1272,7 @@ function fmtDur(ms) { const m = Math.round(ms / 6e4); if (m < 1) return "0min"; 
 function fmtClock(ms) { const s = Math.floor(ms / 1000); return pad2(Math.floor(s / 3600)) + ":" + pad2(Math.floor(s / 60) % 60) + ":" + pad2(s % 60); }
 const ICONS = {
   mob: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.7"/><path d="M7 12.3h2"/>', mon: '<rect x="1.8" y="2.8" width="12.4" height="8.4" rx="1.5"/><path d="M5.5 14h5M8 11.2V14"/>', ref: '<path d="M13.2 8a5.2 5.2 0 1 1-1.7-3.8M13.2 2.4v3.2H10"/>',
+  lock: '<rect x="3.2" y="7" width="9.6" height="6.8" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/>',
   tick: '<path d="m3.5 8.5 3 3 6-7"/>', pin: '<path d="M6 2.2h4l-.7 3.6 2.1 2.2H4.6l2.1-2.2zM8 8.2v5.6"/>', phone: '<path d="M3.2 2.2h2.4l1.1 3-1.6 1.2a8.2 8.2 0 0 0 3.8 3.8l1.2-1.6 3 1.1v2.4a1.3 1.3 0 0 1-1.4 1.3C6.5 13.1 2.9 9.5 1.9 3.6A1.3 1.3 0 0 1 3.2 2.2z"/>',
   leaf: '<path d="M3 13c0-6 3-9.5 10-10 0 6.5-3 10-9 10zM3 13l5-5"/>', book: '<path d="M3 3.5h4.3a1.7 1.7 0 0 1 1.7 1.7V13a1.5 1.5 0 0 0-1.5-1.5H3zM13 3.5H9.7A1.7 1.7 0 0 0 8 5.2V13a1.5 1.5 0 0 1 1.5-1.5H13z"/>',
   search: '<circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/>', plus: '<path d="M8 3v10M3 8h10"/>',
@@ -1570,7 +1619,7 @@ async function iniciarSalvamento() {
   let temDados = await carregar();
   if (!temDados) { try { const old = JSON.parse(localStorage.getItem(LS)); if (valido(old) && old.updatedAt) { state = normalize(old); rev = 1; persistir(); temDados = true; } } catch {} }
   if (!temDados) state = normalize(demoState());
-  revAoAbrir = rev; applySettings(); route(); checkDue(true);
+  LK.ready = true; revAoAbrir = rev; applySettings(); route(); checkDue(true);
   await iniciarArquivo(); gistStart(); initRemote(); setTimeout(gcAnexos, 4000);
   if (!EMBED && !handle && !pendingHandle && !localStorage.getItem(SAVE_CFG.lsKey + "_wizard")) {   // primeiro acesso: já salva e baixa o arquivo de dados sozinho
     try { localStorage.setItem(SAVE_CFG.lsKey + "_wizard", "1"); } catch {}
@@ -1684,7 +1733,7 @@ function addTask(colId, props) {
 
 /* ================= renderização ================= */
 function applySettings() {
-  const r = document.documentElement, s = state.settings;
+  const r = document.documentElement, s = state.settings; lkMirror();
   if (applySettings.host === undefined) applySettings.host = r.getAttribute("data-theme") || "";
   if (s.skin && SKIN_DEF[s.skin]) skinApply(s.skin);
   else { r.removeAttribute("data-skin"); { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", "#000000"); }
@@ -1712,7 +1761,7 @@ function renderChrome() {
   const n = pending().length;
   { const cb = $("#btn-calm"), on = !!state.settings.calm; cb.innerHTML = ic("leaf"); cb.classList.toggle("on", on); cb.setAttribute("aria-pressed", on); cb.title = on ? "Modo calmo ligado: sem animações e sem sons. Clique para desligar" : "Modo calmo: tira todas as animações e todos os sons"; }
   $("#btn-bell").innerHTML = ic("bell") + (n ? `<span class="badge">${n}</span>` : "");
-  $("#btn-set").innerHTML = ic("gear");
+  $("#btn-set").innerHTML = ic("gear"); $("#btn-lock").innerHTML = ic("lock");
   $("#btn-upd").innerHTML = `${ic("ref")}<span>Atualizar</span>`;
   { const m = localStorage.getItem("orbita_layout") || "auto", lb = $("#btn-lay"), eff = m === "auto" ? (matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop") : m;
     lb.innerHTML = ic(eff === "mobile" ? "mob" : "mon") + `<i class="lay-b">${m === "auto" ? "A" : m === "mobile" ? "C" : "PC"}</i>`; lb.dataset.m = m;
@@ -2249,6 +2298,13 @@ const MANUAL = () => {
     ].map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("")}</div>`,
     "Por fim, o resumo de atalhos e o glossário A a Z.");
 
+  add("Ajustes", "bloqueio", "lock", "Bloqueio com senha ou padrão", "Deixe o app trancado para quem pegar seu computador ou celular.",
+    step(`Abra <b>Configurações → 🔒 Bloqueio do app</b> e escolha <b>Definir senha</b> ou <b>Definir padrão</b> (ligar pontos, como no Android).`, `Digite ou desenhe duas vezes para confirmar. O padrão precisa de pelo menos 4 pontos; a senha, de 4 caracteres.`, `Pronto: o cadeado aparece na barra do topo. Toque nele (ou aperte ${k("Alt")} + ${k("L")}) para bloquear na hora.`)
+    + grid(["Ao bloquear", "A tela desliga como uma TV de tubo e aparece um cadeado se fechando."], ["Ao abrir", "A TV liga na tela do cadeado. Com o código certo o cadeado abre e o app liga."], ["Bloqueio automático", "Só manual, ao sair do app ou depois de 1, 5 ou 15 minutos fora."], ["Tentativas", "Depois de 5 erros seguidos, espera 30 segundos."])
+    + warn("É uma trava de privacidade na tela. Ela não criptografa os dados guardados no navegador, e não há como recuperar o código: se esquecer, é preciso limpar os dados do site. Mantenha a sincronização com o GitHub ou um arquivo de backup em dia.")
+    + tip("Com o <b>modo calmo</b> ligado, ou se o aparelho pedir menos movimento, as animações de TV e cadeado são puladas, mas o bloqueio funciona igual.")
+    + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
+    "Atalhos e gestos para ir mais rápido.");
   add("Ajuda", "atalhos", "search", "Atalhos e gestos", "Para quem gosta de ser rápido.",
     `<table class="man-table"><tr><th>Atalho</th><th>O que faz</th></tr>
     <tr><td>${k("Ctrl")} ${k("K")} ou ${k("/")}</td><td>Buscar tarefas e executar comandos</td></tr><tr><td>${k("N")}</td><td>Nova tarefa</td></tr>
@@ -2355,6 +2411,7 @@ const COMMANDS = () => [
   { n: "Novo quadro", run: () => acts.boardAdd() },
   { n: "Mostrar só atrasadas", run: () => { ui.f.due = "over"; render(); } },
   { n: "Limpar filtros", run: () => acts.fClear() },
+  { n: "Bloquear o app", k: "Alt L", run: () => acts.lock() },
   { n: "Escolher tema (cores e fontes)", run: () => { openSettings(); setTimeout(() => { const e = $("#sec-skins"); if (e) e.scrollIntoView({ block: "start" }); }, 50); } },
   { n: "Alternar tema claro/escuro", run: () => { if (state.settings.skin) { const ids = ["", ...Object.keys(SKIN_DEF)], i = ids.indexOf(state.settings.skin); state.settings.skin = ids[(i + 1) % ids.length]; save(); applySettings(); render(); return toast("Tema: " + (SKIN_DEF[state.settings.skin] ? SKIN_DEF[state.settings.skin].n : "Padrão")); } const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark"); state.settings.theme = dark ? "light" : "dark"; save(); applySettings(); } },
   { n: "Nova coluna", run: () => acts.colAdd() },
@@ -2427,6 +2484,122 @@ function burnCard(id) {
     requestAnimationFrame(frame);
   } catch (e) {}
 }
+/* ===== Bloqueio do app: senha ou padrão, com animação de TV de tubo e cadeado ===== */
+var LK = { ready: false, fails: 0, until: 0, busy: false, hiddenAt: 0, tm: 0 };
+function lkCfg() { try { const L = state.settings && state.settings.lock; if (L && L.h) return L; if (!LK.ready) return JSON.parse(localStorage.getItem("orbita_lock") || "null"); } catch {} return null; }
+function lkOn() { return !!(state.settings.lock && state.settings.lock.h); }
+function lkLocked() { return document.documentElement.dataset.locked === "1"; }
+function lkAnim() { return !(state.settings.calm || matchMedia("(prefers-reduced-motion: reduce)").matches); }
+function lkMirror() {
+  if (!LK.ready) return;
+  try { const L = state.settings.lock; if (L && L.h) localStorage.setItem("orbita_lock", JSON.stringify({ t: L.t, s: L.s, h: L.h })); else { localStorage.removeItem("orbita_lock"); if (lkLocked()) lkReveal(false); } } catch {}
+}
+async function lkHash(secret, salt) {
+  const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""), te = new TextEncoder();
+  try { if (crypto && crypto.subtle) { const k = await crypto.subtle.importKey("raw", te.encode(secret), "PBKDF2", false, ["deriveBits"]); return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: te.encode(salt), iterations: 150000 }, k, 256)); } } catch {}
+  let h = 2166136261; for (let r = 0; r < 3000; r++) for (const c of secret + "|" + salt) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return "f" + h.toString(16);
+}
+const LK_SVG = `<svg class="padlock" viewBox="0 0 64 64" aria-hidden="true"><g class="shackle"><path d="M20 30V21a12 12 0 0 1 24 0v9" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round"/></g><rect class="pl-body" x="12" y="29" width="40" height="29" rx="7" fill="currentColor"/><circle cx="32" cy="42" r="4.3" fill="#05070b"/><rect x="30.2" y="43" width="3.6" height="8" rx="1.8" fill="#05070b"/></svg>`;
+const PAT_SVG = `<div class="pat"><svg viewBox="0 0 240 240" class="pat-svg" aria-label="Grade de 9 pontos para o padrão"><polyline class="pat-line" points=""/>${Array.from({ length: 9 }, (_, i) => `<circle class="pat-dot" cx="${40 + (i % 3) * 80}" cy="${40 + Math.floor(i / 3) * 80}" r="9"/><circle class="pat-hit" cx="${40 + (i % 3) * 80}" cy="${40 + Math.floor(i / 3) * 80}" r="30"/>`).join("")}</svg></div>`;
+function patPad(root, onDone) {
+  const svg = $(".pat-svg", root), line = $(".pat-line", svg), dots = $$(".pat-dot", svg); let seq = [], drawing = false, pt = null;
+  const P = i => [40 + (i % 3) * 80, 40 + Math.floor(i / 3) * 80];
+  const toSvg = e => { const r = svg.getBoundingClientRect(); return [(e.clientX - r.left) * 240 / r.width, (e.clientY - r.top) * 240 / r.height]; };
+  const draw = () => { const pts = seq.map(P); if (drawing && pt) pts.push(pt); line.setAttribute("points", pts.map(q => q.join(",")).join(" ")); dots.forEach((d, i) => d.classList.toggle("on", seq.includes(i))); };
+  const hit = q => { for (let i = 0; i < 9; i++) { const c = P(i); if (!seq.includes(i) && Math.hypot(q[0] - c[0], q[1] - c[1]) < 28) { seq.push(i); try { navigator.vibrate && navigator.vibrate(8); } catch {} } } };
+  svg.addEventListener("pointerdown", e => { e.preventDefault(); try { svg.setPointerCapture(e.pointerId); } catch {} if (svg.dataset.busy) return; seq = []; drawing = true; pt = toSvg(e); hit(pt); draw(); });
+  svg.addEventListener("pointermove", e => { if (!drawing) return; pt = toSvg(e); hit(pt); draw(); });
+  const end = () => { if (!drawing) return; drawing = false; pt = null; draw(); if (seq.length) { svg.dataset.busy = "1"; onDone(seq.slice()); } };
+  svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
+  return { flash(cls) { svg.classList.add(cls); setTimeout(() => { svg.classList.remove(cls); seq = []; draw(); delete svg.dataset.busy; }, 650); }, free() { seq = []; draw(); delete svg.dataset.busy; } };
+}
+const lkSecret = (t, v) => t === "pat" ? "P:" + v.join("") : "S:" + v;
+function lkRender(boot) {
+  const L = lkCfg(); if (!L) return; const el = $("#lockscreen"), pat = L.t === "pat";
+  el.className = boot && lkAnim() ? "boot" : "";
+  el.innerHTML = `<div class="ls-in">${LK_SVG}<h2>Órbita bloqueado</h2><p class="ls-msg" id="ls-msg">${pat ? "Desenhe seu padrão para entrar" : "Digite sua senha para entrar"}</p>${pat ? PAT_SVG : `<form class="ls-form" id="ls-form" autocomplete="off"><input type="password" id="ls-pw" class="inp" placeholder="Senha" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Senha"><button class="btn main" type="submit">Entrar</button></form>`}</div>`;
+  if (pat) { const pad = patPad(el, seq => lkTry("P:" + seq.join(""), pad)); }
+  else { const f = $("#ls-form"), i = $("#ls-pw"); f.addEventListener("submit", e => { e.preventDefault(); if (i.value) lkTry("S:" + i.value, { flash: c => { f.classList.add(c); setTimeout(() => { f.classList.remove(c); i.value = ""; i.focus(); }, 500); } }); }); setTimeout(() => i.focus({ preventScroll: true }), boot && lkAnim() ? 900 : 50); }
+}
+function lkMsg(t, bad) { const m = $("#ls-msg"); if (m) { m.textContent = t; m.classList.toggle("bad", !!bad); } }
+async function lkTry(secret, pad) {
+  if (LK.busy) return; const L = lkCfg(); if (!L) return;
+  if (Date.now() < LK.until) { pad.flash("bad"); return; }
+  LK.busy = true; const ok = (await lkHash(secret, L.s)) === L.h; LK.busy = false;
+  if (ok) { LK.fails = 0; return lkUnlock(); }
+  LK.fails++; pad.flash("bad"); try { navigator.vibrate && navigator.vibrate([40, 40, 40]); } catch {}
+  if (LK.fails >= 5) { LK.until = Date.now() + 30000; LK.fails = 0; const tick = () => { const r = Math.ceil((LK.until - Date.now()) / 1000); if (r <= 0) return lkMsg(L.t === "pat" ? "Desenhe seu padrão para entrar" : "Digite sua senha para entrar"); lkMsg("Muitas tentativas. Aguarde " + r + " s", true); setTimeout(tick, 500); }; tick(); }
+  else lkMsg((L.t === "pat" ? "Padrão incorreto" : "Senha incorreta") + ". Restam " + (5 - LK.fails) + " tentativas", true);
+}
+function lkInert(on) { $$("body > *:not(#lockscreen):not(#crtfx)").forEach(e => { if (on) e.setAttribute("inert", ""); else e.removeAttribute("inert"); }); }
+function lkUnlock() {
+  const el = $("#lockscreen"), pl = $(".padlock", el); if (pl) pl.classList.add("open"); lkMsg("Aberto", false); el.classList.add("ok");
+  setTimeout(() => lkReveal(true), lkAnim() ? 700 : 0);
+}
+function lkReveal(anim) {
+  const r = document.documentElement, b = document.body, fx = $("#crtfx"); r.removeAttribute("data-locked"); lkInert(false); $("#lockscreen").className = "";
+  if (anim && lkAnim()) { r.classList.add("crt"); b.classList.add("crt-on"); fx.className = "on"; setTimeout(() => { b.classList.remove("crt-on"); r.classList.remove("crt"); fx.className = ""; }, 850); }
+  setTimeout(() => { try { document.activeElement && document.activeElement.blur(); } catch {} }, 0);
+}
+function lkLock(animate) {
+  if (!lkOn()) return; if (lkLocked() || LK.busy2) return;
+  if (ui.overlay || ui.drawer) closeLayer(); { const m = $("#board-menu"); if (m) m.open = false; }
+  const r = document.documentElement, b = document.body, fx = $("#crtfx"), go = () => { lkRender(false); r.setAttribute("data-locked", "1"); lkInert(true); b.classList.remove("crt-off"); r.classList.remove("crt"); fx.className = "";
+    const el = $("#lockscreen"), pl = $(".padlock", el); if (pl && lkAnim() && animate) { el.classList.add("closing"); pl.classList.add("open"); setTimeout(() => pl.classList.remove("open"), 260); setTimeout(() => pl.classList.add("clack"), 760); } LK.busy2 = false; };
+  if (animate && lkAnim()) { LK.busy2 = true; r.classList.add("crt"); b.classList.add("crt-off"); fx.className = "off"; setTimeout(go, 760); } else go();
+}
+function lkSection() {
+  const L = state.settings.lock, on = !!(L && L.h), seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(L && L.auto || "manual") === String(v) ? "on" : ""}" data-act="lkAuto" data-v="${v}">${l}</button>`).join("")}</div>`;
+  if (!on) return `<p class="meta" style="margin:0 0 8px">Proteja o app com uma <b>senha</b> ou um <b>padrão</b> de pontos, como no Android. Ao abrir o app (ou ao tocar em bloquear) ele pede o código, com a animação de TV de tubo e cadeado.</p>
+    <div class="set-row"><button class="btn main" data-act="lkSetup" data-v="pwd">${ic("lock")}Definir senha</button><button class="btn" data-act="lkSetup" data-v="pat">${ic("lock")}Definir padrão</button></div>
+    <p class="meta" style="margin:8px 0 0">Aviso: é uma trava de privacidade na tela. Ela não criptografa os dados guardados no navegador. Se esquecer o código, será preciso limpar os dados do site (faça antes um backup ou use a sincronização).</p>`;
+  return `<div class="set-row"><span class="lk-state">${ic("lock")} Ativo · ${L.t === "pat" ? "padrão" : "senha"}</span><button class="btn" data-act="lock">Bloquear agora</button></div>
+    <div class="set-row"><span class="lbl" style="width:110px">Bloquear sozinho</span>${seg("auto", [["manual", "Só manual"], ["hide", "Ao sair do app"], ["1", "Após 1 min"], ["5", "Após 5 min"], ["15", "Após 15 min"]])}</div>
+    <div class="set-row"><button class="btn" data-act="lkSetup" data-v="pwd">Trocar por senha</button><button class="btn" data-act="lkSetup" data-v="pat">Trocar por padrão</button><button class="btn danger" data-act="lkSetup" data-v="off">Remover bloqueio</button></div>
+    <p class="meta" style="margin:6px 0 0">Ao abrir o app ele sempre pede o código. Atalho para bloquear: <kbd>Alt</kbd> + <kbd>L</kbd>.</p>`;
+}
+function lkFlow(goal) {
+  const cur = state.settings.lock && state.settings.lock.h ? state.settings.lock : null, steps = [];
+  if (cur) steps.push({ k: "verify", t: cur.t }); if (goal !== "off") { steps.push({ k: "new", t: goal }); steps.push({ k: "confirm", t: goal }); }
+  let i = 0, first = null; ui.overlay = "lkset";
+  const title = st => ({ verify: "Confirme o código atual", new: goal === "pat" ? "Novo padrão" : "Nova senha", confirm: goal === "pat" ? "Desenhe de novo para confirmar" : "Repita a senha" })[st.k];
+  const show = (msg, bad) => { const st = steps[i], pat = st.t === "pat";
+    $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal lk-modal" role="dialog" aria-label="Bloqueio"><div class="d-head" style="border-top:0"><h2>${title(st)}</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body" style="display:grid;gap:12px;justify-items:center;padding:18px">
+      <p class="ls-msg ${bad ? "bad" : ""}" id="lk-msg">${esc(msg || (pat ? (st.k === "new" ? "Ligue pelo menos 4 pontos" : st.k === "verify" ? "Desenhe o padrão atual" : "Repita o mesmo padrão") : (st.k === "new" ? "Use pelo menos 4 caracteres" : st.k === "verify" ? "Digite a senha atual" : "Digite a mesma senha")))}</p>
+      ${pat ? PAT_SVG : `<form id="lk-form" class="ls-form" autocomplete="off"><input type="password" class="inp" id="lk-pw" placeholder="Senha" autocomplete="new-password" spellcheck="false" aria-label="Senha"><button class="btn main" type="submit">Continuar</button></form>`}</div></div>`;
+    const m = $(".lk-modal"), flash = c => { m.classList.add(c); setTimeout(() => m.classList.remove(c), 500); };
+    const submit = async v => { const raw = lkSecret(st.t, v), len = pat ? v.length : v.length;
+      if (st.k === "verify") { if ((await lkHash(raw, cur.s)) !== cur.h) return { bad: "Código incorreto" }; return { next: true }; }
+      if (st.k === "new") { if (len < 4) return { bad: pat ? "Ligue pelo menos 4 pontos" : "Use pelo menos 4 caracteres" }; first = raw; return { next: true }; }
+      if (raw !== first) { i = steps.length - 2; return { back: pat ? "Os padrões não conferem. Desenhe de novo" : "As senhas não conferem. Digite de novo" }; }
+      return { done: raw }; };
+    const handle = async (v, pad) => { const r = await submit(v);
+      if (r.bad) { if (pad) pad.flash("bad"); else { flash("shake"); } $("#lk-msg").textContent = r.bad; $("#lk-msg").classList.add("bad"); const pw = $("#lk-pw"); if (pw) { pw.value = ""; pw.focus(); } return; }
+      if (r.back) return show(r.back, true);
+      if (r.next) { i++; return show(); }
+      const salt = Array.from(crypto.getRandomValues(new Uint8Array(12)), x => x.toString(16).padStart(2, "0")).join("");
+      state.settings.lock = { t: goal, s: salt, h: await lkHash(r.done, salt), auto: (cur && cur.auto) || "manual" }; save(); applySettings(); closeLayer(); toast("Bloqueio ativado. Toque no cadeado do topo (ou Alt+L) para bloquear."); openSettings(); };
+    if (pat) { const pad = patPad(m, seq => handle(seq, pad)); } else { const f = $("#lk-form"), inp = $("#lk-pw"); f.addEventListener("submit", e => { e.preventDefault(); if (inp.value) handle(inp.value); }); setTimeout(() => inp.focus(), 60); }
+  };
+  if (goal === "off" && !cur) return;
+  if (goal === "off") { steps.push({ k: "done" }); }
+  // remover: só precisa confirmar o código atual
+  if (goal === "off") { const st0 = steps[0], pat = st0.t === "pat"; steps.length = 1;
+    const sub = async v => { const raw = lkSecret(st0.t, v); if ((await lkHash(raw, cur.s)) !== cur.h) return false; state.settings.lock = null; save(); applySettings(); closeLayer(); toast("Bloqueio removido"); openSettings(); return true; };
+    $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal lk-modal" role="dialog" aria-label="Remover bloqueio"><div class="d-head" style="border-top:0"><h2>Remover o bloqueio</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body" style="display:grid;gap:12px;justify-items:center;padding:18px"><p class="ls-msg" id="lk-msg">${pat ? "Desenhe o padrão atual para remover" : "Digite a senha atual para remover"}</p>${pat ? PAT_SVG : `<form id="lk-form" class="ls-form" autocomplete="off"><input type="password" class="inp" id="lk-pw" placeholder="Senha" autocomplete="off" aria-label="Senha"><button class="btn danger" type="submit">Remover</button></form>`}</div></div>`;
+    const m = $(".lk-modal"), bad = () => { $("#lk-msg").textContent = "Código incorreto"; $("#lk-msg").classList.add("bad"); m.classList.add("shake"); setTimeout(() => m.classList.remove("shake"), 500); };
+    if (pat) { const pad = patPad(m, async seq => { if (!(await sub(seq))) { pad.flash("bad"); bad(); } }); } else { const f = $("#lk-form"), inp = $("#lk-pw"); f.addEventListener("submit", async e => { e.preventDefault(); if (inp.value && !(await sub(inp.value))) { bad(); inp.value = ""; inp.focus(); } }); setTimeout(() => inp.focus(), 60); }
+    return; }
+  show();
+}
+document.addEventListener("visibilitychange", () => {
+  if (!lkOn() || lkLocked()) return; const m = state.settings.lock.auto || "manual";
+  if (document.hidden) { LK.hiddenAt = Date.now(); if (m === "hide") lkLock(false); }
+  else if (m !== "manual" && m !== "hide" && LK.hiddenAt && Date.now() - LK.hiddenAt >= +m * 60000) lkLock(false);
+});
+addEventListener("pageshow", e => { if (e.persisted && lkOn() && !lkLocked()) lkLock(false); });
+(function lkBoot() { const go = () => { if (lkLocked() && lkCfg()) lkRender(true); }; if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go(); lkInert(lkLocked()); document.addEventListener("DOMContentLoaded", () => lkInert(lkLocked())); })();
+
 function skinGrid() {
   const cur = SKIN_DEF[state.settings.skin] ? state.settings.skin : "", dark = getComputedStyle(document.documentElement).colorScheme.includes("dark");
   const card = (id, d) => { const f = d ? d.body : "inherit";
@@ -2450,6 +2623,7 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Abertura da Órbita</span>${seg("orbIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Abertura do Quadro</span>${seg("boardIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}<button class="btn sm" data-act="bdReplay">Rever</button></div>
     <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div></section>
+  <section id="sec-lock"><h3>🔒 Bloqueio do app</h3>${lkSection()}</section>
   <section><h3>Avisos de prazo</h3>
     <div class="set-row"><label for="s_hours">Avisar quando faltar até</label><input class="inp" style="flex:none;width:80px" id="s_hours" type="number" min="1" max="168" value="${s.notifyHours}" data-in="setHours"><span>horas</span></div>
     <div class="set-row">${"Notification" in window ? `<button class="btn" data-act="askNotif">Ativar avisos do navegador</button><span class="meta">Estado: ${({ granted: "ativados", denied: "bloqueados pelo navegador", default: "desativados" })[Notification.permission]}</span>` : `<span class="meta">Este navegador não oferece avisos do sistema. As pendências aparecem no sino.</span>`}</div></section>
@@ -2472,7 +2646,7 @@ function openSettings() {
 function openHelp() {
   ui.overlay = "help"; const row = (k, d) => `<div class="set-row"><span style="width:150px">${k.split(" ").map(x => `<kbd>${x}</kbd>`).join(" ")}</span><span>${d}</span></div>`;
   $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Atalhos"><div class="d-head" style="border-top:0"><h2>Atalhos e truques</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body"><section>
-  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Roda do mouse / deslizar", "Sobre o nome do quadro: alterna entre os quadros")}${row("Alt N", "Nova tarefa de qualquer lugar")}${row("Alt Q", "Novo quadro")}${row("Alt Shift C", "Abrir as configurações")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4 5", "Quadro, Órbita, Lista, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
+  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Roda do mouse / deslizar", "Sobre o nome do quadro: alterna entre os quadros")}${row("Alt L", "Bloquear o app")}${row("Alt N", "Nova tarefa de qualquer lugar")}${row("Alt Q", "Novo quadro")}${row("Alt Shift C", "Abrir as configurações")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4 5", "Quadro, Órbita, Lista, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
   <section><h3>Captura rápida</h3><p style="margin:0">No campo no fim de cada coluna, ou no Ctrl K, escreva tudo em uma linha:</p><p class="mono" style="margin:6px 0">Trocar toner #CH-48300 !alta @amanha +Hardware</p>
   ${row("#texto", "número do chamado")}${row("!alta", "prioridade: critica, alta, media, baixa ou 1 a 4")}${row("@hoje", "prazo: hoje, amanha, +3 (dias) ou 25/12")}${row("+tag", "adiciona a tag e cria se não existir")}</section></div></div>`;
 }
@@ -2773,6 +2947,9 @@ const acts = {
     state.tasks = state.tasks.filter(t => !tids.includes(t.id)); state.columns = state.columns.filter(c => c.board !== b.id); state.boards = state.boards.filter(x => x.id !== b.id);
     setBoard(state.boards[0].id); save(); render(); },
   palRun: el => palRun(+el.dataset.v),
+  lock: () => { if (!lkOn()) { toast("Defina uma senha ou padrão para poder bloquear o app"); openSettings(); setTimeout(() => { const e = $("#sec-lock"); if (e) e.scrollIntoView({ block: "start" }); }, 60); return; } lkLock(true); },
+  lkSetup: el => lkFlow(el.dataset.v),
+  lkAuto: el => { if (!state.settings.lock) return; state.settings.lock.auto = el.dataset.v; save(); const sec = $("#sec-lock"); if (sec) sec.innerHTML = `<h3>🔒 Bloqueio do app</h3>${lkSection()}`; },
   skinSet: el => { const v = el.dataset.v; state.settings.skin = v; save(); applySettings(); render(); const g = $("#skin-grid"); if (g) g.innerHTML = skinGrid(); },
   setOpt: el => { const k = el.dataset.k, v = el.dataset.v; state.settings[k] = k === "accent" || k === "depth" ? +v : v; save(); applySettings(); openSettings(); },
   askNotif: async () => { try { const r = await Notification.requestPermission(); toast(r === "granted" ? "Avisos do navegador ativados" : "O navegador bloqueou os avisos aqui. As pendências continuam no sino"); } catch { toast("O navegador bloqueou os avisos aqui. As pendências continuam no sino"); } openSettings(); },
@@ -2897,8 +3074,10 @@ document.addEventListener("focusout", e => { const f = e.target.closest && e.tar
 document.addEventListener("submit", e => { e.preventDefault(); const f = e.target.closest(".quick"); if (!f) return; const inp = $("input", f), p = parseQuick(inp.value.trim()); if (!p.title) return; ui.fresh = addTask(f.dataset.col, p).id; ui.refocus = f.dataset.col; render(); p.tags.forEach(g => suggestTpl(task(ui.fresh) || state.tasks[state.tasks.length - 1], g)); });
 $("#file-in").addEventListener("change", async e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; importar(await f.text()); });
 document.addEventListener("keydown", e => {
+  if (document.documentElement.dataset.locked === "1") return;
   const tg = e.target, typing = /INPUT|TEXTAREA|SELECT/.test(tg.tagName) || tg.isContentEditable;
   if (e.ctrlKey && e.shiftKey && !e.altKey && e.code === "KeyD") { e.preventDefault(); const m = localStorage.getItem("orbita_layout") || "auto", eff = m === "auto" ? (matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop") : m; return layoutSet(eff === "mobile" ? "desktop" : "mobile"); }
+  if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.code === "KeyL") { e.preventDefault(); return acts.lock(); }
   if (e.ctrlKey && e.altKey && !e.shiftKey && e.code === "KeyR") { e.preventDefault(); return acts.appUpdate($("#btn-upd")); }
   if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && (e.code === "KeyN" || e.code === "KeyQ")) { e.preventDefault(); if (ui.overlay) closeLayer(); return e.code === "KeyN" ? acts.newTask() : acts.boardAdd(); }
   if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && e.code === "KeyC") { e.preventDefault(); return ui.overlay === "set" ? closeLayer() : openSettings(); }
