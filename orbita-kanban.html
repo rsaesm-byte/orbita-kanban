@@ -1065,7 +1065,7 @@ body:has(.modal.spl) .toasts { display: none; }
 <header class="top">
   <div class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 100 100"><defs><linearGradient id="lgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#d4961f"/></linearGradient><linearGradient id="lgB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f7bff"/><stop offset="1" stop-color="#7cc4ff"/></linearGradient><clipPath id="lgC"><circle cx="50" cy="50" r="28"/></clipPath></defs><circle class="lg-orb" cx="50" cy="50" r="44" fill="none" stroke="url(#lgG)" stroke-width="1.2" stroke-dasharray="1 5" stroke-linecap="round" opacity=".7"/><g clip-path="url(#lgC)" fill="none" stroke="url(#lgB)" stroke-width="3.2" stroke-linecap="round"><path d="M20 36q15-4 30 0t30 0"/><path d="M20 46q15 4 30 0t30 0"/><path d="M20 57q15-4 30 0t30 0"/><path d="M20 67q15 4 30 0t30 0"/></g><circle cx="50" cy="50" r="28" fill="none" stroke="url(#lgG)" stroke-width="4"/><ellipse cx="62" cy="52" rx="5" ry="2.8" fill="none" stroke="url(#lgG)" stroke-width="2"/><g class="lg-moon"><circle cx="50" cy="6" r="4.2" fill="#050a18" stroke="url(#lgB)" stroke-width="2.4"/></g></svg></span>
     <input class="board-name" id="board-name" aria-label="Nome do quadro" data-in="boardName">
-    <details class="menu" id="board-menu"><summary aria-label="Trocar de quadro" title="Trocar de quadro" id="board-sum"></summary><div class="menu-body" id="board-list"></div></details></div>
+    <details class="menu" id="board-menu"><summary aria-label="Trocar de quadro" title="Trocar de quadro (role o mouse ou deslize aqui para alternar)" id="board-sum"></summary><div class="menu-body" id="board-list"></div></details></div>
   <nav class="tabs" id="tabs" aria-label="Visões"></nav>
   <span class="spacer"></span>
   <button class="btn search-btn" data-act="palette" id="btn-search"></button>
@@ -2339,7 +2339,7 @@ function openSettings() {
 function openHelp() {
   ui.overlay = "help"; const row = (k, d) => `<div class="set-row"><span style="width:150px">${k.split(" ").map(x => `<kbd>${x}</kbd>`).join(" ")}</span><span>${d}</span></div>`;
   $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Atalhos"><div class="d-head" style="border-top:0"><h2>Atalhos e truques</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body"><section>
-  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Alt N", "Nova tarefa de qualquer lugar")}${row("Alt Q", "Novo quadro")}${row("Alt Shift C", "Abrir as configurações")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4 5", "Quadro, Órbita, Lista, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
+  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Roda do mouse / deslizar", "Sobre o nome do quadro: alterna entre os quadros")}${row("Alt N", "Nova tarefa de qualquer lugar")}${row("Alt Q", "Novo quadro")}${row("Alt Shift C", "Abrir as configurações")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4 5", "Quadro, Órbita, Lista, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
   <section><h3>Captura rápida</h3><p style="margin:0">No campo no fim de cada coluna, ou no Ctrl K, escreva tudo em uma linha:</p><p class="mono" style="margin:6px 0">Trocar toner #CH-48300 !alta @amanha +Hardware</p>
   ${row("#texto", "número do chamado")}${row("!alta", "prioridade: critica, alta, media, baixa ou 1 a 4")}${row("@hoje", "prazo: hoje, amanha, +3 (dias) ou 25/12")}${row("+tag", "adiciona a tag e cria se não existir")}</section></div></div>`;
 }
@@ -3053,6 +3053,24 @@ iniciarSalvamento();
   document.addEventListener("mousedown", e => { if (e.target.closest && e.target.closest(".info-row .grip, .chk-row .grip")) e.preventDefault(); });
   document.addEventListener("selectstart", e => { if (d) e.preventDefault(); });
   document.addEventListener("pointerup", end); document.addEventListener("pointercancel", end);
+})();
+
+/* ===== Ciclar entre quadros: roda do mouse (desktop) e deslizar o dedo (celular) sobre o seletor ===== */
+(() => {
+  const zone = document.querySelector(".top .brand"); if (!zone) return;
+  const cycle = dir => { const L = state.boards; if (L.length < 2) return; const i = L.findIndex(b => b.id === board().id), nx = L[(i + dir + L.length) % L.length];
+    ui.armed = null; transit(dir > 0 ? "turn" : "turn", () => { setBoard(nx.id); render(); }); haptic && haptic(); };
+  let lock = 0, acc = 0;
+  zone.addEventListener("wheel", e => {
+    if (state.boards.length < 2 || $("#board-menu").open || document.activeElement === $("#board-name") || e.ctrlKey) return;
+    e.preventDefault(); acc += e.deltaY || e.deltaX; const now = Date.now(); if (now < lock || Math.abs(acc) < 30) return;
+    cycle(acc > 0 ? 1 : -1); acc = 0; lock = now + 320;
+  }, { passive: false });
+  let sx = 0, sy = 0, st = 0, on = false;
+  zone.addEventListener("touchstart", e => { if (e.touches.length !== 1) { on = false; return; } const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); on = true; }, { passive: true });
+  zone.addEventListener("touchend", e => { if (!on) return; on = false; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+    if (state.boards.length < 2 || $("#board-menu").open || Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - st > 900) return;
+    e.preventDefault(); cycle(dx < 0 ? 1 : -1); }, { passive: false });
 })();
 </script>
 </body>
