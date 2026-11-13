@@ -923,7 +923,7 @@ html:root:not([data-theme]) .col-add { background: transparent; border: 1.5px da
 .info-pin { width: 26px; height: 32px; } .info-del { width: 26px; height: 32px; align-self: center; }
 .info-row.wide .info-val { grid-column: 2 / -1; grid-row: 2; }
 .info-row.wide .grip { grid-row: 1; }
-@media (max-width: 520px) { .info-row .lbl-inp { padding: 9px 8px; font-size: 13px; } .info-side .ftype { width: 52px; max-width: 52px; } }
+
 
 /* ===== cartões mais compactos + repetição ===== */
 :root { --pad: 9px; --gap: 8px; } :root[data-density="compact"] { --pad: 7px; --gap: 5px; }
@@ -1059,6 +1059,18 @@ body:has(.modal.spl) .toasts { display: none; }
 .burn-paper .bp-m { position: absolute; left: 22px; top: 0; bottom: 0; width: 1px; background: #e58c8c; }
 .burn-paper span { display: block; word-break: break-word; }
 .burn-fx { position: absolute; pointer-events: none; mix-blend-mode: normal; }
+
+/* nome do campo legível: em telas estreitas o nome ganha uma linha própria, largura toda, e o valor fica logo abaixo */
+.info-row .lbl-inp { min-height: 38px; }
+@media all {
+  .info-row { grid-template-columns: 20px minmax(0, 1fr) auto; row-gap: 5px; }
+  .info-row .grip { grid-column: 1; grid-row: 1; }
+  .info-row .lbl-inp { grid-column: 2; grid-row: 1; font-size: 14px; padding: 9px 10px; }
+  .info-row > .info-side { grid-column: 3; grid-row: 1; }
+  .info-row > .info-val { grid-column: 2 / -1; grid-row: 2; }
+  .info-row { padding-bottom: 8px; border-bottom: 1px dashed color-mix(in oklab, var(--ink) 12%, transparent); }
+  .info-side .ftype { width: 74px; max-width: 74px; font-size: 12px; padding: 6px 4px; }
+}
 </style>
 </head>
 <body>
@@ -1657,7 +1669,7 @@ function infoField(t, f) {
   return `<div class="field info-row${wide}" data-k="${ek}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar ${nm}">⋮⋮</span><textarea class="lbl-inp" rows="1" spellcheck="false" data-in="infoName" data-v="${ek}" placeholder="Nome do campo" aria-label="Nome do campo" title="${nm} (toque para renomear)" autocomplete="off">${nm}</textarea><div class="info-val">${f.type === "select" ? `<input class="inp opts" data-in="infoOpts" data-v="${ek}" value="${esc((f.opts || []).join(", "))}" placeholder="Opções separadas por vírgula" aria-label="Opções da lista">` : ""}${ctl}</div>
     <div class="info-side"><select class="ftype" data-in="infoType" data-v="${ek}" aria-label="Tipo do campo" title="Tipo do campo">${FTYPES.map(([x, l]) => `<option value="${x}" ${x === f.type ? "selected" : ""}>${l}</option>`).join("")}</select><button class="info-pin${f.pin ? " on" : ""}" data-act="infoPin" data-v="${ek}" title="${f.pin ? "Aparece no cartão do quadro (clique para tirar)" : "Mostrar no cartão do quadro"}" aria-pressed="${!!f.pin}">${ic("pin")}</button><button class="info-del" data-act="infoDel" data-v="${ek}" title="Apagar este campo" aria-label="Apagar campo ${nm}">${ic("x")}</button></div></div>`;
 }
-function fitName(el) { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; }
+function fitName(el) { el.style.height = "auto"; el.style.height = Math.max(38, el.scrollHeight + 2) + "px"; }
 function renderDrawerRepHint(t) { const h = $(".rep-hint"); if (!h || !t.rep) return; const nx = repNext(t.rep, t.due); h.innerHTML = nx ? `Ao concluir, a próxima aparece em <b>${fmtD(nx.slice(0, 10))}</b>, na primeira coluna e com o checklist zerado.` : `Não há próxima data: esta é a <b>última</b> vez.`; }
 function repBlock(t) {
   const r = t.rep || {}, days = r.k === "days" || (r.k === "custom" && r.u === "w"), nx = t.rep ? repNext(t.rep, t.due) : "";
@@ -2222,7 +2234,7 @@ function renderDrawer() {
   </div></aside>`;
   if (st) { const nb = $("#layer .d-body"); if (nb) nb.scrollTop = st; }
   if (keep) { const el = document.getElementById(keep); if (el) el.focus(); }
-  fillThumbs(); $$(".lbl-inp").forEach(fitName);
+  fillThumbs(); $$(".lbl-inp").forEach(fitName); [80, 350, 700].forEach(ms => setTimeout(() => $$(".lbl-inp").forEach(fitName), ms));
 }
 
 /* ---------- paleta de comandos ---------- */
