@@ -1326,7 +1326,7 @@ function normalize(s) {
   const d = defaultState();
   if (!s || !Array.isArray(s.columns) || !Array.isArray(s.tasks)) return d;
   if (!Array.isArray(s.boards) || !s.boards.length) s.boards = [{ id: "b_main", name: (s.board && s.board.name) || "Meu quadro" }];
-  s.deleted = s.deleted || {}; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
+  s.deleted = s.deleted || {}; s.trash = Array.isArray(s.trash) ? s.trash.filter(e => e && e.id && e.task) : []; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
   if (!Array.isArray(s.infoFields)) { const ord = (Array.isArray(s.infoOrder) ? s.infoOrder : []).filter(k => INFO.some(i => i[0] === k)); INFO.forEach(([k]) => { if (!ord.includes(k)) ord.push(k); }); s.infoFields = ord.map(k => ({ id: k, name: INFO.find(i => i[0] === k)[1] })); }
   delete s.infoOrder; s.infoFields = s.infoFields.filter(f => f && f.id).map(f => ({ id: String(f.id), name: String(f.name || "Campo") }));
   if (!Array.isArray(s.models) || !s.models.length) s.models = defaultModels(s.infoFields);
@@ -1349,7 +1349,7 @@ const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { r
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
-  listas: ["boards", "tasks", "columns", "tags", "fields", "templates"], debounceMs: 1500, conferirArquivoMs: 20000,
+  listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash"], debounceMs: 1500, conferirArquivoMs: 20000,
   AUTO_DOWNLOAD_SEM_API: !EMBED && !matchMedia("(pointer: coarse)").matches };
 const FS_OK = !EMBED && !!(window.showSaveFilePicker && window.showOpenFilePicker);
 let rev = 0, revAoAbrir = 0, localSalvoEm = "", lastBrowserSave = null;
@@ -1370,6 +1370,9 @@ function tomb(...ids) { state.deleted = state.deleted || {}; const t = new Date(
 const valido = d => d && Array.isArray(d.columns) && Array.isArray(d.tasks);
 
 /* junta dois bancos por id; em conflito vale o principal (p); excluídos somem dos dois */
+const TRASH_DAYS = 30;
+function toTrash(t, from) { state.trash = state.trash || []; const c = col(t.col); state.trash.unshift({ id: "tr_" + uid(), deletedAt: Date.now(), from: from || "", colName: c ? c.name : "", task: JSON.parse(JSON.stringify(t)) }); if (state.trash.length > 300) { const gone = state.trash.splice(300); tomb(...gone.map(e => e.id)); } }
+function trashPurge() { const lim = Date.now() - TRASH_DAYS * 864e5, old = (state.trash || []).filter(e => e.deletedAt < lim); if (!old.length) return; tomb(...old.map(e => e.id)); state.trash = state.trash.filter(e => e.deletedAt >= lim); save(); gcAnexos(); }
 function mergeById(a = [], b = [], dead) { const ids = new Set(a.map(x => x.id)); return a.filter(x => !dead[x.id]).concat(b.filter(x => !ids.has(x.id) && !dead[x.id])); }
 function mergeStates(p, s) {
   p = Object.assign(defaultState(), p); s = Object.assign(defaultState(), s);
@@ -1620,7 +1623,7 @@ async function iniciarSalvamento() {
   if (!temDados) { try { const old = JSON.parse(localStorage.getItem(LS)); if (valido(old) && old.updatedAt) { state = normalize(old); rev = 1; persistir(); temDados = true; } } catch {} }
   if (!temDados) state = normalize(demoState());
   LK.ready = true; revAoAbrir = rev; applySettings(); route(); checkDue(true);
-  await iniciarArquivo(); gistStart(); initRemote(); setTimeout(gcAnexos, 4000);
+  await iniciarArquivo(); gistStart(); initRemote(); setTimeout(gcAnexos, 4000); setTimeout(() => { trashPurge(); bakSnap(); }, 6000); setInterval(() => bakSnap(), 30 * 6e4);
   if (!EMBED && !handle && !pendingHandle && !localStorage.getItem(SAVE_CFG.lsKey + "_wizard")) {   // primeiro acesso: já salva e baixa o arquivo de dados sozinho
     try { localStorage.setItem(SAVE_CFG.lsKey + "_wizard", "1"); } catch {}
     if (!rev) { rev = 1; persistir(); }
@@ -2608,6 +2611,30 @@ function skinGrid() {
     return `<button class="skin-card ${cur === id ? "on" : ""}" data-act="skinSet" data-v="${id}" aria-pressed="${cur === id}">${th}<b>${d ? d.n : "Padrão"}${cur === id ? "<em>✓ em uso</em>" : ""}</b><small>${d ? esc(d.d) : "O visual original do Órbita, com claro, escuro ou automático."}</small></button>`; };
   return card("", null) + Object.keys(SKIN_DEF).map(id => card(id, SKIN_DEF[id])).join("");
 }
+/* ===== backups automáticos (IndexedDB, últimas 10 versões) ===== */
+const BAK_MAX = 10;
+let bakRev = -1;
+async function bakList() { try { const ks = (await kvKeys()).filter(k => String(k).startsWith("bak_")).sort().reverse(); const out = []; for (const k of ks) { const v = await kvGet(k); if (v) out.push(Object.assign({ key: k }, v)); } return out; } catch { return []; } }
+async function bakSnap(force) {
+  try {
+    if (!LK.ready || (!force && rev === bakRev)) return; const l = await bakList();
+    if (!force && l[0] && Date.now() - l[0].ts < 36e5) return;
+    const ts = Date.now(); await kvSet("bak_" + ts, { ts, rev, tasks: state.tasks.length, trash: (state.trash || []).length, json: JSON.stringify(state) }); bakRev = rev;
+    (await bakList()).slice(BAK_MAX).forEach(b => kvSet(b.key, undefined));
+  } catch {}
+}
+const fdt = t => new Date(t).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+async function safeBox() {
+  const box = $("#safe-box"); if (!box) return; const bl = await bakList(), tr = state.trash || [];
+  const left = e => Math.max(0, Math.ceil((e.deletedAt + TRASH_DAYS * 864e5 - Date.now()) / 864e5));
+  const syncTxt = GIST.cfg && GIST.cfg.token ? (ui.sync === "err" ? "⚠ Sem sincronizar. Os dados estão salvos neste aparelho e sobem quando a conexão voltar" : (dirty || ui.sync === "busy") ? "⏳ Alterações pendentes de envio" : "✓ Sincronizado" + (ui.syncAt ? " às " + ui.syncAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "")) : "Sincronização com o GitHub desligada (veja a seção Dados)";
+  box.innerHTML = `<p class="meta" style="margin:0 0 8px">${esc(syncTxt)}. Se dois aparelhos mudarem ao mesmo tempo, o app combina os dois lados sozinho e nada se perde.</p>
+  <h4 style="margin:10px 0 4px">🗑 Lixeira <span class="meta">(${tr.length})</span></h4>
+  ${tr.length ? tr.slice(0, 50).map(e => `<div class="set-row"><span style="flex:1;min-width:0"><b>${esc(e.task.title || "Sem título")}</b><br><span class="meta">${e.from ? esc(e.from) + " · " : ""}apagada ${fdt(e.deletedAt)} · some em ${left(e)} dia(s)</span></span><button class="btn sm" data-act="trRestore" data-id="${e.id}">Restaurar</button><button class="btn sm ghost" data-act="trDel" data-id="${e.id}" title="Apagar de vez">${ic("trash") || "✕"}</button></div>`).join("") + `<div class="set-row"><button class="btn sm" data-act="trEmpty">Esvaziar lixeira</button></div>` : `<p class="meta" style="margin:0">Vazia. Tarefas apagadas ficam aqui por ${TRASH_DAYS} dias.</p>`}
+  <h4 style="margin:12px 0 4px">🕘 Backups neste aparelho <span class="meta">(últimos ${BAK_MAX})</span></h4>
+  ${bl.length ? bl.map(b => `<div class="set-row"><span style="flex:1;min-width:0">${fdt(b.ts)}<br><span class="meta">${b.tasks} tarefa(s)${b.trash ? " · " + b.trash + " na lixeira" : ""}</span></span><button class="btn sm" data-act="bakRestore" data-k="${b.key}">Restaurar</button></div>`).join("") : `<p class="meta" style="margin:0">O primeiro backup é feito poucos segundos depois de abrir o app.</p>`}
+  <div class="set-row"><button class="btn sm" data-act="bakNow">Fazer backup agora</button></div>`;
+}
 function openSettings() {
   Object.keys(SKIN_DEF).forEach(skinFont);
   ui.overlay = "set"; ui.drawer = null; const s = state.settings, seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(s[key]) === String(v) ? "on" : ""}" data-act="setOpt" data-k="${key}" data-v="${v}">${l}</button>`).join("")}</div>`;
@@ -2623,6 +2650,7 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Abertura da Órbita</span>${seg("orbIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Abertura do Quadro</span>${seg("boardIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}<button class="btn sm" data-act="bdReplay">Rever</button></div>
     <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div></section>
+  <section id="sec-safe"><h3>🛟 Segurança dos dados</h3><div id="safe-box"></div></section>
   <section id="sec-lock"><h3>🔒 Bloqueio do app</h3>${lkSection()}</section>
   <section><h3>Avisos de prazo</h3>
     <div class="set-row"><label for="s_hours">Avisar quando faltar até</label><input class="inp" style="flex:none;width:80px" id="s_hours" type="number" min="1" max="168" value="${s.notifyHours}" data-in="setHours"><span>horas</span></div>
@@ -2642,6 +2670,7 @@ function openSettings() {
   <section><h3>Dados</h3><p class="meta" style="margin:0 0 6px">${esc(saveInfo()[1])}. ${FS_OK ? "Com um arquivo de dados conectado, cada alteração é gravada nele sozinha (Ctrl+S grava na hora)." : EMBED ? "Aberto pelo Claude, os dados ficam na sua conta. Para gravar em um arquivo .json no computador, abra o arquivo .html no Chrome ou Edge." : "Este navegador não grava direto em arquivo. Use Chrome ou Edge, ou baixe backups."}</p>${FS_OK ? `<div class="set-row">${handle ? `<button class="btn main" data-act="fileSave">Salvar agora</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : pendingHandle ? `<button class="btn main" data-act="fileReconnect">Reconectar arquivo</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : `<button class="btn main" data-act="fileCreate">Criar arquivo de dados</button><button class="btn" data-act="fileOpen">Abrir arquivo existente</button>`}</div>` : ""}<div class="set-row"><button class="btn" data-act="exportJson">Baixar backup (JSON)</button><button class="btn" data-act="importJson">Restaurar backup</button><button class="btn" data-act="csv">Baixar CSV</button></div>
     <div class="set-row">${hasDemo ? `<button class="btn" data-act="clearDemo">Remover tarefas de exemplo</button>` : ""}<button class="btn" data-act="unarchive">Desarquivar tudo (${state.tasks.filter(t => t.archived).length})</button><button class="btn danger" data-act="reset">${ui.armed === "reset" ? "Clique de novo para apagar tudo" : "Apagar tudo e recomeçar"}</button></div></section>
   </div></div>`;
+  safeBox();
 }
 function openHelp() {
   ui.overlay = "help"; const row = (k, d) => `<div class="set-row"><span style="width:150px">${k.split(" ").map(x => `<kbd>${x}</kbd>`).join(" ")}</span><span>${d}</span></div>`;
@@ -2782,7 +2811,7 @@ $("#att-in").addEventListener("change", e => { const fs = [...e.target.files]; e
 document.addEventListener("dragover", e => { if (!ui.drawer || !e.dataTransfer || ![...e.dataTransfer.types].includes("Files")) return; e.preventDefault(); const d = $(".drawer"); if (d) d.classList.add("dropping"); });
 document.addEventListener("dragleave", e => { if (!e.relatedTarget) { const d = $(".drawer"); if (d) d.classList.remove("dropping"); } });
 document.addEventListener("drop", e => { const d = $(".drawer"); if (d) d.classList.remove("dropping"); if (!ui.drawer || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); addFiles(cur(), [...e.dataTransfer.files]); });
-async function gcAnexos() { try { const used = new Set(state.tasks.flatMap(t => t.files.map(f => "att_" + f.id))); (await kvKeys()).filter(k => String(k).startsWith("att_") && !used.has(k)).forEach(k => kvSet(k, undefined)); } catch {} }
+async function gcAnexos() { try { const used = new Set(state.tasks.concat((state.trash || []).map(e => e.task)).flatMap(t => (t.files || []).map(f => "att_" + f.id))); (await kvKeys()).filter(k => String(k).startsWith("att_") && !used.has(k)).forEach(k => kvSet(k, undefined)); } catch {} }
 
 /* ---------- exportar a tarefa como nota Markdown (frontmatter, callouts e wikilinks do Obsidian) ---------- */
 function htmlToMd(html) {
@@ -2906,7 +2935,7 @@ const acts = {
   flip: el => { const id = el.dataset.id; ui.flipped.has(id) ? ui.flipped.delete(id) : ui.flipped.add(id); el.closest(".card").classList.toggle("flipped"); },
   timer: el => toggleTimer(el.dataset.id),
   timeReset: () => { cur().timeMs = 0; save(); render(); renderDrawer(); },
-  del: el => { const t = task(el.dataset.id); burnCard(t.id); snapshotUndo("Tarefa apagada"); tomb(t.id); if (state.timer && state.timer.id === t.id) state.timer = null; state.tasks.splice(state.tasks.indexOf(t), 1); save(); closeLayer(); render(); },
+  del: el => { const t = task(el.dataset.id); burnCard(t.id); snapshotUndo("Tarefa apagada. Fica 30 dias na lixeira"); toTrash(t, boardOf(t) ? (state.boards.find(b => b.id === boardOf(t)) || {}).name : ""); tomb(t.id); if (state.timer && state.timer.id === t.id) state.timer = null; state.tasks.splice(state.tasks.indexOf(t), 1); save(); closeLayer(); render(); },
   dup: el => { const t = task(el.dataset.id), c = JSON.parse(JSON.stringify(t)); c.id = uid(); c.title += " (cópia)"; c.createdAt = Date.now(); c.timeMs = 0; c.demo = false; c.check.forEach(k => k.id = uid()); state.tasks.splice(state.tasks.indexOf(t) + 1, 0, c); save(); render(); openTask(c.id); },
   repDateAdd: () => { const t = cur(), i = $("#rep_date"); if (!t || !t.rep || !i || !i.value) return; t.rep.dates = [...new Set([...(t.rep.dates || []), i.value])]; save(); render(); renderDrawer(); },
   repDateDel: el => { const t = cur(); if (!t || !t.rep) return; t.rep.dates = (t.rep.dates || []).filter(x => x !== el.dataset.v); save(); render(); renderDrawer(); },
@@ -2942,10 +2971,15 @@ const acts = {
   boardArchive: () => { $("#board-menu").open = false; const cs = cols().map(c => c.id), list = state.tasks.filter(t => cs.includes(t.col) && isDone(t) && !t.archived); if (!list.length) return toast("Não há tarefas concluídas neste quadro"); snapshotUndo(list.length + " tarefas concluídas arquivadas. Elas continuam nos relatórios e na busca"); list.forEach(t => t.archived = true); save(); render(); },
   boardDel: el => { if (state.boards.length < 2) return; if (ui.armed !== "board") { ui.armed = "board"; el.textContent = "Clique de novo para apagar"; return; } ui.armed = null; $("#board-menu").open = false;
     const b = board(), cids = cols(b.id).map(c => c.id), tids = state.tasks.filter(t => cids.includes(t.col)).map(t => t.id);
-    snapshotUndo(`Quadro “${b.name}” apagado com ${tids.length} tarefas`); tomb(b.id, ...cids, ...tids);
+    snapshotUndo(`Quadro “${b.name}” apagado com ${tids.length} tarefas. Elas ficam 30 dias na lixeira`); state.tasks.filter(t => tids.includes(t.id)).forEach(t => toTrash(t, b.name)); tomb(b.id, ...cids, ...tids);
     if (state.timer && tids.includes(state.timer.id)) state.timer = null;
     state.tasks = state.tasks.filter(t => !tids.includes(t.id)); state.columns = state.columns.filter(c => c.board !== b.id); state.boards = state.boards.filter(x => x.id !== b.id);
     setBoard(state.boards[0].id); save(); render(); },
+  trRestore: el => { const e = (state.trash || []).find(x => x.id === el.dataset.id); if (!e) return; const t = JSON.parse(JSON.stringify(e.task)); t.id = uid(); if (!col(t.col)) { const c = (state.columns.find(c => c.name === e.colName && c.board === ui.board) || cols()[0]); t.col = c.id; } t.archived = false; state.tasks.push(t); tomb(e.id); state.trash = state.trash.filter(x => x.id !== e.id); save(); render(); toast("Tarefa restaurada em “" + col(t.col).name + "”", "Abrir", () => openTask(t.id)); safeBox(); },
+  trDel: el => { const e = (state.trash || []).find(x => x.id === el.dataset.id); if (!e) return; tomb(e.id); state.trash = state.trash.filter(x => x.id !== e.id); save(); gcAnexos(); safeBox(); },
+  trEmpty: el => { if (ui.armed !== "trE") { ui.armed = "trE"; el.textContent = "Clique de novo: apagar de vez"; return; } ui.armed = null; tomb(...state.trash.map(e => e.id)); state.trash = []; save(); gcAnexos(); safeBox(); toast("Lixeira esvaziada"); },
+  bakNow: async () => { await bakSnap(true); safeBox(); toast("Backup feito"); },
+  bakRestore: async el => { const b = await kvGet(el.dataset.k); if (!b) return; if (ui.armed !== "bak" + el.dataset.k) { ui.armed = "bak" + el.dataset.k; el.textContent = "Clique de novo para restaurar"; return; } ui.armed = null; await bakSnap(true); const d = normalize(JSON.parse(b.json)); snapshotUndo("Backup de " + fdt(b.ts) + " restaurado"); state = d; overwriteNext = true; save(); closeLayer(); refresh(); },
   palRun: el => palRun(+el.dataset.v),
   lock: () => { if (!lkOn()) { toast("Defina uma senha ou padrão para poder bloquear o app"); openSettings(); setTimeout(() => { const e = $("#sec-lock"); if (e) e.scrollIntoView({ block: "start" }); }, 60); return; } lkLock(true); },
   lkSetup: el => lkFlow(el.dataset.v),
