@@ -1322,11 +1322,18 @@ function demoState() {
 }
 const newCols = b => [["A fazer", 290, 0, false], ["Em andamento", 60, 3, false], ["Concluído", 150, 0, true]].map(([name, hue, wip, done]) => ({ id: uid(), name, hue, wip, done, board: b }));
 function defaultState() { const d = demoState(); d.tasks = []; return d; }
+const DEF_REPLIES = () => [
+  { id: "rp_ok", name: "Chamado resolvido", text: "Olá, {nome}!\n\nO chamado {chamado} ({titulo}) foi resolvido.\nSe precisar de algo mais ou o problema voltar, é só responder este chamado.\n\n{assinatura}" },
+  { id: "rp_wait", name: "Aguardando retorno", text: "Olá, {nome}!\n\nSobre o chamado {chamado}: preciso de um retorno seu para continuar o atendimento. Pode me informar quando a máquina {maquina} estiver disponível?\n\n{assinatura}" },
+  { id: "rp_info", name: "Pedir informações", text: "Olá, {nome}!\n\nPara seguir com o chamado {chamado}, preciso das informações abaixo:\n- Patrimônio / nome da máquina:\n- Descrição do problema:\n- Melhor horário para contato:\n\n{assinatura}" },
+  { id: "rp_close", name: "Encerrando por falta de retorno", text: "Olá, {nome}!\n\nComo não tivemos retorno, o chamado {chamado} será encerrado. Caso ainda precise, abra um novo chamado ou responda esta mensagem.\n\n{assinatura}" },
+  { id: "rp_sched", name: "Agendamento de atendimento", text: "Olá, {nome}!\n\nVamos atender o chamado {chamado} (máquina {maquina}). Podemos fazer o atendimento hoje? Me avise o melhor horário.\n\n{assinatura}" }
+];
 function normalize(s) {
   const d = defaultState();
   if (!s || !Array.isArray(s.columns) || !Array.isArray(s.tasks)) return d;
   if (!Array.isArray(s.boards) || !s.boards.length) s.boards = [{ id: "b_main", name: (s.board && s.board.name) || "Meu quadro" }];
-  s.deleted = s.deleted || {}; s.trash = Array.isArray(s.trash) ? s.trash.filter(e => e && e.id && e.task) : []; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
+  if (!Array.isArray(s.replies)) s.replies = DEF_REPLIES(); s.deleted = s.deleted || {}; s.trash = Array.isArray(s.trash) ? s.trash.filter(e => e && e.id && e.task) : []; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
   if (!Array.isArray(s.infoFields)) { const ord = (Array.isArray(s.infoOrder) ? s.infoOrder : []).filter(k => INFO.some(i => i[0] === k)); INFO.forEach(([k]) => { if (!ord.includes(k)) ord.push(k); }); s.infoFields = ord.map(k => ({ id: k, name: INFO.find(i => i[0] === k)[1] })); }
   delete s.infoOrder; s.infoFields = s.infoFields.filter(f => f && f.id).map(f => ({ id: String(f.id), name: String(f.name || "Campo") }));
   if (!Array.isArray(s.models) || !s.models.length) s.models = defaultModels(s.infoFields);
@@ -1334,7 +1341,7 @@ function normalize(s) {
   s.models = s.models.filter(m => m && m.id).map(m => ({ id: String(m.id), name: String(m.name || "Modelo"), diary: !!m.diary, fields: (Array.isArray(m.fields) ? m.fields : []).filter(f => f && f.id).map(f => ({ id: String(f.id), name: String(f.name || "Campo"), type: FT.includes(f.type) ? f.type : "text", pin: !!f.pin, ...(f.type === "select" ? { opts: Array.isArray(f.opts) ? f.opts.map(String) : [] } : {}) })) }));
   if (!s.models.length) s.models = defaultModels();
   s.boards.forEach(b => { if (b.model && !s.models.some(m => m.id === b.model)) delete b.model; });
-  s.settings = Object.assign({}, d.settings, s.settings); if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
+  s.settings = Object.assign({}, d.settings, s.settings); s.settings.sla = Object.assign({ on: false, h: [4, 8, 24, 72] }, s.settings.sla); if (typeof s.settings.sig !== "string") s.settings.sig = "Ricardo Saes – Suporte de TI\nRamal: 4700 | Opção 1 > 2"; if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
   if (!s.columns.length) s.columns = d.columns;
   s.columns.forEach(c => { if (!s.boards.some(b => b.id === c.board)) c.board = s.boards[0].id; });
   s.boards.forEach(b => { if (!s.columns.some(c => c.board === b.id)) s.columns.push(...newCols(b.id)); });
@@ -1349,7 +1356,7 @@ const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { r
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
-  listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash"], debounceMs: 1500, conferirArquivoMs: 20000,
+  listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies"], debounceMs: 1500, conferirArquivoMs: 20000,
   AUTO_DOWNLOAD_SEM_API: !EMBED && !matchMedia("(pointer: coarse)").matches };
 const FS_OK = !EMBED && !!(window.showSaveFilePicker && window.showOpenFilePicker);
 let rev = 0, revAoAbrir = 0, localSalvoEm = "", lastBrowserSave = null;
@@ -1370,6 +1377,20 @@ function tomb(...ids) { state.deleted = state.deleted || {}; const t = new Date(
 const valido = d => d && Array.isArray(d.columns) && Array.isArray(d.tasks);
 
 /* junta dois bancos por id; em conflito vale o principal (p); excluídos somem dos dois */
+function repFill(txt, t) { const i = t.info || {}, v = { nome: i.usuario || "", chamado: t.ticket ? "#" + t.ticket : "", maquina: i.maqNova || i.maqAntiga || "", patrimonio: i.patrimonio || "", titulo: t.title || "", assinatura: state.settings.sig || "" }; return txt.replace(/\{(\w+)\}/g, (m, k) => k in v ? v[k] : m).replace(/Olá, !/, "Olá!").replace(/[ \t]+\n/g, "\n").replace(/ {2,}/g, " "); }
+async function copyText(x) { try { await navigator.clipboard.writeText(x); return true; } catch { const a = document.createElement("textarea"); a.value = x; a.style.cssText = "position:fixed;opacity:0"; document.body.append(a); a.select(); let ok = false; try { ok = document.execCommand("copy"); } catch {} a.remove(); return ok; } }
+const slaDue = p => { const h = state.settings.sla.h[p]; if (!state.settings.sla.on || !h) return ""; const d = new Date(Date.now() + h * 36e5); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+function impParse(txt) {
+  const L = txt.split(/\r?\n/).map(x => x.trim()).filter(Boolean); if (!L.length) return [];
+  const sep = L[0].includes(";") ? ";" : L[0].includes("\t") ? "\t" : L[0].split(",").length > 2 ? "," : null;
+  const cut = (l) => l.split(sep).map(x => x.trim().replace(/^"|"$/g, "")), pri = x => { const k = norm(x || ""), i = ["critica", "alta", "media", "baixa"].findIndex(y => k && y.startsWith(k.slice(0, 3))); return i < 0 ? 2 : i; };
+  const dt = x => { x = (x || "").trim(); let m = x.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/); if (m) return `${m[3].length < 4 ? "20" + m[3] : m[3]}-${pad2(m[2])}-${pad2(m[1])}`; m = x.match(/^\d{4}-\d{2}-\d{2}/); return m ? m[0] : ""; };
+  if (sep) {
+    const h = cut(L[0]).map(norm), ix = re => h.findIndex(x => re.test(x)), iT = ix(/titulo|assunto|resumo|descri|title|summary/), iN = ix(/chamado|ticket|numero|^id$|^key$/), iP = ix(/prior/), iD = ix(/prazo|venc|due|limite/), iU = ix(/usuario|solicitante|requerente|nome/);
+    if (iT >= 0 || iN >= 0) return L.slice(1).map(l => { const c = cut(l); return { title: (c[iT] || c[iN] || "").trim(), ticket: (c[iN] || "").replace(/^#/, ""), priority: iP >= 0 ? pri(c[iP]) : 2, due: iD >= 0 ? dt(c[iD]) : "", user: iU >= 0 ? c[iU] : "", tags: [] }; }).filter(o => o.title);
+  }
+  return L.map(l => { const m = l.match(/^#?([A-Za-z]{1,5}-?\d{3,})\s*[:\-–—]?\s+(.+)$/); if (m && !/[#!@]/.test(l.slice(0, 1))) { const o = parseQuick(m[2]); o.ticket = o.ticket || m[1]; return o; } return parseQuick(l); }).filter(o => o.title);
+}
 const TRASH_DAYS = 30;
 function toTrash(t, from) { state.trash = state.trash || []; const c = col(t.col); state.trash.unshift({ id: "tr_" + uid(), deletedAt: Date.now(), from: from || "", colName: c ? c.name : "", task: JSON.parse(JSON.stringify(t)) }); if (state.trash.length > 300) { const gone = state.trash.splice(300); tomb(...gone.map(e => e.id)); } }
 function trashPurge() { const lim = Date.now() - TRASH_DAYS * 864e5, old = (state.trash || []).filter(e => e.deletedAt < lim); if (!old.length) return; tomb(...old.map(e => e.id)); state.trash = state.trash.filter(e => e.deletedAt >= lim); save(); gcAnexos(); }
@@ -1654,6 +1675,7 @@ function dueInfo(t) {
   const ms = d - now, day = Math.round((sod(d) - sod(now)) / DAY), hm = hasT ? " " + t.due.slice(11) : "";
   let label, cls = "";
   if (ms < 0) { cls = "over"; label = day === 0 ? "Venceu hoje" + hm : "Atrasada " + (-day) + "d"; }
+  else if (hasT && ms < 864e5) { const h = Math.floor(ms / 36e5), m = Math.floor(ms % 36e5 / 6e4); cls = ms < 36e5 * 4 ? "today" : "soon"; label = "faltam " + (h ? h + "h" + pad2(m) : m + "min"); }
   else if (day === 0) { cls = "today"; label = "Hoje" + hm; }
   else if (day === 1) { cls = "soon"; label = "Amanhã" + hm; }
   else if (day <= 7) { cls = day <= 3 ? "soon" : ""; label = "em " + day + " dias"; }
@@ -1730,6 +1752,7 @@ function parseQuick(text) {
 }
 function addTask(colId, props) {
   const t = Object.assign({ id: uid(), title: "Nova tarefa", desc: "", ticket: "", info: {}, diary: [], model: boardModelId(), priority: 2, due: "", tags: [], check: [], extra: [], files: [], notes: "", custom: {}, timeMs: 0, createdAt: Date.now(), doneAt: null, archived: false }, props);
+  if (!t.due && !(props && props.due)) t.due = slaDue(t.priority);
   t.col = colId || cols()[0].id; if (isDone(t)) t.doneAt = Date.now();
   state.tasks.push(t); save(); return t;
 }
@@ -2364,6 +2387,7 @@ function bfRestore(t) {
   const m = modelOf(t), hide = (m.hide || []).filter(k => BF.some(x => x[0] === k)); if (!hide.length) return "";
   return `<div class="field bf-restore"><span class="lbl">Campos ocultos no modelo “${esc(m.name)}”</span><div class="tags">${hide.map(k => `<button class="tag on" data-act="bfShow" data-v="${k}" style="--h:190">+ ${(BF.find(x => x[0] === k) || [, k])[1]}</button>`).join("")}</div></div>`;
 }
+const repBlock2 = t => `<div class="field" data-bf="replies"><span class="lbl">Respostas prontas</span><div class="set-row"><select class="inp" id="d_reply" data-in="repPick" aria-label="Escolher resposta pronta"><option value="">Escolher uma resposta para copiar…</option>${state.replies.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></div><span class="meta">Preenche nome, chamado e máquina desta tarefa e copia com a sua assinatura.</span></div>`;
 function renderDrawer() {
   const t = task(ui.drawer); if (!t) return closeLayer();
   const run = state.timer && state.timer.id === t.id, [dd, dt] = [t.due.slice(0, 10), t.due.slice(11)], bk = blockOf(t);
@@ -2389,6 +2413,7 @@ function renderDrawer() {
       <div class="chk-list">${t.check.map(c => ckRow(t, c)).join("")}</div>
       <input class="inp" id="d_newck" placeholder="+ Adicionar item e pressionar Enter" data-in="ckNew">${tplRow(t)}</div>
     ${state.fields.map(f => `<div class="field"><label for="cf_${f.id}">${esc(f.name)}</label><input class="inp" id="cf_${f.id}" type="${f.type}" data-in="tCustom" data-v="${f.id}" value="${esc(t.custom[f.id] ?? "")}"></div>`).join("")}
+    ${repBlock2(t)}
     ${filesBlock(t)}
     <div class="field" data-bf="extra">${foldHead("extra", "Informações adicionais", t.extra.length)}<div class="fold-body" ${FOLD.extra ? "hidden" : ""}>
       ${t.extra.map(x => `<div class="xrow"><input class="inp" id="xk_${x.id}" data-in="xKey" data-x="${x.id}" placeholder="Nome do campo" value="${esc(x.k)}" title="${esc(x.k)}" aria-label="Nome do campo"><input class="inp" id="xv_${x.id}" data-in="xVal" data-x="${x.id}" placeholder="Informação" value="${esc(x.v)}" aria-label="Informação"><button class="icon-btn" data-act="xDel" data-v="${x.id}" aria-label="Apagar campo">${ic("x")}</button></div>`).join("")}
@@ -2417,6 +2442,9 @@ const COMMANDS = () => [
   { n: "Bloquear o app", k: "Alt L", run: () => acts.lock() },
   { n: "Escolher tema (cores e fontes)", run: () => { openSettings(); setTimeout(() => { const e = $("#sec-skins"); if (e) e.scrollIntoView({ block: "start" }); }, 50); } },
   { n: "Alternar tema claro/escuro", run: () => { if (state.settings.skin) { const ids = ["", ...Object.keys(SKIN_DEF)], i = ids.indexOf(state.settings.skin); state.settings.skin = ids[(i + 1) % ids.length]; save(); applySettings(); render(); return toast("Tema: " + (SKIN_DEF[state.settings.skin] ? SKIN_DEF[state.settings.skin].n : "Padrão")); } const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark"); state.settings.theme = dark ? "light" : "dark"; save(); applySettings(); } },
+  { n: "Importar chamados (texto ou CSV)", run: () => openImport() },
+  { n: "Respostas prontas e SLA (configurar)", run: () => { openSettings(); setTimeout(() => { const e = $("#sec-desk"); if (e) e.scrollIntoView({ block: "start" }); }, 50); } },
+  ...state.templates.map(tp => ({ n: "Nova tarefa do modelo: " + tp.name.replace(/^Exemplo:\s*/i, ""), run: () => acts.tplNew({ dataset: { id: tp.id } }) })),
   { n: "Nova coluna", run: () => acts.colAdd() },
   { n: state.timer ? "Pausar cronômetro" : "Cronometrar a próxima sugerida", run: () => { const t = state.timer ? task(state.timer.id) : nextUp(); if (t) toggleTimer(t.id); } },
   { n: "Ver pendências", run: () => acts.bell() }, { n: "Copiar resumo do relatório", run: () => acts.copyRep() },
@@ -2612,6 +2640,13 @@ function skinGrid() {
   return card("", null) + Object.keys(SKIN_DEF).map(id => card(id, SKIN_DEF[id])).join("");
 }
 /* ===== backups automáticos (IndexedDB, últimas 10 versões) ===== */
+function openImport() {
+  ui.overlay = "imp"; $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Importar chamados"><div class="d-head" style="border-top:0"><h2>Importar chamados</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body">
+  <p class="meta" style="margin:0">Cole uma lista (uma por linha, ex.: <span class="mono">CH-48300 Trocar toner</span>) ou linhas de uma planilha/CSV com cabeçalho (Chamado, Título, Prioridade, Prazo, Usuário). Elas entram na primeira coluna do quadro atual.</p>
+  <textarea class="inp" id="imp_txt" rows="9" placeholder="CH-48300 Trocar toner da impressora&#10;CH-48311 Instalar certificado digital !alta @amanha" style="width:100%"></textarea>
+  <div class="set-row"><button class="btn main" data-act="impRun">Importar</button><button class="btn ghost" data-act="close">Cancelar</button></div></div></div>`;
+  setTimeout(() => { const e = $("#imp_txt"); if (e) e.focus(); }, 60);
+}
 const BAK_MAX = 10;
 let bakRev = -1;
 async function bakList() { try { const ks = (await kvKeys()).filter(k => String(k).startsWith("bak_")).sort().reverse(); const out = []; for (const k of ks) { const v = await kvGet(k); if (v) out.push(Object.assign({ key: k }, v)); } return out; } catch { return []; } }
@@ -2650,6 +2685,14 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Abertura da Órbita</span>${seg("orbIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Abertura do Quadro</span>${seg("boardIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}<button class="btn sm" data-act="bdReplay">Rever</button></div>
     <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div></section>
+  <section id="sec-desk"><h3>🎧 Atendimento</h3>
+    <div class="set-row"><button class="btn" data-act="impOpen">Importar chamados (texto ou CSV)</button></div>
+    <div class="set-row"><span class="lbl" style="width:110px">Prazo automático (SLA)</span><button class="btn ${s.sla.on ? "on" : ""}" data-act="slaToggle">${s.sla.on ? "Ligado" : "Desligado"}</button><span class="meta">Tarefas novas sem prazo recebem um prazo pela prioridade.</span></div>
+    <div class="set-row">${PRI.map((p, i) => `<label class="meta" style="display:flex;align-items:center;gap:4px">${p}<input class="inp" style="width:62px" type="number" min="0" max="999" value="${s.sla.h[i]}" data-in="slaH" data-p="${i}" aria-label="Horas para ${p}">h</label>`).join("")}</div>
+    <h4 style="margin:10px 0 4px">Assinatura</h4><textarea class="inp" rows="2" data-in="sigSet" aria-label="Assinatura" style="width:100%">${esc(s.sig)}</textarea>
+    <h4 style="margin:10px 0 4px">Respostas prontas</h4><p class="meta" style="margin:0 0 6px">Variáveis: {nome} {chamado} {maquina} {patrimonio} {titulo} {assinatura}</p>
+    ${state.replies.map(r => `<div class="tpl-box"><div class="set-row"><input class="inp" id="rp_${r.id}" value="${esc(r.name)}" data-in="rpName" data-id="${r.id}" aria-label="Nome da resposta"><button class="btn sm ghost" data-act="rpDel" data-id="${r.id}" title="Apagar">${ic("trash")}</button></div><textarea class="inp" rows="4" data-in="rpText" data-id="${r.id}" aria-label="Texto da resposta" style="width:100%">${esc(r.text)}</textarea></div>`).join("")}
+    <div class="set-row"><button class="btn sm" data-act="rpAdd">${ic("plus")}Nova resposta</button></div></section>
   <section id="sec-safe"><h3>🛟 Segurança dos dados</h3><div id="safe-box"></div></section>
   <section id="sec-lock"><h3>🔒 Bloqueio do app</h3>${lkSection()}</section>
   <section><h3>Avisos de prazo</h3>
@@ -2975,6 +3018,12 @@ const acts = {
     if (state.timer && tids.includes(state.timer.id)) state.timer = null;
     state.tasks = state.tasks.filter(t => !tids.includes(t.id)); state.columns = state.columns.filter(c => c.board !== b.id); state.boards = state.boards.filter(x => x.id !== b.id);
     setBoard(state.boards[0].id); save(); render(); },
+  slaToggle: el => { state.settings.sla.on = !state.settings.sla.on; save(); el.classList.toggle("on", state.settings.sla.on); el.textContent = state.settings.sla.on ? "Ligado" : "Desligado"; },
+  rpAdd: () => { const r = { id: uid(), name: "Nova resposta", text: "Olá, {nome}!\n\n\n\n{assinatura}" }; state.replies.push(r); save(); openSettings(); setTimeout(() => { const e = $("#rp_" + r.id); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); e.select(); } }, 60); },
+  rpDel: el => { snapshotUndo("Resposta apagada"); tomb(el.dataset.id); state.replies = state.replies.filter(x => x.id !== el.dataset.id); save(); openSettings(); },
+  impOpen: () => openImport(),
+  impRun: () => { const o = impParse($("#imp_txt").value); if (!o.length) return toast("Não encontrei chamados no texto"); snapshotUndo(o.length + " chamado(s) importado(s)"); const c = cols()[0].id; o.forEach(x => { const t = addTask(c, { title: x.title, ticket: x.ticket, priority: x.priority, due: x.due || "", tags: x.tags || [] }); if (x.user) { t.info = t.info || {}; t.info.usuario = x.user; } }); save(); closeLayer(); render(); },
+  tplNew: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (!tp) return; const t = addTask(cols()[0].id, { title: tp.name.replace(/^Exemplo:\s*/i, ""), tags: tp.tag ? [tp.tag] : [] }); applyTpl(t, tp); closeLayer(); render(); openTask(t.id); },
   trRestore: el => { const e = (state.trash || []).find(x => x.id === el.dataset.id); if (!e) return; const t = JSON.parse(JSON.stringify(e.task)); t.id = uid(); if (!col(t.col)) { const c = (state.columns.find(c => c.name === e.colName && c.board === ui.board) || cols()[0]); t.col = c.id; } t.archived = false; state.tasks.push(t); tomb(e.id); state.trash = state.trash.filter(x => x.id !== e.id); save(); render(); toast("Tarefa restaurada em “" + col(t.col).name + "”", "Abrir", () => openTask(t.id)); safeBox(); },
   trDel: el => { const e = (state.trash || []).find(x => x.id === el.dataset.id); if (!e) return; tomb(e.id); state.trash = state.trash.filter(x => x.id !== e.id); save(); gcAnexos(); safeBox(); },
   trEmpty: el => { if (ui.armed !== "trE") { ui.armed = "trE"; el.textContent = "Clique de novo: apagar de vez"; return; } ui.armed = null; tomb(...state.trash.map(e => e.id)); state.trash = []; save(); gcAnexos(); safeBox(); toast("Lixeira esvaziada"); },
@@ -3067,6 +3116,10 @@ const ins = {
   ckIconCustom: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; const v = el.value.trim(); const f = v ? ((window.Intl && Intl.Segmenter) ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(v)][0].segment : Array.from(v)[0]) : ""; if (f) c.icon = f; else delete c.icon; save(); render(); },
   ckText: el => { const c = cur().check.find(c => c.id === el.dataset.ck); if (c) { c.t = el.value; save(); } },
   setVol: el => { state.settings.volume = +el.value; save(); },
+  sigSet: el => { state.settings.sig = el.value; save(); },
+  slaH: el => { state.settings.sla.h[+el.dataset.p] = clamp(+el.value || 0, 0, 999); save(); },
+  rpName: el => { const r = state.replies.find(x => x.id === el.dataset.id); if (r) { r.name = el.value || "Resposta"; save(); } },
+  rpText: el => { const r = state.replies.find(x => x.id === el.dataset.id); if (r) { r.text = el.value; save(); } },
   setHours: el => { state.settings.notifyHours = clamp(+el.value || 24, 1, 168); save(); renderChrome(); },
   tagName: el => { tag(el.dataset.id).name = el.value; save(); render(); },
   fieldName: el => { state.fields.find(f => f.id === el.dataset.id).name = el.value; save(); },
@@ -3088,6 +3141,7 @@ const chg = {
   dTheme: el => { const t = cur(), e = t.diary.find(x => x.id === el.dataset.e); if (e) { e.theme = el.value.trim() || "Geral"; save(); renderDrawer(); } },
   cxDate: el => { const t = task(ctxId); if (!t) return; const tm = t.due.slice(11); t.due = el.value ? el.value + (tm ? "T" + tm : "") : ""; save(); render(); closeCtx(); },
   tBlock: el => { const t = cur(), b = blockOf(t); b[el.dataset.k] = el.dataset.k === "m" ? +el.value : el.value; if (!b.d || !b.s) return; t.block = b; save(); render(); renderDrawer(); },
+  repPick: async el => { const r = state.replies.find(x => x.id === el.value); el.value = ""; if (!r) return; const x = repFill(r.text, cur()); toast(await copyText(x) ? `“${r.name}” copiada. Cole no chamado` : "Não consegui copiar neste navegador"); },
   tplApply: el => { const tp = state.templates.find(x => x.id === el.value); el.value = ""; if (tp) applyTpl(cur(), tp); },
   tplTag: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.tag = el.value; save(); } },
   tplItems: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.items = el.value.split("\n").map(x => x.trim()).filter(Boolean); save(); } },
