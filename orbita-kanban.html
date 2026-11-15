@@ -813,7 +813,7 @@ body[data-view="manual"] #strip { display: none; }
   .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
 }
 .tab-x { }
-.set-tabs { display: flex; gap: 6px; overflow-x: auto; position: sticky; top: -14px; z-index: 5; margin: -14px -16px 0; padding: 10px 16px 8px; background: var(--surface, var(--bg)); border-bottom: 1px solid var(--line); scrollbar-width: none; } .set-tabs::-webkit-scrollbar { display: none; }
+.set-tabs { min-height: 52px; box-sizing: border-box; align-items: center; flex-shrink: 0; display: flex; gap: 6px; overflow-x: auto; position: sticky; top: -14px; z-index: 5; margin: -14px -16px 0; padding: 14px 16px 8px; background: var(--surface, var(--bg)); border-bottom: 1px solid var(--line); scrollbar-width: none; } .set-tabs::-webkit-scrollbar { display: none; }
 .set-tabs button { flex: none; border: 1px solid var(--line); background: var(--bg2, transparent); color: var(--ink2); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; } .set-tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 .m-body > section[hidden] { display: none; }
 .ls-bio { margin-top: 4px; } .ls-bio svg { margin-right: 6px; }
