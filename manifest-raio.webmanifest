@@ -1,23 +1,32 @@
 {
- "name": "\u00d3rbita Kanban",
- "short_name": "\u00d3rbita",
- "start_url": "./orbita-kanban.html",
+ "name": "Órbita Kanban",
+ "short_name": "Órbita",
+ "description": "Quadro kanban para tarefas e chamados, com agenda, foco do dia e sincronização.",
+ "lang": "pt-BR",
+ "id": "./index.html",
+ "start_url": "./index.html",
  "scope": "./",
  "display": "standalone",
  "background_color": "#000000",
  "theme_color": "#000000",
  "icons": [
   {
-   "src": "icons/raio-192.png",
+   "src": "icons/raio-192.png?v=3",
    "sizes": "192x192",
    "type": "image/png",
    "purpose": "any"
   },
   {
-   "src": "icons/raio-512.png",
+   "src": "icons/raio-512.png?v=3",
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "any"
+  },
+  {
+   "src": "icons/raio-maskable-512.png?v=3",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
   }
  ]
 }
