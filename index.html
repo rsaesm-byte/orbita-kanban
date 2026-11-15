@@ -627,7 +627,7 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
   .search-btn { min-width: 0; padding-inline: 10px; } .search-btn span, .search-btn kbd { display: none; }
   .btn { min-height: 40px; } .btn.bell, #btn-set, .search-btn { min-width: 40px; justify-content: center; }
   /* abas viram barra de navegação no rodapé */
-  .tabs { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 90; display: grid; grid-template-columns: repeat(5, 1fr); padding: 4px; border-radius: 16px; background: color-mix(in oklab, var(--surface) 88%, transparent); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid var(--line); box-shadow: 0 10px 30px -8px rgb(var(--shadow) / .55); }
+  .tabs { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 90; display: grid; grid-template-columns: repeat(7, 1fr); padding: 4px; border-radius: 16px; background: color-mix(in oklab, var(--surface) 88%, transparent); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid var(--line); box-shadow: 0 10px 30px -8px rgb(var(--shadow) / .55); }
   .tabs a { text-align: center; padding: 11px 2px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
   main { padding-bottom: calc(84px + env(safe-area-inset-bottom)); scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
   #btn-new { position: fixed; right: 16px; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 91; height: 52px; min-width: 52px; border-radius: 26px; padding: 0 18px; box-shadow: 0 12px 28px -6px rgb(var(--shadow) / .65), 0 0 0 1px rgb(255 255 255 / .12) inset; }
@@ -813,6 +813,21 @@ body[data-view="manual"] #strip { display: none; }
   .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
 }
 .tab-x { }
+.ag-bar { display: flex; align-items: center; gap: 6px; margin: 4px 0 10px; flex-wrap: wrap; } .ag-title { margin: 0 6px; font-size: 18px; min-width: 150px; text-align: center; }
+.ag-wd, .ag-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; } .ag-wd span { text-align: center; font-size: 11px; color: var(--ink2); text-transform: uppercase; padding-bottom: 3px; }
+.ag-day { min-height: 92px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px; display: flex; flex-direction: column; gap: 3px; min-width: 0; } .ag-grid.wk .ag-day { min-height: 300px; }
+.ag-day.out { opacity: .45; } .ag-day.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; } .ag-day.over { background: color-mix(in oklab, var(--accent) 16%, var(--surface)); outline: 2px dashed var(--accent); }
+.ag-n { display: flex; align-items: baseline; gap: 4px; font-size: 12px; } .ag-n span { color: var(--ink2); font-size: 10px; text-transform: uppercase; display: none; } .ag-grid.wk .ag-n span { display: inline; }
+.ag-add { margin-left: auto; border: 0; background: none; color: var(--ink2); font-size: 16px; line-height: 1; cursor: pointer; border-radius: 6px; width: 22px; height: 22px; opacity: .5; } .ag-day:hover .ag-add { opacity: 1; }
+.ag-t { text-align: left; border: 0; border-left: 3px solid var(--pc); background: color-mix(in oklab, var(--pc) 12%, var(--surface)); color: var(--ink); font-size: 11.5px; padding: 3px 5px; border-radius: 5px; cursor: grab; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.ag-grid.wk .ag-t { white-space: normal; } .ag-t i { font-style: normal; font-weight: 700; margin-right: 4px; color: var(--ink2); } .ag-t.done { text-decoration: line-through; opacity: .55; }
+.ag-more { border: 0; background: none; color: var(--accent); font-size: 11px; cursor: pointer; text-align: left; padding: 0 4px; }
+.ag-ghost { position: fixed; z-index: 9999; pointer-events: none; max-width: 200px; box-shadow: 0 8px 24px rgb(0 0 0 / .3); transform: rotate(-2deg); } body.ag-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
+.fo-wrap { max-width: 760px; margin: 0 auto; } .fo-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 6px 0 14px; flex-wrap: wrap; } .fo-head h2 { font-size: 22px; } 
+.fo-prog { display: grid; gap: 2px; min-width: 150px; } .fo-prog b { font-size: 26px; line-height: 1; } .fo-prog i { display: block; height: 6px; border-radius: 9px; background: var(--bg2); overflow: hidden; } .fo-prog u { display: block; height: 100%; background: var(--accent); border-radius: 9px; transition: width .4s; }
+.fo-sec h3 { margin: 16px 0 6px; font-size: 14px; } .fo-card { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--pc); border-radius: 10px; padding: 8px 10px; margin-bottom: 6px; }
+.fo-main { flex: 1; min-width: 0; display: grid; gap: 2px; cursor: pointer; } .fo-main b { font-weight: 600; overflow-wrap: anywhere; } .fo-empty { text-align: center; padding: 30px 0; color: var(--ink2); font-size: 16px; }
+@media (max-width: 760px) { .ag-day { min-height: 64px; padding: 2px; } .ag-t { font-size: 10px; padding: 2px 3px; } .ag-grid.wk { grid-template-columns: 1fr; } .ag-grid.wk .ag-day { min-height: 0; } .ag-wd:has(+ .ag-grid.wk) { display: none; } .ag-title { min-width: 0; font-size: 16px; } .tabs a { font-size: 11px; } .fo-card { flex-wrap: wrap; } .fo-main { flex-basis: 100%; } .fo-card .due { margin-right: auto; } }
 @media (max-width: 760px) { .tab-x { display: none; } }
 :root[data-calm="on"] .man.js .man-sec:not(.in) { opacity: 1; transform: none; }
 /* ===== tema claro: limpo e nítido (superfícies sólidas, bordas finas, sombras curtas) ===== */
@@ -1286,7 +1301,7 @@ const ic = n => `<svg class="ic" viewBox="0 0 16 16" aria-hidden="true">${ICONS[
 const PRI = ["Crítica", "Alta", "Média", "Baixa"];
 const HUES = [25, 60, 95, 150, 190, 240, 290, 340];
 const ACCENTS = [[190, "Petróleo"], [250, "Cobalto"], [300, "Violeta"], [350, "Magenta"], [150, "Verde"]];
-const VIEWS = [["quadro", "Quadro"], ["orbita", "Órbita"], ["lista", "Lista"], ["relatorios", "Relatórios"], ["manual", "Manual do Usuário"]];
+const VIEWS = [["quadro", "Quadro"], ["orbita", "Órbita"], ["lista", "Lista"], ["agenda", "Agenda"], ["foco", "Foco do dia"], ["relatorios", "Relatórios"], ["manual", "Manual do Usuário"]];
 const LS = "orbita-kanban-v1", LSN = "orbita-kanban-avisos", LSB = "orbita_kanban_quadro";
 
 /* ================= estado ================= */
@@ -1341,7 +1356,7 @@ function normalize(s) {
   s.models = s.models.filter(m => m && m.id).map(m => ({ id: String(m.id), name: String(m.name || "Modelo"), diary: !!m.diary, fields: (Array.isArray(m.fields) ? m.fields : []).filter(f => f && f.id).map(f => ({ id: String(f.id), name: String(f.name || "Campo"), type: FT.includes(f.type) ? f.type : "text", pin: !!f.pin, ...(f.type === "select" ? { opts: Array.isArray(f.opts) ? f.opts.map(String) : [] } : {}) })) }));
   if (!s.models.length) s.models = defaultModels();
   s.boards.forEach(b => { if (b.model && !s.models.some(m => m.id === b.model)) delete b.model; });
-  s.settings = Object.assign({}, d.settings, s.settings); s.settings.sla = Object.assign({ on: false, h: [4, 8, 24, 72] }, s.settings.sla); if (typeof s.settings.sig !== "string") s.settings.sig = "Ricardo Saes – Suporte de TI\nRamal: 4700 | Opção 1 > 2"; if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
+  s.settings = Object.assign({}, d.settings, s.settings); if (!Array.isArray(s.settings.savedF)) s.settings.savedF = []; s.settings.sla = Object.assign({ on: false, h: [4, 8, 24, 72] }, s.settings.sla); if (typeof s.settings.sig !== "string") s.settings.sig = "Ricardo Saes – Suporte de TI\nRamal: 4700 | Opção 1 > 2"; if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
   if (!s.columns.length) s.columns = d.columns;
   s.columns.forEach(c => { if (!s.boards.some(b => b.id === c.board)) c.board = s.boards[0].id; });
   s.boards.forEach(b => { if (!s.columns.some(c => c.board === b.id)) s.columns.push(...newCols(b.id)); });
@@ -1781,7 +1796,7 @@ function renderChrome() {
     + `<button data-act="boardRename">${ic("note")}Renomear</button><button data-act="boardDup">${ic("copy")}Duplicar quadro</button><button data-act="boardArchive">${ic("check")}Arquivar tarefas concluídas</button>`
     + `<label class="bm-sel">Modelo padrão das novas tarefas<select class="inp" data-in="boardModelSel" id="bm_model">${state.models.map(m => `<option value="${m.id}" ${boardModelId() === m.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}</select></label>`
     + (state.boards.length > 1 ? `<hr><button class="danger" data-act="boardDel">${ic("trash")}${ui.armed === "board" ? "Clique de novo para apagar" : "Apagar este quadro"}</button>` : ""); }
-  $("#tabs").innerHTML = VIEWS.map(([k, n]) => `<a href="#${k}" class="${ui.view === k ? "on" : ""}">${k === "manual" ? `Manual<span class="tab-x"> do Usuário</span>` : n}</a>`).join("");
+  $("#tabs").innerHTML = VIEWS.map(([k, n]) => `<a href="#${k}" class="${ui.view === k ? "on" : ""}">${k === "manual" ? `Manual<span class="tab-x"> do Usuário</span>` : k === "foco" ? `Foco<span class="tab-x"> do dia</span>` : n}</a>`).join("");
   $("#btn-search").innerHTML = `${ic("search")}<span>Buscar ou executar…</span><kbd>Ctrl K</kbd>`;
   $("#btn-new").innerHTML = `${ic("plus")}Nova tarefa`;
   const n = pending().length;
@@ -1798,7 +1813,7 @@ function renderChrome() {
   h += `<div class="chips">` + PRI.map((p, i) => `<button class="chip p${i} ${f.pri.has(i) ? "on" : ""}" data-act="fPri" data-v="${i}"><i></i>${p}</button>`).join("") +
     [["over", "Atrasadas"], ["today", "Hoje"], ["week", "7 dias"]].map(([k, l]) => `<button class="chip ${f.due === k ? "on" : ""}" data-act="fDue" data-v="${k}">${l}</button>`).join("") +
     state.tags.map(t => `<button class="tag ${f.tags.has(t.id) ? "on" : ""}" style="--h:${t.hue}" data-act="fTag" data-v="${t.id}">${esc(t.name)}</button>`).join("") +
-    (any ? `<button class="chip" data-act="fClear">Limpar filtros</button>` : "") + `</div><span class="spacer"></span><button class="btn sm" id="reconnectBtn" data-act="fileReconnect" hidden>Reconectar arquivo</button><span id="sync" class="sync"></span>`;
+    state.settings.savedF.map(x => { const on = !!any && x.due === f.due && x.pri.length === f.pri.size && x.pri.every(i => f.pri.has(i)) && x.tags.length === f.tags.size && x.tags.every(i => f.tags.has(i)); return `<button class="chip saved ${on ? "on" : ""}" data-act="fApply" data-id="${x.id}" title="Filtro salvo">★ ${esc(x.name)}</button>`; }).join("") + (any ? `<button class="chip" data-act="fSave" title="Guardar este filtro como atalho">★ Salvar filtro</button><button class="chip" data-act="fClear">Limpar filtros</button>` : "") + `</div><span class="spacer"></span><button class="btn sm" id="reconnectBtn" data-act="fileReconnect" hidden>Reconectar arquivo</button><span id="sync" class="sync"></span>`;
   $("#strip").innerHTML = h; setSaveStatus();
 }
 const INFO = [["maqAntiga", "Máquina antiga"], ["maqNova", "Máquina nova"], ["patrimonio", "Patrimônio"], ["serviceTag", "Service Tag"], ["office", "Pacote Office"], ["lic365", "Licença 365"], ["usuario", "Usuário"], ["rede", "Senha rede"], ["email", "E-mail"], ["ramal", "Ramal"], ["celular", "Celular"]];
@@ -2056,6 +2071,56 @@ function renderList() {
   $("#view").innerHTML = `<div class="pad${ui.en}"><div class="tbl-wrap"><table><thead><tr>${th("ticket", "Chamado")}${th("title", "Tarefa")}${th("col", "Coluna")}${th("priority", "Prioridade")}${th("due", "Prazo")}<th>Tags</th><th>Checklist</th>${th("time", "Tempo")}</tr></thead><tbody>` +
     (rows.map((t, n) => { const di = dueInfo(t), dn = isDone(t); return `<tr data-act="open" data-id="${t.id}" class="p${t.priority}" style="--n:${Math.min(n, 24)}"><td class="mono">${t.ticket ? "#" + esc(t.ticket) : ""}</td><td class="wrap">${esc(t.title)}</td><td>${esc(col(t.col).name)}</td><td><span class="pri">${PRI[t.priority]}</span></td><td class="due ${dn || !di ? "" : di.cls}">${di ? (dn ? dm(di.d) : di.label) : ""}</td><td><div class="tags">${t.tags.map(tag).filter(Boolean).map(g => `<span class="tag" style="--h:${g.hue}">${esc(g.name)}</span>`).join("")}</div></td><td class="num">${t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : ""}</td><td class="num">${spent(t) >= 6e4 ? fmtDur(spent(t)) : ""}</td></tr>`; }).join("") || `<tr><td colspan="8">Nenhuma tarefa com esses filtros.</td></tr>`) + `</tbody></table></div></div>`;
 }
+/* ===== Agenda (mês/semana) ===== */
+const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"], DSEM = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+const ymd = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+ui.cal = { mode: "month", ref: ymd(new Date()) };
+function renderAgenda() {
+  const c = ui.cal, ref = new Date(c.ref + "T12:00:00"), today = ymd(new Date()), week = c.mode === "week";
+  let a, n;
+  if (week) { a = new Date(ref); a.setDate(a.getDate() - a.getDay()); n = 7; }
+  else { const f = new Date(ref.getFullYear(), ref.getMonth(), 1); a = new Date(f); a.setDate(1 - f.getDay()); const last = new Date(ref.getFullYear(), ref.getMonth() + 1, 0); n = Math.ceil((f.getDay() + last.getDate()) / 7) * 7; }
+  const by = {}; live().filter(passes).forEach(t => { if (t.due) (by[t.due.slice(0, 10)] = by[t.due.slice(0, 10)] || []).push(t); });
+  Object.values(by).forEach(l => l.sort((x, y) => (x.due.slice(11) || "99").localeCompare(y.due.slice(11) || "99") || x.priority - y.priority));
+  const title = week ? `${dm(a)} a ${dm(new Date(+a + 6 * DAY))}` : `${MESES[ref.getMonth()][0].toUpperCase() + MESES[ref.getMonth()].slice(1)} de ${ref.getFullYear()}`;
+  let cells = "";
+  for (let i = 0; i < n; i++) { const d = new Date(a); d.setDate(a.getDate() + i); const k = ymd(d), l = by[k] || [], out = !week && d.getMonth() !== ref.getMonth(), max = week ? 99 : 3;
+    cells += `<div class="ag-day ${k === today ? "today" : ""} ${out ? "out" : ""}" data-day="${k}"><div class="ag-n"><b>${d.getDate()}</b><span>${DSEM[d.getDay()]}</span><button class="ag-add" data-act="agAdd" data-day="${k}" aria-label="Nova tarefa em ${dm(d)}" title="Nova tarefa neste dia">+</button></div>`
+      + l.slice(0, max).map(t => `<button class="ag-t p${t.priority} ${isDone(t) ? "done" : ""}" data-act="open" data-id="${t.id}" data-drag="${t.id}" title="${esc(t.title)}">${t.due.length > 10 ? `<i>${t.due.slice(11)}</i>` : ""}${esc(t.title)}</button>`).join("")
+      + (l.length > max ? `<button class="ag-more" data-act="agWeek" data-day="${k}">+${l.length - max} mais</button>` : "") + `</div>`; }
+  const nod = live().filter(t => !t.due && !isDone(t)).length;
+  $("#view").innerHTML = `<div class="pad${ui.en}"><div class="ag-bar"><button class="btn sm" data-act="agNav" data-v="-1" aria-label="Anterior">‹</button><h2 class="ag-title">${title}</h2><button class="btn sm" data-act="agNav" data-v="1" aria-label="Próximo">›</button><button class="btn sm" data-act="agNav" data-v="0">Hoje</button><span class="spacer"></span><div class="seg"><button class="${week ? "" : "on"}" data-act="agMode" data-v="month">Mês</button><button class="${week ? "on" : ""}" data-act="agMode" data-v="week">Semana</button></div></div>
+  <div class="ag-wd">${DSEM.map(x => `<span>${x}</span>`).join("")}</div><div class="ag-grid ${week ? "wk" : ""}">${cells}</div>
+  <p class="meta" style="margin:8px 2px 0">Arraste uma tarefa para outro dia para mudar o prazo (no celular, segure e arraste). ${nod ? nod + " tarefa(s) abertas sem prazo não aparecem aqui." : ""}</p></div>`;
+}
+(function agDrag() {
+  let d = null;
+  const dayAt = (x, y) => { const e = document.elementFromPoint(x, y); return e && e.closest ? e.closest(".ag-day") : null; };
+  const end = (cancel, ev) => { if (!d) return; clearTimeout(d.tm); if (d.ghost) { d.ghost.remove(); $$(".ag-day.over").forEach(x => x.classList.remove("over")); } const st = d; d = null; document.body.classList.remove("ag-dragging");
+    if (!st.on || cancel) return; ui.noClick = Date.now(); const cell = dayAt(ev.clientX, ev.clientY), t = task(st.id); if (!cell || !t) return; const nd = cell.dataset.day; if (nd === t.due.slice(0, 10)) return;
+    snapshotUndo("Prazo movido para " + dm(nd + "T12:00:00")); t.due = nd + (t.due.length > 10 ? "T" + t.due.slice(11) : ""); save(); render(); };
+  document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest(".ag-t[data-drag]"); if (!b || e.button) return; d = { id: b.dataset.drag, x: e.clientX, y: e.clientY, on: false, touch: e.pointerType !== "mouse", b };
+    if (d.touch) d.tm = setTimeout(() => { if (d && !d.on) start(e.clientX, e.clientY); }, 380); });
+  function start(x, y) { d.on = true; document.body.classList.add("ag-dragging"); d.ghost = d.b.cloneNode(true); d.ghost.className += " ag-ghost"; document.body.append(d.ghost); mv(x, y); if (navigator.vibrate) try { navigator.vibrate(12); } catch {} }
+  function mv(x, y) { d.ghost.style.left = x + 8 + "px"; d.ghost.style.top = y + 8 + "px"; $$(".ag-day.over").forEach(z => z.classList.remove("over")); const c = dayAt(x, y); if (c) c.classList.add("over"); }
+  document.addEventListener("pointermove", e => { if (!d) return; if (!d.on) { const m = Math.hypot(e.clientX - d.x, e.clientY - d.y); if (d.touch) { if (m > 10) { clearTimeout(d.tm); d = null; } return; } if (m > 6) start(e.clientX, e.clientY); } else { e.preventDefault(); mv(e.clientX, e.clientY); } }, { passive: false });
+  document.addEventListener("pointerup", e => end(false, e)); document.addEventListener("pointercancel", e => end(true, e));
+  document.addEventListener("click", e => { if (ui.noClick && Date.now() - ui.noClick < 400 && e.target.closest && e.target.closest(".ag-t")) { e.stopPropagation(); e.preventDefault(); } }, true);
+  document.addEventListener("touchmove", e => { if (d && d.on) e.preventDefault(); }, { passive: false });
+})();
+/* ===== Foco do dia ===== */
+function renderFoco() {
+  const all = live(), open = all.filter(t => !isDone(t)), nowD = new Date(), start = sod(Date.now());
+  const over = open.filter(t => { const di = dueInfo(t); return di && di.ms < 0; }).sort((a, b) => score(b) - score(a));
+  const tod = open.filter(t => { const di = dueInfo(t); return di && di.ms >= 0 && di.day === 0; }).sort((a, b) => score(b) - score(a));
+  const rest = open.filter(t => !over.includes(t) && !tod.includes(t)).sort((a, b) => score(b) - score(a)).slice(0, 3);
+  const doneToday = all.filter(t => t.doneAt && t.doneAt >= start).length, total = doneToday + over.length + tod.length;
+  const card = t => { const di = dueInfo(t), run = state.timer && state.timer.id === t.id; return `<div class="fo-card p${t.priority}"><div class="fo-main" data-act="open" data-id="${t.id}" role="button" tabindex="0"><b>${esc(t.title)}</b><span class="meta">${t.ticket ? "#" + esc(t.ticket) + " · " : ""}${PRI[t.priority]}${t.check.length ? " · checklist " + t.check.filter(c => c.d).length + "/" + t.check.length : ""}</span></div>${di ? `<span class="due ${di.cls}">${di.label}</span>` : ""}<button class="btn sm ${run ? "on" : ""}" data-act="timer" data-id="${t.id}" aria-label="Cronômetro" title="Cronômetro">${ic("clock")}</button><button class="btn sm main" data-act="foDone" data-id="${t.id}" title="Concluir">${ic("check")}Concluir</button></div>`; };
+  const sec = (h, l, e) => l.length ? `<section class="fo-sec"><h3>${h} <span class="meta">${l.length}</span></h3>${l.map(card).join("")}</section>` : "";
+  const pct = total ? Math.round(doneToday / total * 100) : 100;
+  $("#view").innerHTML = `<div class="pad${ui.en}"><div class="fo-wrap"><div class="fo-head"><div><h2 style="margin:0">Foco do dia</h2><span class="meta">${(x => x[0].toUpperCase() + x.slice(1))(nowD.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }))}</span></div><div class="fo-prog" title="Concluídas hoje"><b>${doneToday}</b><span class="meta">concluída(s) hoje</span><i><u style="width:${pct}%"></u></i></div></div>
+  ${over.length || tod.length ? "" : `<p class="fo-empty">Nada atrasado nem para hoje. 🎉</p>`}${sec("⚠ Atrasadas", over)}${sec("📅 Para hoje", tod)}${sec("➡ Sugestão para adiantar", rest)}</div></div>`;
+}
 function reportData() {
   const N = ui.period, today = sod(Date.now()), start = today - (N - 1) * DAY, all = boardTasks(), open = all.filter(t => !t.archived && !isDone(t));
   const days = []; for (let i = 0; i < N; i++) days.push({ ts: start + i * DAY, c: 0, d: 0 });
@@ -2157,7 +2222,7 @@ const MANUAL = () => {
     "Agora que você já mexeu em um cartão, vamos entender cada pedaço da tela.");
 
   add("Começando", "tela", "search", "Conhecendo a tela", "Tudo o que você precisa está em quatro áreas. Saber onde cada uma fica já resolve metade das dúvidas.",
-    grid(["Barra do topo", "Nome do quadro (com a setinha para trocar ou criar quadros), as abas <b>Quadro, Órbita, Lista, Relatórios e Manual</b>, busca, <b>Nova tarefa</b>, modo calmo, sino de pendências e configurações."],
+    grid(["Barra do topo", "Nome do quadro (com a setinha para trocar ou criar quadros), as abas <b>Quadro, Órbita, Lista, Agenda, Foco do dia, Relatórios e Manual</b>, busca, <b>Nova tarefa</b>, modo calmo, sino de pendências e configurações."],
       ["Faixa de filtros", "Mostra a <b>próxima tarefa</b> sugerida e botões para filtrar por prioridade, tag e prazo. Clique de novo no botão para tirar o filtro."],
       ["Colunas", "Cada coluna é uma etapa. O número ao lado do nome é quantas tarefas ela tem. No celular, uma barra de chips no topo leva você de coluna em coluna."],
       ["Cartões", "Cada cartão resume uma tarefa: chamado, prioridade, título, tags, prazo, checklist e tempo. Clique nele para abrir tudo."])
@@ -2249,7 +2314,7 @@ const MANUAL = () => {
     "Com muitas tarefas, filtros e busca poupam tempo.");
 
   add("O dia a dia", "busca", "search", "Filtros, busca e comandos", "Achar rápido é metade da produtividade.",
-    grid(["Filtros da faixa", "Prioridade, tags e prazo (Atrasadas, Hoje, 7 dias). Combine quantos quiser. Para limpar, clique de novo ou use o comando <b>Limpar filtros</b>."], ["Busca e comandos", `${k("Ctrl")} ${k("K")} (ou ${k("/")}) abre a busca. Digite parte do título, o número do chamado (#CH-48213), tag ou até texto de campos e do diário.`])
+    grid(["Filtros da faixa", "Prioridade, tags e prazo (Atrasadas, Hoje, 7 dias). Combine quantos quiser. Para limpar, clique de novo ou use o comando <b>Limpar filtros</b>."], ["Filtros salvos", "Com algum filtro ligado, toque em <b>★ Salvar filtro</b>: ele vira um botão fixo na faixa (ex.: ★ Alta + Hoje). Renomeie ou apague em <b>Configurações → Atendimento</b>."], ["Busca e comandos", `${k("Ctrl")} ${k("K")} (ou ${k("/")}) abre a busca. Digite parte do título, o número do chamado (#CH-48213), tag ou até texto de campos e do diário.`])
     + step(`Aperte ${k("Ctrl")} ${k("K")}.`, `Digite o que procura. Use ↑ ↓ para escolher e Enter para abrir.`, `Para executar uma ação, digite o nome dela: <i>tema</i>, <i>novo quadro</i>, <i>backup</i>, <i>csv</i>, <i>configurações</i>…`)
     + trick("A busca também <b>cria</b> tarefas: escreva a frase com marcadores e escolha Criar tarefa.")
     + `<p class="man-try-row">${go("Abrir a busca agora", "palette")}</p>`,
@@ -2267,6 +2332,18 @@ const MANUAL = () => {
     + tip("Quer levar a tabela para o Excel? Use o comando <b>Baixar CSV</b> na busca (Ctrl K) ou em Configurações → Dados.")
     + `<p class="man-try-row">${go("Ir para a Lista", "view:lista")}</p>`,
     "E para ver o todo, com gráficos, existem os Relatórios.");
+
+  add("Visões", "agenda", "cal", "Agenda (calendário)", "Veja os prazos no mês ou na semana e remarque arrastando.",
+    grid(["Mês e Semana", "Os botões no canto alternam a visão. As setas ‹ › andam no tempo e <b>Hoje</b> volta para a data atual."], ["Arrastar para remarcar", "Arraste uma tarefa para outro dia e o prazo muda (a hora é mantida). No celular, <b>segure</b> a tarefa por meio segundo e arraste. Aparece um aviso com <b>Desfazer</b>."], ["Nova tarefa no dia", "O <b>+</b> no canto de cada dia cria uma tarefa já com aquele prazo."], ["Filtros", "Os filtros da faixa também valem aqui. Tarefas sem prazo não aparecem."])
+    + tip("Dias com muitas tarefas mostram <i>+N mais</i>: toque para abrir a semana daquele dia.")
+    + `<p class="man-try-row">${go("Ir para a Agenda", "view:agenda")}</p>`,
+    "Para decidir o que fazer agora, use o Foco do dia.");
+
+  add("Visões", "foco", "check", "Foco do dia", "Uma tela só com o que importa hoje, sem distração.",
+    grid(["Atrasadas e Para hoje", "Listas ordenadas por urgência. Cada tarefa tem <b>Concluir</b> (move para a coluna de concluídas) e cronômetro."], ["Sugestão para adiantar", "Até 3 tarefas abertas que valem adiantar se sobrar tempo."], ["Progresso", "O contador mostra quantas tarefas você concluiu hoje, com uma barra de progresso."], ["Quadro atual", "A tela mostra o quadro que está aberto. Troque de quadro para ver o foco dos outros."])
+    + tip("Se tudo estiver em dia, a tela mostra 🎉. Atalho: aperte a tecla <b>5</b> para abri-la.")
+    + `<p class="man-try-row">${go("Ir para o Foco do dia", "view:foco")}</p>`,
+    "Agora um assunto importante: onde seus dados ficam guardados.");
 
   add("Visões", "relatorios", "bell", "Relatórios", "Números e gráficos para entender seu ritmo e mostrar resultado.",
     grid(["Cartões de números", "Abertas, atrasadas, concluídas, criadas, tempo até concluir e tempo cronometrado."], ["Gráficos", "Abertas por prioridade e por tag, criadas e concluídas por dia, tarefas por coluna. Passe o mouse nas barras para ver o valor."])
@@ -2383,7 +2460,7 @@ function manSpy() {
   v.onscroll = () => { cancelAnimationFrame(manSpy.r); manSpy.r = requestAnimationFrame(spy); }; spy();
 }
 
-function renderView() { ui.en = ui.enter ? " enter" : ""; ui.enter = false; document.body.dataset.view = ui.view; $("#view").onscroll = null; if (ui.view !== "orbita") ORB.lock = null; ({ quadro: renderBoard, orbita: renderOrbit, lista: renderList, relatorios: renderReports, manual: renderManual }[ui.view])(); }
+function renderView() { ui.en = ui.enter ? " enter" : ""; ui.enter = false; document.body.dataset.view = ui.view; $("#view").onscroll = null; if (ui.view !== "orbita") ORB.lock = null; ({ quadro: renderBoard, orbita: renderOrbit, lista: renderList, agenda: renderAgenda, foco: renderFoco, relatorios: renderReports, manual: renderManual }[ui.view])(); }
 function render() { renderChrome(); renderView(); }
 
 /* ---------- gaveta da tarefa ---------- */
@@ -2457,6 +2534,7 @@ const COMMANDS = () => [
   { n: "Bloquear o app", k: "Alt L", run: () => acts.lock() },
   { n: "Escolher tema (cores e fontes)", run: () => { openSettings(); setTimeout(() => { const e = $("#sec-skins"); if (e) e.scrollIntoView({ block: "start" }); }, 50); } },
   { n: "Alternar tema claro/escuro", run: () => { if (state.settings.skin) { const ids = ["", ...Object.keys(SKIN_DEF)], i = ids.indexOf(state.settings.skin); state.settings.skin = ids[(i + 1) % ids.length]; save(); applySettings(); render(); return toast("Tema: " + (SKIN_DEF[state.settings.skin] ? SKIN_DEF[state.settings.skin].n : "Padrão")); } const dark = getComputedStyle(document.documentElement).colorScheme.includes("dark"); state.settings.theme = dark ? "light" : "dark"; save(); applySettings(); } },
+  { n: "Salvar filtro atual como atalho", run: () => acts.fSave() },
   { n: "Importar chamados (texto ou CSV)", run: () => openImport() },
   { n: "Respostas prontas e SLA (configurar)", run: () => { openSettings(); setTimeout(() => { const e = $("#sec-desk"); if (e) e.scrollIntoView({ block: "start" }); }, 50); } },
   ...state.templates.map(tp => ({ n: "Nova tarefa do modelo: " + tp.name.replace(/^Exemplo:\s*/i, ""), run: () => acts.tplNew({ dataset: { id: tp.id } }) })),
@@ -2704,6 +2782,7 @@ function openSettings() {
     <div class="set-row"><button class="btn" data-act="impOpen">Importar chamados (texto ou CSV)</button></div>
     <div class="set-row"><span class="lbl" style="width:110px">Prazo automático (SLA)</span><button class="btn ${s.sla.on ? "on" : ""}" data-act="slaToggle">${s.sla.on ? "Ligado" : "Desligado"}</button><span class="meta">Tarefas novas sem prazo recebem um prazo pela prioridade.</span></div>
     <div class="set-row">${PRI.map((p, i) => `<label class="meta" style="display:flex;align-items:center;gap:4px">${p}<input class="inp" style="width:62px" type="number" min="0" max="999" value="${s.sla.h[i]}" data-in="slaH" data-p="${i}" aria-label="Horas para ${p}">h</label>`).join("")}</div>
+    <h4 style="margin:10px 0 4px">Filtros salvos</h4>${s.savedF.length ? s.savedF.map(x => `<div class="set-row"><input class="inp" value="${esc(x.name)}" data-in="fsName" data-id="${x.id}" aria-label="Nome do filtro"><button class="btn sm ghost" data-act="fsDel" data-id="${x.id}" title="Apagar">${ic("trash")}</button></div>`).join("") : `<p class="meta" style="margin:0">Escolha filtros no topo do quadro e toque em ★ Salvar filtro.</p>`}
     <h4 style="margin:10px 0 4px">Assinatura</h4><textarea class="inp" rows="2" data-in="sigSet" aria-label="Assinatura" style="width:100%">${esc(s.sig)}</textarea>
     <h4 style="margin:10px 0 4px">Respostas prontas</h4><p class="meta" style="margin:0 0 6px">Variáveis: {nome} {chamado} {maquina} {patrimonio} {titulo} {assinatura}</p>
     ${state.replies.map(r => `<div class="tpl-box"><div class="set-row"><input class="inp" id="rp_${r.id}" value="${esc(r.name)}" data-in="rpName" data-id="${r.id}" aria-label="Nome da resposta"><button class="btn sm ghost" data-act="rpDel" data-id="${r.id}" title="Apagar">${ic("trash")}</button></div><textarea class="inp" rows="4" data-in="rpText" data-id="${r.id}" aria-label="Texto da resposta" style="width:100%">${esc(r.text)}</textarea></div>`).join("")}
@@ -2733,7 +2812,7 @@ function openSettings() {
 function openHelp() {
   ui.overlay = "help"; const row = (k, d) => `<div class="set-row"><span style="width:150px">${k.split(" ").map(x => `<kbd>${x}</kbd>`).join(" ")}</span><span>${d}</span></div>`;
   $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Atalhos"><div class="d-head" style="border-top:0"><h2>Atalhos e truques</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body"><section>
-  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Roda do mouse / deslizar", "Sobre o nome do quadro: alterna entre os quadros")}${row("Alt L", "Bloquear o app")}${row("Alt N", "Nova tarefa de qualquer lugar")}${row("Alt Q", "Novo quadro")}${row("Alt Shift C", "Abrir as configurações")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 2 3 4 5", "Quadro, Órbita, Lista, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
+  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Roda do mouse / deslizar", "Sobre o nome do quadro: alterna entre os quadros")}${row("Alt L", "Bloquear o app")}${row("Alt N", "Nova tarefa de qualquer lugar")}${row("Alt Q", "Novo quadro")}${row("Alt Shift C", "Abrir as configurações")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 a 7", "Quadro, Órbita, Lista, Agenda, Foco do dia, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
   <section><h3>Captura rápida</h3><p style="margin:0">No campo no fim de cada coluna, ou no Ctrl K, escreva tudo em uma linha:</p><p class="mono" style="margin:6px 0">Trocar toner #CH-48300 !alta @amanha +Hardware</p>
   ${row("#texto", "número do chamado")}${row("!alta", "prioridade: critica, alta, media, baixa ou 1 a 4")}${row("@hoje", "prazo: hoje, amanha, +3 (dias) ou 25/12")}${row("+tag", "adiciona a tag e cria se não existir")}</section></div></div>`;
 }
@@ -3033,6 +3112,14 @@ const acts = {
     if (state.timer && tids.includes(state.timer.id)) state.timer = null;
     state.tasks = state.tasks.filter(t => !tids.includes(t.id)); state.columns = state.columns.filter(c => c.board !== b.id); state.boards = state.boards.filter(x => x.id !== b.id);
     setBoard(state.boards[0].id); save(); render(); },
+  agNav: el => { const c = ui.cal, v = +el.dataset.v, d = new Date(c.ref + "T12:00:00"); if (!v) c.ref = ymd(new Date()); else { if (c.mode === "week") d.setDate(d.getDate() + 7 * v); else { d.setDate(1); d.setMonth(d.getMonth() + v); } c.ref = ymd(d); } render(); },
+  agMode: el => { ui.cal.mode = el.dataset.v; render(); },
+  agWeek: el => { ui.cal.mode = "week"; ui.cal.ref = el.dataset.day; render(); },
+  agAdd: el => { const t = addTask(cols()[0].id, { due: el.dataset.day }); render(); openTask(t.id); const i = $("#d_title"); if (i) { i.focus(); i.select(); } },
+  foDone: el => { const t = task(el.dataset.id); if (!t) return; const c = cols(boardOf(t)).find(c => c.done); if (!c) return toast("Este quadro não tem coluna de concluídas"); if (state.timer && state.timer.id === t.id) stopTimer(); snapshotUndo("Tarefa concluída"); setCol(t, c.id); save(); render(); },
+  fSave: () => { const f = ui.f; if (!(f.pri.size || f.tags.size || f.due)) return; const nm = [...[...f.pri].sort().map(i => PRI[i]), ...[...f.tags].map(id => (tag(id) || {}).name).filter(Boolean), ({ over: "Atrasadas", today: "Hoje", week: "7 dias" })[f.due]].filter(Boolean).join(" + "); state.settings.savedF.push({ id: uid(), name: nm, pri: [...f.pri], tags: [...f.tags], due: f.due }); save(); render(); toast("Filtro salvo como “" + nm + "”. Renomeie em Configurações › Atendimento"); },
+  fApply: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (!x) return; ui.f = { pri: new Set(x.pri), tags: new Set(x.tags.filter(id => tag(id))), due: x.due || "" }; render(); },
+  fsDel: el => { snapshotUndo("Filtro apagado"); state.settings.savedF = state.settings.savedF.filter(x => x.id !== el.dataset.id); save(); openSettings(); render(); },
   slaToggle: el => { state.settings.sla.on = !state.settings.sla.on; save(); el.classList.toggle("on", state.settings.sla.on); el.textContent = state.settings.sla.on ? "Ligado" : "Desligado"; },
   rpAdd: () => { const r = { id: uid(), name: "Nova resposta", text: "Olá, {nome}!\n\n\n\n{assinatura}" }; state.replies.push(r); save(); openSettings(); setTimeout(() => { const e = $("#rp_" + r.id); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); e.select(); } }, 60); },
   rpDel: el => { snapshotUndo("Resposta apagada"); tomb(el.dataset.id); state.replies = state.replies.filter(x => x.id !== el.dataset.id); save(); openSettings(); },
@@ -3131,6 +3218,7 @@ const ins = {
   ckIconCustom: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; const v = el.value.trim(); const f = v ? ((window.Intl && Intl.Segmenter) ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(v)][0].segment : Array.from(v)[0]) : ""; if (f) c.icon = f; else delete c.icon; save(); render(); },
   ckText: el => { const c = cur().check.find(c => c.id === el.dataset.ck); if (c) { c.t = el.value; save(); } },
   setVol: el => { state.settings.volume = +el.value; save(); },
+  fsName: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (x) { x.name = el.value || "Filtro"; save(); renderChrome(); } },
   sigSet: el => { state.settings.sig = el.value; save(); },
   slaH: el => { state.settings.sla.h[+el.dataset.p] = clamp(+el.value || 0, 0, 999); save(); },
   rpName: el => { const r = state.replies.find(x => x.id === el.dataset.id); if (r) { r.name = el.value || "Resposta"; save(); } },
@@ -3199,7 +3287,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "n" || e.key === "N") { e.preventDefault(); acts.newTask(); }
   else if (e.key === "/") { e.preventDefault(); openPalette(); }
   else if (e.key === "?") openHelp();
-  else if (/^[1-5]$/.test(e.key)) location.hash = VIEWS[+e.key - 1][0];
+  else if (/^[1-7]$/.test(e.key)) location.hash = VIEWS[+e.key - 1][0];
 });
 
 /* ---------- arrastar e soltar com profundidade ---------- */
