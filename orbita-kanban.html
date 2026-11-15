@@ -814,6 +814,111 @@ body[data-view="manual"] #strip { display: none; }
   .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
 }
 .tab-x { }
+/* ===== Notebook ===== */
+body[data-view="notas"] main { overflow: hidden; }
+body[data-view="notas"] #strip { display: none; }
+@keyframes nbPop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.nb { height: 100%; display: grid; grid-template-columns: 236px 316px minmax(0, 1fr); background: var(--bg); }
+.nb > * { min-height: 0; min-width: 0; }
+.nb-side { border-right: 1px solid var(--line); background: var(--surface2); overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.nb-new { display: flex; gap: 6px; } .nb-new .main { flex: 1; justify-content: center; }
+.nb-tpls { display: grid; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px; animation: nbPop .18s ease; }
+.nb-tpls button { display: flex; gap: 8px; align-items: center; border: 0; background: none; padding: 6px 8px; border-radius: 7px; text-align: left; color: var(--ink); }
+.nb-tpls button:hover { background: var(--accent-soft); }
+.nb-hoje { display: flex; gap: 10px; align-items: center; text-align: left; border: 0; border-radius: 12px; padding: 10px 12px; color: #fff; background: linear-gradient(135deg, oklch(.55 .13 var(--ah)), oklch(.5 .14 calc(var(--ah) + 60))); box-shadow: 0 6px 16px -8px rgb(var(--shadow) / .6); transition: transform .15s; }
+.nb-hoje:hover { transform: translateY(-1px); } .nb-hoje > span:first-child { font-size: 22px; } .nb-hoje small { display: block; opacity: .85; font-size: 11px; } .nb-hoje small::first-letter { text-transform: uppercase; }
+.nb-nav { display: grid; gap: 1px; }
+.nb-lbl { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); font-weight: 600; margin: 8px 4px 2px; }
+.nb-row { display: flex; align-items: center; gap: 8px; width: 100%; border: 0; background: none; padding: 6px 8px; border-radius: 8px; color: var(--ink2); text-align: left; position: relative; }
+.nb-row small { margin-left: auto; color: var(--ink3); } .nb-row:hover { background: var(--surface); } .nb-row.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: inset 3px 0 0 oklch(.6 .14 var(--ch, var(--ah))); }
+.nb-row.add { color: var(--ink3); } .nb-brow { display: flex; align-items: center; } .nb-brow .nb-row { flex: 1; }
+.nb-bed { border: 0; background: none; color: var(--ink3); opacity: 0; padding: 4px 6px; border-radius: 6px; } .nb-brow:hover .nb-bed, .nb-bed:focus-visible { opacity: 1; } @media (pointer: coarse) { .nb-bed { opacity: .7; } }
+.nb-bedit { display: grid; gap: 6px; padding: 8px; margin: 2px 0 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; animation: nbPop .18s ease; }
+.nb-emo-g { display: flex; flex-wrap: wrap; gap: 2px; } .nb-emo-g button { border: 0; background: none; font-size: 17px; padding: 3px 4px; border-radius: 6px; } .nb-emo-g button:hover { background: var(--accent-soft); }
+.nb-emo-g.big { background: var(--surface2); border: 1px solid var(--line); border-radius: 10px; padding: 6px; margin: 4px 0 8px; animation: nbPop .18s ease; } .nb-emo-g.big button { font-size: 22px; padding: 4px 6px; }
+.nb-hues { display: flex; gap: 6px; } .nb-hues button { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; background: oklch(.65 .14 var(--ch)); } .nb-hues button.on { border-color: var(--ink); }
+.nb-tags { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 2px; } .nb-tags .chip small { color: var(--ink3); } .nb-tags .chip.on, .nb-sr .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.nb-cal { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px; }
+.nb-calh { display: flex; align-items: center; justify-content: space-between; font-size: 12px; text-transform: capitalize; margin-bottom: 4px; } .nb-calh button { border: 0; background: none; font-size: 16px; padding: 0 8px; color: var(--ink2); }
+.nb-calg { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; } .nb-calg i { font-style: normal; font-size: 10px; color: var(--ink3); }
+.nb-cd { border: 0; background: none; font-size: 11px; aspect-ratio: 1; border-radius: 6px; color: var(--ink2); position: relative; padding: 0; }
+.nb-cd[data-n="1"] { background: oklch(.9 .06 var(--ah)); } .nb-cd[data-n="2"] { background: oklch(.82 .09 var(--ah)); } .nb-cd[data-n="3"] { background: oklch(.72 .12 var(--ah)); color: #fff; }
+.nb-cd.dn::after { content: ""; position: absolute; bottom: 2px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--accent); } .nb-cd.today { outline: 2px solid var(--accent); outline-offset: -1px; font-weight: 700; } .nb-cd:hover { filter: brightness(.95); }
+.nb-tools { display: grid; gap: 2px; margin-top: auto; } .nb-tools button { border: 0; background: none; text-align: left; padding: 6px 8px; border-radius: 8px; color: var(--ink2); } .nb-tools button:hover, .nb-tools button.on { background: var(--surface); color: var(--ink); }
+.nb-list { border-right: 1px solid var(--line); display: flex; flex-direction: column; background: var(--bg); }
+.nb-lh { display: flex; align-items: center; gap: 8px; padding: 12px 12px 6px; } .nb-lh h2 { margin: 0; font: 600 17px var(--display); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nb-sr { display: flex; align-items: center; gap: 6px; padding: 4px 12px 8px; position: relative; flex-wrap: wrap; } .nb-sr > span { position: absolute; left: 22px; top: 12px; color: var(--ink3); pointer-events: none; display: inline-flex; } .nb-sr .inp { flex: 1; padding-left: 30px; min-width: 120px; }
+.nb-items { flex: 1; overflow: auto; padding: 0 8px 20px; display: grid; gap: 4px; align-content: start; }
+.nb-item { display: flex; gap: 10px; text-align: left; border: 1px solid transparent; background: var(--surface); border-radius: 12px; padding: 10px; color: var(--ink); transition: border-color .15s, transform .15s; }
+.nb-item:hover { border-color: var(--line); transform: translateX(2px); } .nb-item.on { border-color: oklch(.6 .14 var(--ch)); box-shadow: 0 0 0 3px oklch(.6 .14 var(--ch) / .15); }
+.nb-ico { font-size: 22px; line-height: 1.2; } .nb-it { display: grid; gap: 2px; min-width: 0; flex: 1; } .nb-it b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.nb-it small { color: var(--ink2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .nb-star { color: #d9a400; }
+.nb-im { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--ink3); } .nb-bk { color: oklch(.5 .13 var(--ch)); } .nb-tg2 { color: var(--accent); }
+.nb-none { text-align: center; color: var(--ink3); padding: 30px 10px; display: grid; gap: 10px; justify-items: center; }
+.nb-main { display: flex; flex-direction: column; background: var(--surface); position: relative; }
+.nb-bar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; } .nb-bar .spacer { flex: 1; }
+.nb-ib.on { background: var(--accent-soft); border-color: var(--accent); } .nb-more { position: relative; } .nb-more summary { list-style: none; cursor: pointer; } .nb-more .menu-body { right: 0; left: auto; min-width: 200px; z-index: 20; }
+.nb-back, .nb-sidebtn { display: none; }
+.nb-scroll { flex: 1; overflow: auto; scroll-behavior: smooth; }
+.nb-cover { height: 110px; position: relative; background: linear-gradient(120deg, oklch(.8 .1 var(--ch)), oklch(.68 .15 calc(var(--ch) + 55))); } .nb-cover .btn { position: absolute; right: 12px; bottom: 8px; opacity: 0; transition: opacity .2s; } .nb-cover:hover .btn, .nb-cover .btn:focus-visible { opacity: 1; }
+.nb-page { max-width: 880px; margin: 0 auto; padding: 18px 32px 100px; }
+.nb-ed[data-mode="split"] .nb-page { max-width: 1280px; }
+.nb-head { display: flex; align-items: center; gap: 8px; } .nb-icon { border: 0; background: none; font-size: 38px; border-radius: 12px; padding: 0 6px; line-height: 1.2; } .nb-icon:hover { background: var(--surface2); }
+.nb-title { flex: 1; min-width: 0; border: 0; background: none; font: 700 30px/1.25 var(--display); color: var(--ink); padding: 6px 2px; outline: none; }
+.nb-title::placeholder { color: var(--ink3); opacity: .6; }
+.nb-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; color: var(--ink3); font-size: 12px; margin: 2px 0 10px; } .nb-meta .inp { width: auto; padding: 2px 6px; font-size: 12px; }
+.nb-tb { display: flex; gap: 2px; flex-wrap: wrap; padding: 4px; margin: 0 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface2); position: sticky; top: 6px; z-index: 5; box-shadow: 0 4px 12px -8px rgb(var(--shadow) / .5); }
+.nb-tb button { border: 0; background: none; min-width: 32px; height: 30px; border-radius: 7px; padding: 0 6px; color: var(--ink2); font-size: 13px; } .nb-tb button:hover { background: var(--accent-soft); color: var(--ink); }
+.nb-split { display: grid; gap: 28px; } .nb-ed[data-mode="split"] .nb-split { grid-template-columns: 1fr 1fr; }
+.nb-ed[data-mode="edit"] .nb-pv { display: none; } .nb-ed[data-mode="read"] .nb-edwrap, .nb-ed[data-mode="read"] .nb-tb { display: none; }
+.nb-ed[data-mode="split"] .nb-pv { border-left: 1px dashed var(--line); padding-left: 24px; }
+.nb-edwrap { position: relative; } .nb-ta { width: 100%; border: 0; outline: none; resize: none; background: none; color: var(--ink); font: 400 16px/1.75 var(--body); padding: 2px 0; overflow: hidden; min-height: 220px; tab-size: 2; }
+.nb-ta::placeholder { color: var(--ink3); }
+.nb-menu { position: absolute; z-index: 30; width: 250px; max-height: 280px; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 30px -12px rgb(var(--shadow) / .6); padding: 4px; animation: nbPop .14s ease; }
+.nb-menu[hidden] { display: none; } .nb-mh { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink3); padding: 4px 8px; }
+.nb-menu button { display: flex; gap: 10px; align-items: center; width: 100%; border: 0; background: none; text-align: left; padding: 6px 8px; border-radius: 8px; color: var(--ink); } .nb-menu button > span { width: 22px; text-align: center; color: var(--ink2); }
+.nb-menu button.on, .nb-menu button:hover { background: var(--accent-soft); }
+.nb-pv { font-size: 16px; line-height: 1.75; min-width: 0; overflow-wrap: anywhere; } .nb-pv p { margin: 0 0 4px; }
+.nb-gap { height: 10px; } .nb-h { font-family: var(--display); line-height: 1.3; margin: 18px 0 6px; } h1.nb-h { font-size: 26px; } h2.nb-h { font-size: 21px; } h3.nb-h { font-size: 17px; } h4.nb-h, h5.nb-h, h6.nb-h { font-size: 15px; }
+.nb-li { display: flex; gap: 8px; padding-left: calc(var(--lv, 0) * 22px); align-items: baseline; } .nb-b { width: 1.4em; flex: none; text-align: right; color: var(--ink3); }
+.nb-todo { align-items: flex-start; } .nb-todo input { margin-top: .5em; accent-color: var(--accent); width: 16px; height: 16px; flex: none; } .nb-todo.on > span { text-decoration: line-through; color: var(--ink3); }
+.nb-pv blockquote { margin: 6px 0; padding: 4px 14px; border-left: 3px solid var(--edge); color: var(--ink2); }
+.nb-call { --c: oklch(.6 .13 var(--ch)); margin: 8px 0; padding: 10px 14px; border-left: 4px solid var(--c); border-radius: 10px; background: color-mix(in oklab, var(--c) 12%, var(--surface)); } .nb-ct { font-weight: 600; margin-bottom: 2px; }
+.nb-pv code { font: 13px var(--mono); background: var(--surface2); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+.nb-code { position: relative; margin: 8px 0; background: #0f1d20; color: #dff3ef; border-radius: 12px; padding: 12px 14px; overflow: auto; } .nb-code code { background: none; border: 0; color: inherit; padding: 0; white-space: pre; font-size: 13px; line-height: 1.6; display: block; }
+.nb-cp { position: absolute; right: 8px; top: 8px; border: 1px solid rgb(255 255 255 / .25); background: rgb(255 255 255 / .08); color: #fff; border-radius: 6px; font-size: 11px; padding: 2px 8px; opacity: 0; transition: opacity .15s; } .nb-code:hover .nb-cp { opacity: 1; } @media (pointer: coarse) { .nb-cp { opacity: .8; } }
+.nb-tw { overflow: auto; margin: 8px 0; } .nb-pv table { border-collapse: collapse; min-width: 50%; } .nb-pv th, .nb-pv td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; } .nb-pv th { background: var(--surface2); }
+.nb-pv hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; } .nb-pv mark { background: oklch(.92 .12 95); color: #3a2f00; border-radius: 3px; padding: 0 2px; } .nb-img { max-width: 100%; border-radius: 10px; }
+.nb-wl { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); } .nb-wl:hover { background: var(--accent-soft); } .nb-wl.miss { border-bottom-style: dashed; opacity: .75; }
+.nb-tg { color: var(--accent); text-decoration: none; background: var(--accent-soft); border-radius: 99px; padding: 0 8px; font-size: .9em; }
+.nb-tk { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--line); background: var(--surface2); border-radius: 8px; padding: 0 8px; font-size: .92em; color: var(--ink); margin: 1px 0; max-width: 100%; text-align: left; } .nb-tk:hover { border-color: var(--accent); } .nb-tk.dn { text-decoration: line-through; opacity: .65; } .nb-tk.miss { opacity: .6; border-style: dashed; }
+.nb-live { display: grid; gap: 4px; justify-items: start; border: 1px dashed var(--edge); border-radius: 12px; padding: 10px 12px; margin: 8px 0; background: var(--surface2); }
+.nb-foot { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 6px; } .nb-fh { font-size: 12px; font-weight: 600; color: var(--ink2); margin: 14px 0 6px; }
+.nb-bl { display: grid; gap: 6px; } .nb-bl > button { display: grid; text-align: left; border: 1px solid var(--line); background: var(--surface2); border-radius: 10px; padding: 8px 10px; color: var(--ink); } .nb-bl small { color: var(--ink3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .nb-bl > button:hover { border-color: var(--accent); }
+.nb-ul { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 10px; border: 1px dashed var(--line); border-radius: 10px; }
+.nb-trashbar { background: var(--surface2); border: 1px dashed var(--edge); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.nb-empty { flex: 1; display: grid; place-content: center; text-align: center; gap: 6px; padding: 30px; } .nb-empty h2 { margin: 0; font-family: var(--display); } .nb-big { font-size: 64px; animation: nbFloat 3s ease-in-out infinite; } .nb-ebtn { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+@keyframes nbFloat { 50% { transform: translateY(-8px) rotate(-3deg); } }
+.nb-gwrap { flex: 1; position: relative; min-height: 0; background: radial-gradient(circle at 50% 40%, var(--surface), var(--surface2)); } #nb-g { width: 100%; height: 100%; display: block; touch-action: none; }
+.nb-ghint { position: absolute; left: 14px; bottom: 6px; margin: 0; } .nb-gleg { display: inline-flex; gap: 10px; flex-wrap: wrap; } .nb-gleg i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; background: oklch(.62 .14 var(--ch)); }
+.nb-ge { stroke: var(--edge); stroke-width: 1.2; opacity: .55; transition: opacity .2s, stroke .2s; } .nb-ge.hi { stroke: var(--accent); stroke-width: 2; opacity: 1; }
+.nb-gn { cursor: pointer; } .nb-gn circle { fill: oklch(.62 .14 var(--ch)); stroke: var(--surface); stroke-width: 2; transition: filter .2s; } .nb-gn text { font-size: 11px; fill: var(--ink2); pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.nb-gn.cur circle { stroke: var(--ink); } .nb-gn:hover circle, .nb-gn.hi circle { filter: drop-shadow(0 0 6px oklch(.62 .14 var(--ch))); } #nb-g.hov .nb-gn:not(.hi) { opacity: .35; } #nb-g.hov .nb-ge:not(.hi) { opacity: .12; } .nb-gn:focus-visible circle { stroke: var(--accent); stroke-width: 3; }
+.nb.focus { grid-template-columns: minmax(0, 1fr); } .nb.focus .nb-side, .nb.focus .nb-list { display: none; } .nb.focus .nb-bar { opacity: .35; transition: opacity .2s; } .nb.focus .nb-bar:hover { opacity: 1; } .nb.focus .nb-page { max-width: 760px; } .nb.focus .nb-ta, .nb.focus .nb-pv { font-size: 18px; }
+.nb-scrim { display: none; }
+@media (max-width: 720px), (pointer: coarse) and (max-width: 1000px) { body[data-view="notas"] #btn-new { display: none; } body[data-view="notas"] main { padding-bottom: calc(76px + env(safe-area-inset-bottom)); } }
+@media (max-width: 1100px) { .nb { grid-template-columns: 210px 270px minmax(0, 1fr); } }
+@media (max-width: 999px) { .nb-ed[data-mode="split"] .nb-pv { display: none; } .nb-ed[data-mode="split"] .nb-split { grid-template-columns: 1fr; } .nb-splitbtn { display: none; } }
+@media (max-width: 760px) {
+  .nb { grid-template-columns: minmax(0, 1fr); position: relative; overflow: hidden; }
+  .nb-side { position: absolute; top: 0; bottom: 0; left: 0; width: min(310px, 86%); z-index: 30; transform: translateX(-105%); transition: transform .25s ease; box-shadow: 8px 0 30px -10px rgb(0 0 0 / .5); }
+  .nb.side-open .nb-side { transform: none; } .nb.side-open .nb-scrim { display: block; position: absolute; inset: 0; z-index: 29; background: rgb(0 0 0 / .35); }
+  .nb[data-pane="list"] .nb-main { display: none; } .nb[data-pane="edit"] .nb-list { display: none; } .nb-back, .nb-sidebtn { display: inline-flex; }
+  .nb-page { padding: 12px 14px 120px; } .nb-title { font-size: 24px; } .nb-ta, .nb-pv { font-size: 16px; } .nb-tb { top: 2px; flex-wrap: nowrap; overflow-x: auto; } .nb-cover { height: 80px; }
+  .nb-item { padding: 12px 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .nb *, .nb { animation: none !important; transition: none !important; } }
+
 .note-wrap { display: grid; gap: 2px; } .snz { display: flex; gap: 6px; align-items: center; padding: 0 10px 6px; flex-wrap: wrap; } .snz .chip { padding: 2px 8px; font-size: 12px; }
 .linkb { border: 0; background: none; color: var(--accent); cursor: pointer; text-align: left; font: inherit; padding: 2px 0; } .linkb.dn { text-decoration: line-through; opacity: .6; } .sub-row { gap: 8px; align-items: center; }
 .logo svg *, .ic-opt svg * { transform-box: fill-box; transform-origin: center; }
@@ -1323,7 +1428,7 @@ const ic = n => `<svg class="ic" viewBox="0 0 16 16" aria-hidden="true">${ICONS[
 const PRI = ["Crítica", "Alta", "Média", "Baixa"];
 const HUES = [25, 60, 95, 150, 190, 240, 290, 340];
 const ACCENTS = [[190, "Petróleo"], [250, "Cobalto"], [300, "Violeta"], [350, "Magenta"], [150, "Verde"]];
-const VIEWS = [["quadro", "Quadro"], ["orbita", "Órbita"], ["lista", "Lista"], ["agenda", "Agenda"], ["foco", "Foco do dia"], ["relatorios", "Relatórios"], ["manual", "Manual do Usuário"]];
+const VIEWS = [["quadro", "Quadro"], ["orbita", "Órbita"], ["lista", "Lista"], ["agenda", "Agenda"], ["foco", "Foco do dia"], ["relatorios", "Relatórios"], ["notas", "Notebook"], ["manual", "Manual do Usuário"]];
 const LS = "orbita-kanban-v1", LSN = "orbita-kanban-avisos", LSB = "orbita_kanban_quadro";
 
 /* ================= estado ================= */
@@ -1358,7 +1463,8 @@ function demoState() {
   };
 }
 const newCols = b => [["A fazer", 290, 0, false], ["Em andamento", 60, 3, false], ["Concluído", 150, 0, true]].map(([name, hue, wip, done]) => ({ id: uid(), name, hue, wip, done, board: b }));
-function defaultState() { const d = demoState(); d.tasks = []; return d; }
+function nbDefs() { return [{ id: "nb_diario", name: "Diário", icon: "📔", hue: 20 }, { id: "nb_trabalho", name: "Trabalho", icon: "💼", hue: 220 }, { id: "nb_pessoal", name: "Pessoal", icon: "🏡", hue: 140 }, { id: "nb_faculdade", name: "Faculdade", icon: "🎓", hue: 280 }]; }
+function defaultState() { const d = demoState(); d.tasks = []; d.notebooks = nbDefs(); d.notes = []; return d; }
 const DEF_REPLIES = () => [
   { id: "rp_ok", name: "Chamado resolvido", text: "Olá, {nome}!\n\nO chamado {chamado} ({titulo}) foi resolvido.\nSe precisar de algo mais ou o problema voltar, é só responder este chamado.\n\n{assinatura}" },
   { id: "rp_wait", name: "Aguardando retorno", text: "Olá, {nome}!\n\nSobre o chamado {chamado}: preciso de um retorno seu para continuar o atendimento. Pode me informar quando a máquina {maquina} estiver disponível?\n\n{assinatura}" },
@@ -1370,7 +1476,7 @@ function normalize(s) {
   const d = defaultState();
   if (!s || !Array.isArray(s.columns) || !Array.isArray(s.tasks)) return d;
   if (!Array.isArray(s.boards) || !s.boards.length) s.boards = [{ id: "b_main", name: (s.board && s.board.name) || "Meu quadro" }];
-  if (!Array.isArray(s.replies)) s.replies = DEF_REPLIES(); s.deleted = s.deleted || {}; s.trash = Array.isArray(s.trash) ? s.trash.filter(e => e && e.id && e.task) : []; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
+  if (!Array.isArray(s.replies)) s.replies = DEF_REPLIES(); if (!Array.isArray(s.notebooks) || !s.notebooks.length) s.notebooks = nbDefs(); s.notebooks = s.notebooks.filter(b => b && b.id).map(b => Object.assign({ name: "Caderno", icon: "📓", hue: 190 }, b)); s.notes = (Array.isArray(s.notes) ? s.notes : []).filter(n => n && n.id).map(n => Object.assign({ title: "", body: "", nb: "nb_pessoal", tags: [], icon: "", cover: null, fav: false, pin: false, created: Date.now(), updated: Date.now() }, n)); s.deleted = s.deleted || {}; s.trash = Array.isArray(s.trash) ? s.trash.filter(e => e && e.id && e.task) : []; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
   if (!Array.isArray(s.infoFields)) { const ord = (Array.isArray(s.infoOrder) ? s.infoOrder : []).filter(k => INFO.some(i => i[0] === k)); INFO.forEach(([k]) => { if (!ord.includes(k)) ord.push(k); }); s.infoFields = ord.map(k => ({ id: k, name: INFO.find(i => i[0] === k)[1] })); }
   delete s.infoOrder; s.infoFields = s.infoFields.filter(f => f && f.id).map(f => ({ id: String(f.id), name: String(f.name || "Campo") }));
   if (!Array.isArray(s.models) || !s.models.length) s.models = defaultModels(s.infoFields);
@@ -1393,7 +1499,7 @@ const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { r
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
-  listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies"], debounceMs: 1500, conferirArquivoMs: 20000,
+  listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
   AUTO_DOWNLOAD_SEM_API: !EMBED && !matchMedia("(pointer: coarse)").matches };
 const FS_OK = !EMBED && !!(window.showSaveFilePicker && window.showOpenFilePicker);
 let rev = 0, revAoAbrir = 0, localSalvoEm = "", lastBrowserSave = null;
@@ -2337,7 +2443,7 @@ const MANUAL = () => {
     "Agora que você já mexeu em um cartão, vamos entender cada pedaço da tela.");
 
   add("Começando", "tela", "search", "Conhecendo a tela", "Tudo o que você precisa está em quatro áreas. Saber onde cada uma fica já resolve metade das dúvidas.",
-    grid(["Barra do topo", "Nome do quadro (com a setinha para trocar ou criar quadros), as abas <b>Quadro, Órbita, Lista, Agenda, Foco do dia, Relatórios e Manual</b>, busca, <b>Nova tarefa</b>, modo calmo, sino de pendências e configurações."],
+    grid(["Barra do topo", "Nome do quadro (com a setinha para trocar ou criar quadros), as abas <b>Quadro, Órbita, Lista, Agenda, Foco do dia, Relatórios, Notebook e Manual</b>, busca, <b>Nova tarefa</b>, modo calmo, sino de pendências e configurações."],
       ["Faixa de filtros", "Mostra a <b>próxima tarefa</b> sugerida e botões para filtrar por prioridade, tag e prazo. Clique de novo no botão para tirar o filtro."],
       ["Colunas", "Cada coluna é uma etapa. O número ao lado do nome é quantas tarefas ela tem. No celular, uma barra de chips no topo leva você de coluna em coluna."],
       ["Cartões", "Cada cartão resume uma tarefa: chamado, prioridade, título, tags, prazo, checklist e tempo. Clique nele para abrir tudo."])
@@ -2467,6 +2573,14 @@ const MANUAL = () => {
     + tip("O período do relatório (7, 14 ou 30 dias) é o que está selecionado na tela quando você clica em baixar.")
     + `<p class="man-try-row">${go("Ir para os Relatórios", "view:relatorios")}</p>`,
     "Agora um assunto importante: onde seus dados ficam guardados.");
+
+  add("Visões", "notebook", "book", "Notebook (notas e diário)", "Um caderno completo dentro do app: diário, anotações de trabalho, faculdade e ideias, ligados às suas tarefas.",
+    step(`Abra a aba <b>Notebook</b>. À esquerda ficam os <b>cadernos</b> (Diário, Trabalho, Pessoal, Faculdade; crie os seus com <b>Novo caderno</b> e use o ✎ para trocar nome, ícone e cor).`, `Toque em <b>Nova nota</b> (a seta ▾ ao lado abre <b>modelos</b>: reunião, aula, passo a passo de TI, projeto…). Digite o título e escreva. Tudo é salvo sozinho.`, `Para o <b>diário</b>, toque em <b>Diário de hoje</b> ou em qualquer dia do <b>calendário</b>: a nota do dia é criada (ou aberta) já com um roteiro.`)
+    + grid(["Digite / para blocos", "Em qualquer linha, escreva <b>/</b> e escolha: títulos, listas, checklist, tabela, código, destaque, data, tarefa…"], ["Digite [[ para ligar notas", "<code>[[Nome da nota]]</code> cria um link, como no Obsidian. Em <b>Mencionada em</b> (rodapé da nota) você vê quem aponta para ela. Se mudar o título, os links nas outras notas são atualizados."], ["Ligue tarefas", "Use <code>[[#</code> e escolha um cartão do quadro. O botão <b>▢→</b> transforma a linha atual em tarefa nova e deixa o link."], ["Escrever, Dividir, Ler", "<b>Ler</b> mostra a nota formatada e deixa marcar os checklists com um toque. <b>Dividir</b> (computador) mostra texto e resultado lado a lado."], ["Mapa de notas", "Veja suas notas como um grafo: pontos são notas, linhas são links. Arraste, passe o mouse para destacar, clique para abrir."], ["Organize", "★ favorita, 📌 fixar no topo, ícone e capa (clique no emoji ao lado do título), #tags no texto e busca. Apagadas ficam 30 dias na <b>Lixeira</b>."])
+    + tip(`Ctrl+B negrito, Ctrl+I itálico, Ctrl+K liga a uma nota, Tab recua item de lista, Enter continua a lista. O botão ⛶ abre o <b>modo escrita</b> (Esc sai). Exporte uma nota ou tudo em <b>.md</b> (compatível com Obsidian) e importe arquivos .md/.txt.`)
+    + warn("As notas ficam salvas com o resto dos dados (navegador, arquivo e GitHub). Elas não têm senha própria: use o bloqueio do app para proteger.")
+    + `<p class="man-try-row">${go("Abrir o Notebook", "view:notas")}</p>`,
+    "Veja também subtarefas e dependências.");
 
   add("Visões", "subtarefas", "tick", "Subtarefas e dependências", "Quebre uma tarefa grande em partes e avise quando uma depende de outra.",
     step("Abra uma tarefa e, no bloco <b>Subtarefas</b>, escreva o título e pressione <b>Enter</b>. Cada subtarefa vira um cartão normal, ligado à tarefa principal.", "Marque a caixinha ao lado da subtarefa para concluí-la. No cartão principal aparece o andamento, como <b>⤷ 2/3</b>.")
@@ -2612,7 +2726,7 @@ function manSpy() {
   v.onscroll = () => { cancelAnimationFrame(manSpy.r); manSpy.r = requestAnimationFrame(spy); }; spy();
 }
 
-function renderView() { ui.en = ui.enter ? " enter" : ""; ui.enter = false; document.body.dataset.view = ui.view; $("#view").onscroll = null; if (ui.view !== "orbita") ORB.lock = null; ({ quadro: renderBoard, orbita: renderOrbit, lista: renderList, agenda: renderAgenda, foco: renderFoco, relatorios: renderReports, manual: renderManual }[ui.view])(); }
+function renderView() { ui.en = ui.enter ? " enter" : ""; ui.enter = false; document.body.dataset.view = ui.view; $("#view").onscroll = null; if (ui.view !== "orbita") ORB.lock = null; ({ quadro: renderBoard, orbita: renderOrbit, lista: renderList, agenda: renderAgenda, foco: renderFoco, relatorios: renderReports, notas: renderNotes, manual: renderManual }[ui.view])(); }
 function render() { renderChrome(); renderView(); }
 
 /* ---------- gaveta da tarefa ---------- */
@@ -2679,6 +2793,8 @@ function renderDrawer() {
 /* ---------- paleta de comandos ---------- */
 const COMMANDS = () => [
   { n: "Nova tarefa", k: "N", run: () => acts.newTask() },
+  { n: "Nova nota", run: () => nbNew() },
+  { n: "Diário de hoje", run: () => nbDaily() },
   ...VIEWS.map(([k, n], i) => ({ n: "Ir para " + n, k: String(i + 1), run: () => { location.hash = k; } })),
   ...(state.boards.length > 1 ? state.boards.filter(b => b.id !== board().id).map(b => ({ n: "Abrir quadro " + b.name, run: () => transit("turn", () => { setBoard(b.id); render(); }) })) : []),
   { n: "Novo quadro", run: () => acts.boardAdd() },
@@ -2704,6 +2820,7 @@ function palItems(q) {
   if (/^[\d\s+\-*/().,%^]+$/.test(q) && /[+\-*/^%]/.test(q.replace(/^\s*-/, "")) && /\d/.test(q)) { try { const v = Function('"use strict";return (' + q.replace(/,/g, ".").replace(/\^/g, "**").replace(/(\d+(?:\.\d+)?)%/g, "($1/100)") + ')')(); if (typeof v === "number" && isFinite(v)) out.push({ sec: "Calculadora", calc: String(+v.toFixed(10)).replace(".", ",") }); } catch (e) {} }
   const ts = state.tasks.map(t => { const tg = t.tags.map(tag).filter(Boolean).map(g => g.name).join(" "); const s = Math.max(norm(t.ticket) === k && k ? 200 : 0, fuzzy(k, norm(t.ticket)) * 1.2, fuzzy(k, norm(t.title)), fuzzy(k, norm(tg)) * .7, k.length > 2 && norm(t.desc + " " + plain(t.notes) + " " + t.extra.map(x => x.k + " " + x.v).join(" ")).includes(k) ? 20 : 0, k.length > 1 && norm(Object.values(t.info || {}).map(x => typeof x === "string" && x.includes("<") ? plain(x) : x).join(" ") + " " + (t.diary || []).map(e => (e.theme || "") + " " + plain(e.html)).join(" ")).includes(k) ? 60 : 0, k.length > 1 && norm(t.check.map(c => c.t).join(" ") + " " + (t.files || []).map(f => f.name).join(" ") + " " + kids(t).map(x => x.title).join(" ")).includes(k) ? 30 : 0); return { t, s: s - (t.archived ? 5 : 0) }; }).filter(x => x.s > 0).sort((a, b) => b.s - a.s || score(b.t) - score(a.t)).slice(0, k ? 8 : 5);
   ts.forEach(({ t }) => out.push({ sec: "Tarefas", t }));
+  if (k.length > 1) nbLive().map(n => ({ n, s: Math.max(fuzzy(k, norm(nbTitle(n))) * 1.1, k.length > 2 && norm(n.body).includes(k) ? 35 : 0) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 4).forEach(({ n }) => out.push({ sec: "Notas", c: { n: (n.icon || "📝") + " " + nbTitle(n), run: () => nbShow(n.id) } }));
   COMMANDS().map(c => ({ c, s: fuzzy(k, norm(c.n)) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, k ? 6 : 20).forEach(({ c }) => out.push({ sec: "Ações", c }));
   if (k) out.push({ sec: "Criar", c: { n: `Criar tarefa “${q}”`, run: () => { const p = parseQuick(q); if (p.title) { const t = addTask(null, p); render(); openTask(t.id); } } } });
   return out;
@@ -2721,6 +2838,320 @@ function renderPal() {
   const on = $(".pal-item.on"); if (on) on.scrollIntoView({ block: "nearest" });
 }
 function palRun(i) { const it = ui.pal.items[i]; if (!it) return; if (it.calc) { try { navigator.clipboard.writeText(it.calc); } catch {} closeLayer(); return toast("Copiado: " + it.calc); } closeLayer(); if (it.t) { if (it.t.archived) { it.t.archived = false; save(); render(); } openTask(it.t.id); } else it.c.run(); }
+
+/* ===================== NOTEBOOK ===================== */
+const NB_EMO = ["📝", "📓", "📔", "📌", "💡", "🎯", "📚", "🎓", "💼", "🏡", "❤️", "⭐", "🔥", "🧠", "🛠️", "💻", "🌱", "✈️", "🍳", "💰", "📞", "🗓️", "✅", "🎨", "🚀", "🔒", "🎧", "🏋️"];
+const NB_COV = [190, 260, 320, 20, 80, 140, 40, 220];
+const NB_TPL = [
+  { k: "blank", n: "Em branco", i: "📝", body: "" },
+  { k: "diario", n: "Diário", i: "📔", nb: "nb_diario", body: "## Como estou\n\n## 3 prioridades\n- [ ] \n- [ ] \n- [ ] \n\n## Tarefas de hoje\n{{tarefas-hoje}}\n\n## Anotações\n\n## Gratidão\n- \n" },
+  { k: "reuniao", n: "Reunião", i: "👥", nb: "nb_trabalho", title: "Reunião - {{data}}", body: "> [!info] Reunião\n> **Data:** {{data}}\n> **Participantes:** \n\n## Pauta\n- \n\n## Decisões\n- \n\n## Ações\n- [ ] \n" },
+  { k: "aula", n: "Aula / Faculdade", i: "🎓", nb: "nb_faculdade", title: "Aula - {{data}}", body: "**Disciplina:** \n**Data:** {{data}}\n\n## Resumo\n\n## Conceitos-chave\n- \n\n## Dúvidas\n- [ ] \n\n## Para estudar\n- [ ] \n" },
+  { k: "ti", n: "Passo a passo (TI)", i: "🛠️", nb: "nb_trabalho", title: "Procedimento: ", body: "> [!tip] Procedimento\n> Sintoma: \n\n## Pré-requisitos\n- \n\n## Passos\n1. \n2. \n3. \n\n## Verificação\n- [ ] \n\n## Observações\n" },
+  { k: "projeto", n: "Projeto", i: "🚀", title: "Projeto: ", body: "## Objetivo\n\n## Marcos\n- [ ] \n\n## Riscos\n\n## Notas\n" },
+  { k: "leitura", n: "Livro / Artigo", i: "📚", title: "Leitura: ", body: "**Autor:** \n**Fonte:** \n\n## Ideias principais\n- \n\n## Citações\n> \n\n## O que vou aplicar\n- [ ] \n" }
+];
+const NB_CMDS = [
+  { f: "h1", n: "Título grande", k: "h1 titulo cabecalho", i: "H1" }, { f: "h2", n: "Título médio", k: "h2 titulo", i: "H2" }, { f: "h3", n: "Subtítulo", k: "h3 subtitulo", i: "H3" },
+  { f: "ul", n: "Lista", k: "lista bullet marcadores", i: "•" }, { f: "ol", n: "Lista numerada", k: "numerada 1", i: "1." }, { f: "todo", n: "Checklist", k: "tarefa todo caixa", i: "☑" },
+  { f: "quote", n: "Citação", k: "quote citacao", i: "❝" }, { f: "callout", n: "Destaque (dica)", k: "callout destaque dica", i: "💡" }, { f: "warn", n: "Destaque (atenção)", k: "aviso atencao warn", i: "⚠️" },
+  { f: "codeblock", n: "Bloco de código", k: "codigo code", i: "</>" }, { f: "table", n: "Tabela", k: "tabela table", i: "▦" }, { f: "hr", n: "Divisor", k: "linha divisor hr", i: "—" },
+  { f: "date", n: "Data de hoje", k: "data hoje", i: "📅" }, { f: "time", n: "Hora agora", k: "hora", i: "🕒" }, { f: "wiki", n: "Ligar a outra nota", k: "link ligar nota wiki", i: "🔗" },
+  { f: "task", n: "Criar tarefa desta linha", k: "tarefa cartao criar", i: "▢" }, { f: "live", n: "Tarefas de hoje (ao vivo)", k: "tarefas hoje ao vivo", i: "⚡" }
+];
+const NB = { sel: null, nb: "all", q: "", mode: null, pane: "list", graph: false, focus: false, cal: null, tpl: false, emo: false, menu: null, side: false, editBook: null, tag: "", codes: [] };
+const nbLive = () => state.notes.filter(n => !n.trashed);
+const nbBook = id => state.notebooks.find(b => b.id === id);
+const nbGet = id => state.notes.find(n => n.id === id);
+const nbTitle = n => (n.title || "").trim() || "Sem título";
+const nbWords = s => (String(s).match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) || []).length;
+const unesc = s => String(s).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+const nbSlug = s => norm(s).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "nota";
+function nbTagsOf(n) { const m = new Set((n.tags || []).map(x => String(x).toLowerCase())); (String(n.body).replace(/```[\s\S]*?```/g, "").match(/(?:^|[\s(])#([\p{L}][\p{L}\p{N}_-]*)/gu) || []).forEach(x => m.add(x.replace(/^[\s(]*#/, "").toLowerCase())); return [...m]; }
+function nbLinkNames(n) { const r = []; String(n.body).replace(/\[\[([^\]\n#][^\]\n]*?)\]\]/g, (_, a) => { r.push(a.split("|")[0].trim()); return _; }); return r; }
+function nbTaskRefs(n) { const r = []; String(n.body).replace(/\[\[#([^\]\n|]+)/g, (_, a) => { r.push(a.trim()); return _; }); return r; }
+const nbResolve = name => { const k = norm(name.trim()); return k ? nbLive().find(n => norm(nbTitle(n)) === k) || null : null; };
+function nbTaskFind(name) { const k = norm(String(name).trim().replace(/^#/, "")); if (!k) return null; return state.tasks.find(t => t.ticket && norm(t.ticket) === k) || state.tasks.find(t => !t.archived && norm(t.title) === k) || state.tasks.find(t => norm(t.title) === k) || null; }
+const nbBack = n => { const k = norm(nbTitle(n)); return nbLive().filter(m => m.id !== n.id && nbLinkNames(m).some(x => norm(x) === k)); };
+function nbUnlinked(n) { if (!(n.title || "").trim() || n.title.trim().length < 3) return []; const k = norm(n.title.trim()); return nbLive().filter(m => m.id !== n.id && norm(m.body).includes(k) && !nbLinkNames(m).some(x => norm(x) === k)).slice(0, 5); }
+function nbPurge() { const lim = Date.now() - 30 * 864e5, old = state.notes.filter(n => n.trashed && n.trashed < lim); if (!old.length) return; tomb(...old.map(n => n.id)); state.notes = state.notes.filter(n => !old.includes(n)); save(); }
+function nbSnip(n) { const l = String(n.body).replace(/```[\s\S]*?```/g, "").split("\n").map(x => x.replace(/^[#>\-*+\s\d.]+(\[[ xX]\])?/, "").replace(/[*_`~=]|\[\[|\]\]|\{\{.*?\}\}/g, "").trim()).filter(Boolean); return (l[0] || "Nota vazia").slice(0, 110); }
+const nbWhen = ts => { const d = new Date(ts), n = new Date(); return dkey(d) === dkey(n) ? pad2(d.getHours()) + ":" + pad2(d.getMinutes()) : pad2(d.getDate()) + "/" + pad2(d.getMonth() + 1) + (d.getFullYear() !== n.getFullYear() ? "/" + String(d.getFullYear()).slice(2) : ""); };
+const nbDateLong = key => { const s = new Date(key + "T12:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }); return s.charAt(0).toUpperCase() + s.slice(1); };
+const nbFill = s => s.replace(/\{\{data\}\}/g, new Date().toLocaleDateString("pt-BR")).replace(/\{\{hora\}\}/g, new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+
+/* ---------- Markdown → HTML (tudo escapado antes) ---------- */
+function nbInline(raw) {
+  const codes = []; let h = esc(raw);
+  h = h.replace(/`([^`\n]+)`/g, (_, c) => "\u0001" + (codes.push(c) - 1) + "\u0002");
+  h = h.replace(/\[\[#([^\]\n|]+?)(?:\|([^\]\n]+?))?\]\]/g, (_, a, b) => { const t = nbTaskFind(unesc(a)); return t ? `<button type="button" class="nb-tk${isDone(t) ? " dn" : ""}" data-act="open" data-id="${t.id}">${isDone(t) ? "✓" : "▢"} ${b || (t.ticket ? "#" + esc(t.ticket) + " " : "") + esc(t.title)}</button>` : `<span class="nb-tk miss" title="Tarefa não encontrada">${b || a}</span>`; });
+  h = h.replace(/\[\[([^\]\n]+?)\]\]/g, (_, a) => { const p = a.split("|"), nm = p[0].trim(), n = nbResolve(unesc(nm)); return n ? `<a href="#notas" class="nb-wl" data-act="nbGo" data-id="${n.id}">${p[1] || nm}</a>` : `<a href="#notas" class="nb-wl miss" data-act="nbMake" data-v="${nm}" title="Nota ainda não existe: clique para criar">${p[1] || nm}</a>`; });
+  h = h.replace(/!\[([^\]\n]*)\]\((https?:\/\/[^)\s]+)\)/g, '<img class="nb-img" loading="lazy" alt="$1" src="$2">');
+  h = h.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  h = h.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<i>$2</i>").replace(/(^|[\s(])_([^_\n]+)_(?=[\s).,!?:;]|$)/g, "$1<i>$2</i>").replace(/~~([^~\n]+)~~/g, "<s>$1</s>").replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
+  h = h.replace(/(^|[\s(>])#([\p{L}][\p{L}\p{N}_-]*)/gu, '$1<a href="#notas" class="nb-tg" data-act="nbTag" data-v="$2">#$2</a>');
+  return h.replace(/\u0001(\d+)\u0002/g, (_, i) => "<code>" + codes[+i] + "</code>");
+}
+const nbSep = s => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(s || "") && String(s).includes("-");
+function nbMd(src) {
+  NB.codes = []; const L = String(src).replace(/\r/g, "").split("\n"), o = []; let i = 0, num = {}, m;
+  const gap = () => { if (o.length && o[o.length - 1] !== '<div class="nb-gap"></div>') o.push('<div class="nb-gap"></div>'); };
+  const callMeta = { tip: ["💡", "Dica", 150], info: ["ℹ️", "Info", 225], warn: ["⚠️", "Atenção", 75], aviso: ["⚠️", "Aviso", 75], important: ["❗", "Importante", 300], importante: ["❗", "Importante", 300], note: ["📝", "Nota", 190], nota: ["📝", "Nota", 190], danger: ["⛔", "Perigo", 25], ok: ["✅", "Ok", 150] };
+  while (i < L.length) {
+    const ln = L[i];
+    if (/^\s*```/.test(ln)) { const buf = []; i++; while (i < L.length && !/^\s*```/.test(L[i])) buf.push(L[i++]); i++; NB.codes.push(buf.join("\n")); o.push(`<pre class="nb-code"><button type="button" class="nb-cp" data-act="nbCopy" data-i="${NB.codes.length - 1}">Copiar</button><code>${esc(buf.join("\n"))}</code></pre>`); continue; }
+    if (!ln.trim()) { gap(); i++; num = {}; continue; }
+    if ((m = ln.match(/^(#{1,6})\s+(.*)$/))) { o.push(`<h${m[1].length} class="nb-h">${nbInline(m[2])}</h${m[1].length}>`); i++; continue; }
+    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(ln)) { o.push("<hr>"); i++; continue; }
+    if ((m = ln.trim().match(/^\{\{(tarefas-hoje|concluidas-hoje)\}\}$/))) {
+      const ts = state.tasks.filter(t => !t.archived), start = sod(Date.now());
+      const list = m[1] === "tarefas-hoje" ? ts.filter(t => !isDone(t) && dueInfo(t) && dueInfo(t).day <= 0) : ts.filter(t => t.doneAt && t.doneAt >= start);
+      o.push(`<div class="nb-live"><b>${m[1] === "tarefas-hoje" ? "⚡ Tarefas de hoje e atrasadas" : "✅ Concluídas hoje"}</b>${list.length ? list.slice(0, 15).map(t => `<button type="button" class="nb-tk${isDone(t) ? " dn" : ""}" data-act="open" data-id="${t.id}">${isDone(t) ? "✓" : "▢"} ${t.ticket ? "#" + esc(t.ticket) + " " : ""}${esc(t.title)}</button>`).join("") : `<span class="meta">Nada por aqui${m[1] === "tarefas-hoje" ? " — dia livre 🎉" : " ainda"}.</span>`}</div>`); i++; continue;
+    }
+    if (ln.includes("|") && nbSep(L[i + 1])) {
+      const row = s => s.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim()), hd = row(ln); i += 2; const rows = []; while (i < L.length && L[i].trim() && L[i].includes("|")) rows.push(row(L[i++]));
+      o.push(`<div class="nb-tw"><table><thead><tr>${hd.map(c => `<th>${nbInline(c)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${hd.map((_, j) => `<td>${nbInline(r[j] || "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`); continue;
+    }
+    if (/^\s*>/.test(ln)) {
+      const buf = []; while (i < L.length && /^\s*>/.test(L[i])) buf.push(L[i++].replace(/^\s*>\s?/, ""));
+      const c = buf[0].match(/^\[!(\w+)\]\s*(.*)$/);
+      if (c) { const ty = c[1].toLowerCase(), meta = callMeta[ty] || ["📝", c[1], 190]; o.push(`<div class="nb-call" style="--ch:${meta[2]}"><div class="nb-ct">${meta[0]} ${nbInline(c[2] || meta[1])}</div>${buf.slice(1).map(x => `<div>${nbInline(x) || "&nbsp;"}</div>`).join("")}</div>`); }
+      else o.push(`<blockquote>${buf.map(x => `<div>${nbInline(x) || "&nbsp;"}</div>`).join("")}</blockquote>`);
+      continue;
+    }
+    if ((m = ln.match(/^(\s*)([-*+]|\d+[.)])\s+(?:\[( |x|X)\]\s+)?(.*)$/))) {
+      const lv = Math.min(Math.floor(m[1].replace(/\t/g, "  ").length / 2), 6), ord = /\d/.test(m[2]); let b = "•";
+      Object.keys(num).forEach(k => +k > lv && delete num[k]);
+      if (ord) { num[lv] = (num[lv] || 0) + 1; b = num[lv] + "."; }
+      if (m[3] !== undefined) { const on = m[3] !== " "; o.push(`<div class="nb-li nb-todo${on ? " on" : ""}" style="--lv:${lv}"><input type="checkbox" data-in="nbCk" data-ln="${i}" ${on ? "checked" : ""} aria-label="Marcar item"><span>${nbInline(m[4])}</span></div>`); }
+      else o.push(`<div class="nb-li" style="--lv:${lv}"><span class="nb-b">${b}</span><span>${nbInline(m[4])}</span></div>`);
+      i++; continue;
+    }
+    const buf = [ln]; i++;
+    while (i < L.length && L[i].trim() && !/^\s*(```|#{1,6}\s|>|[-*+]\s|\d+[.)]\s|\{\{)/.test(L[i]) && !(L[i].includes("|") && nbSep(L[i + 1]))) buf.push(L[i++]);
+    o.push(`<p>${buf.map(nbInline).join("<br>")}</p>`);
+  }
+  return o.join("") || `<p class="meta">Nada para mostrar ainda. Escreva à esquerda…</p>`;
+}
+
+/* ---------- listas e telas ---------- */
+function nbList() {
+  const q = norm(NB.q.trim()); let a = NB.nb === "trash" ? state.notes.filter(n => n.trashed) : nbLive();
+  if (NB.nb === "fav") a = a.filter(n => n.fav); else if (NB.nb !== "all" && NB.nb !== "trash") a = a.filter(n => n.nb === NB.nb);
+  if (NB.tag) a = a.filter(n => nbTagsOf(n).includes(NB.tag));
+  if (q) a = a.filter(n => norm(n.title + " " + n.body + " " + nbTagsOf(n).join(" ")).includes(q));
+  return a.sort((x, y) => (+!!y.pin - +!!x.pin) || (y.updated - x.updated));
+}
+function nbItems() {
+  const a = nbList();
+  return a.map(n => { const b = nbBook(n.nb), tg = nbTagsOf(n).slice(0, 2), tk = (n.body.match(/^\s*[-*+]\s+\[[ xX]\]/gm) || []).length, dn = (n.body.match(/^\s*[-*+]\s+\[[xX]\]/gm) || []).length;
+    return `<button type="button" class="nb-item${n.id === NB.sel ? " on" : ""}" data-act="nbSel" data-id="${n.id}" style="--ch:${b ? b.hue : 190}"><span class="nb-ico">${n.icon || (b ? b.icon : "📝")}</span><span class="nb-it"><b>${n.pin ? "📌 " : ""}${esc(nbTitle(n))}${n.fav ? ' <span class="nb-star">★</span>' : ""}</b><small>${esc(nbSnip(n))}</small><span class="nb-im"><span>${nbWhen(n.updated)}</span>${b ? `<span class="nb-bk">${esc(b.name)}</span>` : ""}${tk ? `<span>☑ ${dn}/${tk}</span>` : ""}${tg.map(t => `<span class="nb-tg2">#${esc(t)}</span>`).join("")}</span></span></button>`; }).join("") || `<div class="nb-none">${NB.q || NB.tag ? "Nenhuma nota encontrada." : NB.nb === "trash" ? "Lixeira vazia." : "Nenhuma nota aqui ainda."}${NB.nb !== "trash" ? `<br><button class="btn sm" data-act="nbNew">${ic("plus")}Criar nota</button>` : ""}</div>`;
+}
+function nbCal() {
+  const base = new Date(NB.cal || Date.now()); base.setDate(1); const y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), days = new Date(y, mo + 1, 0).getDate(), has = {}, dn = {}, tk = dkey(Date.now());
+  nbLive().forEach(n => { const k = dkey(n.created); has[k] = (has[k] || 0) + 1; if (n.date) dn[n.date] = 1; });
+  let cells = ""; for (let i = 0; i < first; i++) cells += "<span></span>";
+  for (let d = 1; d <= days; d++) { const k = y + "-" + pad2(mo + 1) + "-" + pad2(d), c = has[k] || 0; cells += `<button type="button" class="nb-cd${dn[k] ? " dn" : ""}${k === tk ? " today" : ""}" data-n="${Math.min(c, 3)}" data-act="nbDaily" data-v="${k}" title="${c ? c + " nota(s)" : "Abrir diário deste dia"}">${d}</button>`; }
+  const lb = base.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  return `<div class="nb-calh"><button data-act="nbCalNav" data-v="-1" aria-label="Mês anterior">‹</button><b>${lb}</b><button data-act="nbCalNav" data-v="1" aria-label="Próximo mês">›</button></div><div class="nb-calg">${"DSTQQSS".split("").map(c => `<i>${c}</i>`).join("")}${cells}</div>`;
+}
+function nbSide() {
+  const live = nbLive(), cnt = id => live.filter(n => n.nb === id).length, tags = {}; live.forEach(n => nbTagsOf(n).forEach(t => tags[t] = (tags[t] || 0) + 1));
+  const on = k => (NB.nb === k && !NB.graph ? " on" : ""), trash = state.notes.filter(n => n.trashed).length;
+  const tg = Object.entries(tags).sort((a, b) => b[1] - a[1]).slice(0, 16);
+  return `<div class="nb-new"><button class="btn main" data-act="nbNew">${ic("plus")}Nova nota</button><button class="btn" data-act="nbTplToggle" aria-label="Modelos de nota" title="Modelos">▾</button></div>
+  ${NB.tpl ? `<div class="nb-tpls">${NB_TPL.map(t => `<button type="button" data-act="nbNew" data-v="${t.k}"><span>${t.i}</span>${t.n}</button>`).join("")}</div>` : ""}
+  <button class="nb-hoje" data-act="nbDaily"><span>📔</span><span><b>Diário de hoje</b><small>${new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "short" })}</small></span></button>
+  <nav class="nb-nav" aria-label="Cadernos">
+    <button class="nb-row${on("all")}" data-act="nbBook" data-id="all"><span>🗂️</span>Todas as notas<small>${live.length}</small></button>
+    <button class="nb-row${on("fav")}" data-act="nbBook" data-id="fav"><span>⭐</span>Favoritas<small>${live.filter(n => n.fav).length}</small></button>
+    <div class="nb-lbl">Cadernos</div>
+    ${state.notebooks.map(b => `<div class="nb-brow"><button class="nb-row${on(b.id)}" style="--ch:${b.hue}" data-act="nbBook" data-id="${b.id}"><span>${b.icon}</span>${esc(b.name)}<small>${cnt(b.id)}</small></button><button class="nb-bed" data-act="nbBookEdit" data-id="${b.id}" aria-label="Editar caderno ${esc(b.name)}">✎</button></div>
+      ${NB.editBook === b.id ? `<div class="nb-bedit"><input class="inp" value="${esc(b.name)}" data-in="nbBookName" data-id="${b.id}" aria-label="Nome do caderno"><div class="nb-emo-g">${NB_EMO.slice(0, 14).map(e => `<button type="button" data-act="nbBookIcon" data-id="${b.id}" data-v="${e}">${e}</button>`).join("")}</div><div class="nb-hues">${NB_COV.map(h => `<button type="button" style="--ch:${h}" class="${h === b.hue ? "on" : ""}" data-act="nbBookHue" data-id="${b.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><button class="btn sm ghost" data-act="nbBookDel" data-id="${b.id}">Excluir caderno</button></div>` : ""}`).join("")}
+    <button class="nb-row add" data-act="nbBookAdd"><span>＋</span>Novo caderno</button>
+    <button class="nb-row${on("trash")}" data-act="nbBook" data-id="trash"><span>🗑️</span>Lixeira<small>${trash}</small></button>
+  </nav>
+  ${tg.length ? `<div class="nb-lbl">Tags</div><div class="nb-tags">${tg.map(([t, c]) => `<button type="button" class="chip${NB.tag === t ? " on" : ""}" data-act="nbTag" data-v="${esc(t)}">#${esc(t)} <small>${c}</small></button>`).join("")}</div>` : ""}
+  <div class="nb-lbl">Calendário</div><div class="nb-cal">${nbCal()}</div>
+  <div class="nb-tools"><button class="${NB.graph ? "on" : ""}" data-act="nbGraph">🕸️ Mapa de notas</button><button data-act="nbImport">⬆ Importar .md / .txt</button><button data-act="nbExportAll">⬇ Exportar tudo (.md)</button></div>`;
+}
+function nbListHtml() {
+  const title = NB.nb === "all" ? "Todas as notas" : NB.nb === "fav" ? "Favoritas" : NB.nb === "trash" ? "Lixeira" : (nbBook(NB.nb) || {}).name || "Notas";
+  return `<div class="nb-lh"><button class="btn sm nb-sidebtn" data-act="nbSide" aria-label="Cadernos e filtros">☰</button><h2>${esc(title)}</h2>${NB.nb === "trash" ? `<button class="btn sm" data-act="nbEmpty">Esvaziar</button>` : `<button class="btn sm" data-act="nbNew" aria-label="Nova nota">${ic("plus")}</button>`}</div>
+  <div class="nb-sr"><span>${ic("search")}</span><input class="inp" id="nb-q" type="search" placeholder="Buscar nas notas…" value="${esc(NB.q)}" data-in="nbQ" aria-label="Buscar nas notas">${NB.tag ? `<button class="chip on" data-act="nbTag" data-v="${esc(NB.tag)}">#${esc(NB.tag)} ✕</button>` : ""}</div>
+  <div class="nb-items" id="nb-items">${nbItems()}</div>`;
+}
+function nbFoot(n) {
+  if (n.trashed) return "";
+  const bl = nbBack(n), un = nbUnlinked(n), tk = [...new Set(nbTaskRefs(n))].map(nbTaskFind).filter(Boolean);
+  if (!bl.length && !un.length && !tk.length) return `<div class="nb-fh">🔗 Ligações</div><p class="meta">Nenhuma nota aponta para esta ainda. Em outra nota, escreva <code>[[${esc(nbTitle(n))}]]</code> para ligar. Use <code>[[#</code> para ligar tarefas.</p>`;
+  return `${bl.length ? `<div class="nb-fh">🔗 Mencionada em (${bl.length})</div><div class="nb-bl">${bl.map(m => `<button type="button" data-act="nbGo" data-id="${m.id}"><b>${m.icon || "📝"} ${esc(nbTitle(m))}</b><small>${esc(nbSnip(m))}</small></button>`).join("")}</div>` : ""}
+  ${tk.length ? `<div class="nb-fh">▢ Tarefas ligadas (${tk.length})</div><div class="nb-bl">${tk.map(t => `<button type="button" data-act="open" data-id="${t.id}"><b>${isDone(t) ? "✓ " : ""}${esc(t.title)}</b><small>${esc(col(t.col) ? col(t.col).name : "")}${t.due ? " · " + esc(dueInfo(t) ? dueInfo(t).label : "") : ""}</small></button>`).join("")}</div>` : ""}
+  ${un.length ? `<div class="nb-fh">💬 Menciona o título, sem link (${un.length})</div><div class="nb-bl">${un.map(m => `<div class="nb-ul"><span>${m.icon || "📝"} ${esc(nbTitle(m))}</span><button class="btn sm" data-act="nbLink" data-id="${m.id}" data-v="${n.id}">Vincular</button></div>`).join("")}</div>` : ""}`;
+}
+function nbEditor() {
+  const n = nbGet(NB.sel);
+  if (!n) return `<div class="nb-empty"><div class="nb-big">📓</div><h2>Seu caderno</h2><p class="meta">Escolha uma nota ao lado ou comece algo novo.</p><div class="nb-ebtn"><button class="btn main" data-act="nbNew">${ic("plus")}Nova nota</button><button class="btn" data-act="nbDaily">📔 Diário de hoje</button></div></div>`;
+  const b = nbBook(n.nb), ro = !!n.trashed;
+  return `<div class="nb-bar"><button class="btn sm nb-back" data-act="nbBack" aria-label="Voltar para a lista">‹ Notas</button>
+    <div class="seg nb-seg" role="group" aria-label="Modo de edição"><button class="${NB.mode === "edit" ? "on" : ""}" data-act="nbMode" data-v="edit">Escrever</button><button class="nb-splitbtn ${NB.mode === "split" ? "on" : ""}" data-act="nbMode" data-v="split">Dividir</button><button class="${NB.mode === "read" ? "on" : ""}" data-act="nbMode" data-v="read">Ler</button></div><span class="spacer"></span>
+    ${ro ? "" : `<button class="btn sm nb-ib${n.fav ? " on" : ""}" data-act="nbFav" title="Favorita" aria-label="Favorita" aria-pressed="${!!n.fav}">${n.fav ? "★" : "☆"}</button><button class="btn sm nb-ib${n.pin ? " on" : ""}" data-act="nbPin" title="Fixar no topo da lista" aria-label="Fixar" aria-pressed="${!!n.pin}">📌</button>`}
+    <button class="btn sm nb-ib" data-act="nbFocus" title="Modo escrita (tela cheia)" aria-label="Modo escrita">⛶</button>
+    <details class="menu nb-more"><summary class="btn sm nb-ib" aria-label="Mais ações">⋯</summary><div class="menu-body"><button data-act="nbCover">🎨 Trocar capa</button><button data-act="nbDup">⧉ Duplicar</button><button data-act="nbExport">⬇ Exportar .md</button><button data-act="nbCopyNote">⎘ Copiar texto</button>${ro ? `<button data-act="nbRestore">↩ Restaurar</button><button data-act="nbPurgeOne">✕ Excluir para sempre</button>` : `<button data-act="nbDel">🗑 Mover para a lixeira</button>`}</div></details></div>
+  <div class="nb-scroll"><div class="nb-ed" data-mode="${NB.mode}">
+    ${n.cover != null ? `<div class="nb-cover" style="--ch:${n.cover}"><button class="btn sm" data-act="nbCover" data-v="x">Remover capa</button></div>` : ""}
+    <div class="nb-page">
+    ${ro ? `<div class="nb-trashbar">🗑 Esta nota está na lixeira (apagada sozinha após 30 dias). <button class="btn sm" data-act="nbRestore">Restaurar</button></div>` : ""}
+    <div class="nb-head"><button class="nb-icon" data-act="nbEmo" aria-label="Escolher ícone da nota">${n.icon || (b ? b.icon : "📝")}</button><input class="nb-title" id="nb-title" value="${esc(n.title)}" placeholder="Sem título" data-in="nbTitle" data-id="${n.id}" data-old="${esc(n.title)}" aria-label="Título da nota" ${ro ? "readonly" : ""}></div>
+    ${NB.emo ? `<div class="nb-emo-g big">${NB_EMO.map(e => `<button type="button" data-act="nbIcon" data-v="${e}">${e}</button>`).join("")}<button type="button" class="btn sm" data-act="nbIcon" data-v="">Padrão</button></div>` : ""}
+    <div class="nb-meta"><select class="inp" data-in="nbMove" aria-label="Caderno da nota" ${ro ? "disabled" : ""}>${state.notebooks.map(x => `<option value="${x.id}" ${x.id === n.nb ? "selected" : ""}>${x.icon} ${esc(x.name)}</option>`).join("")}</select><span>Criada ${new Date(n.created).toLocaleDateString("pt-BR")}</span><span id="nb-stats"></span></div>
+    ${ro ? "" : `<div class="nb-tb" role="toolbar" aria-label="Formatação">${[["h1", "H1", "Título 1"], ["h2", "H2", "Título 2"], ["b", "<b>B</b>", "Negrito (Ctrl+B)"], ["i", "<i>I</i>", "Itálico (Ctrl+I)"], ["s", "<s>S</s>", "Riscado"], ["hl", "▐", "Destacar"], ["ul", "•", "Lista"], ["ol", "1.", "Lista numerada"], ["todo", "☑", "Checklist"], ["quote", "❝", "Citação"], ["code", "&lt;/&gt;", "Código"], ["callout", "💡", "Destaque"], ["table", "▦", "Tabela"], ["link", "[[ ]]", "Ligar a uma nota (Ctrl+K)"], ["task", "▢→", "Transformar a linha em tarefa do quadro"]].map(([k, l, t]) => `<button type="button" data-act="nbFmt" data-v="${k}" title="${t}" aria-label="${t}">${l}</button>`).join("")}</div>`}
+    <div class="nb-split"><div class="nb-edwrap"><textarea id="nb-ta" class="nb-ta" spellcheck="true" placeholder="Comece a escrever…  Digite / para blocos e [[ para ligar notas" aria-label="Texto da nota" ${ro ? "readonly" : ""}>${esc(n.body)}</textarea><div id="nb-menu" class="nb-menu" role="listbox" hidden></div></div><article id="nb-pv" class="nb-pv" aria-label="Pré-visualização"></article></div>
+    <div class="nb-foot" id="nb-foot"></div></div></div></div>`;
+}
+function renderNotes() {
+  nbPurge();
+  if (!state.settings.nbSeed) { state.settings.nbSeed = true; if (!state.notes.length) { const t = Date.now(); state.notes.push({ id: "nt_welcome", title: "Bem-vindo ao Notebook", body: "# Bem-vindo ao Notebook 👋\n\nAqui você escreve **diário**, anotações de trabalho, faculdade e ideias, tudo ligado ao seu quadro de tarefas.\n\n> [!tip] Comece por aqui\n> Digite **/** para inserir blocos e **[[** para ligar outra nota.\n\n## O que dá para fazer\n- [x] Escrever em Markdown: **negrito**, *itálico*, listas, tabelas e `código`\n- [ ] Ligar notas, como em [[Ideias e atalhos]], e ver o mapa de notas\n- [ ] Ligar uma tarefa do quadro digitando `[[#` e escolhendo o cartão\n- [ ] Abrir o **Diário de hoje** e marcar o que importa\n\n## Hoje no quadro\n{{tarefas-hoje}}\n\n#boas-vindas", nb: "nb_pessoal", tags: [], icon: "👋", cover: 190, pin: true, created: t, updated: t }, { id: "nt_dicas", title: "Ideias e atalhos", body: "Volte para [[Bem-vindo ao Notebook]].\n\n## Atalhos no editor\n| Atalho | O que faz |\n| --- | --- |\n| `/` | Menu de blocos (título, lista, tabela…) |\n| `[[` | Ligar a outra nota |\n| Ctrl+B / Ctrl+I | Negrito / itálico |\n| Ctrl+K | Ligar a uma nota |\n| Tab | Recuar item de lista |\n\n## Ideias\n- [ ] Anotar o que aprendi na faculdade #faculdade\n- [ ] Registrar procedimentos de TI que se repetem #trabalho\n\n```\nTudo o que você escreve é salvo sozinho.\n```", nb: "nb_pessoal", tags: [], icon: "💡", cover: null, pin: false, created: t - 1000, updated: t - 1000 }); } save(); }
+  if (!NB.mode) NB.mode = matchMedia("(min-width: 1000px)").matches ? "split" : "edit";
+  const desk = matchMedia("(min-width: 761px)").matches, L = nbList();
+  if (!NB.sel || !nbGet(NB.sel) || (nbGet(NB.sel).trashed && NB.nb !== "trash")) NB.sel = desk && L[0] ? L[0].id : null;
+  if (!NB.sel) NB.pane = "list";
+  $("#view").innerHTML = `<div class="nb${ui.en}${NB.focus ? " focus" : ""}${NB.side ? " side-open" : ""}" data-pane="${NB.pane}"><aside class="nb-side">${nbSide()}</aside><section class="nb-list">${nbListHtml()}</section><section class="nb-main">${NB.graph ? nbGraphHtml() : nbEditor()}</section><div class="nb-scrim" data-act="nbSide"></div></div>`;
+  if (NB.graph) nbGraphStart(); else nbBind();
+}
+function nbBind() {
+  const n = nbGet(NB.sel), ta = $("#nb-ta"); if (!n || !ta) return; nbPaint(true);
+  ta.addEventListener("input", nbOnInput); ta.addEventListener("keydown", nbKey);
+  ta.addEventListener("click", () => nbMenuClose()); ta.addEventListener("blur", () => setTimeout(nbMenuClose, 150));
+  ta.addEventListener("paste", e => { const t = (e.clipboardData || {}).getData ? e.clipboardData.getData("text") : ""; if (/^https?:\/\/\S+$/.test(t) && ta.selectionStart !== ta.selectionEnd && !ta.readOnly) { e.preventDefault(); nbIns(ta, `[${ta.value.slice(ta.selectionStart, ta.selectionEnd)}](${t})`); } });
+  if (NB.fresh && !n.trashed) { NB.fresh = false; if (!n.title) { const t = $("#nb-title"); if (t) t.focus(); } else { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
+}
+function nbFit() { const ta = $("#nb-ta"); if (ta) { ta.style.height = "auto"; ta.style.height = Math.max(ta.scrollHeight + 4, 220) + "px"; } }
+function nbStats(n) { const w = nbWords(n.body), tk = (n.body.match(/^\s*[-*+]\s+\[[ xX]\]/gm) || []).length, dn = (n.body.match(/^\s*[-*+]\s+\[[xX]\]/gm) || []).length, el = $("#nb-stats"); if (el) el.textContent = `${w} palavra${w === 1 ? "" : "s"} · ${Math.max(1, Math.ceil(w / 200))} min de leitura${tk ? ` · ☑ ${dn}/${tk}` : ""}`; }
+function nbPaint(full) {
+  const n = nbGet(NB.sel); if (!n) return; const pv = $("#nb-pv"); if (pv && NB.mode !== "edit") pv.innerHTML = nbMd(n.body);
+  nbStats(n); nbFit(); const f = $("#nb-foot"); if (f) f.innerHTML = nbFoot(n); if (!full) { const l = $("#nb-items"); if (l) l.innerHTML = nbItems(); }
+}
+const nbSoon = (() => { let t; return () => { clearTimeout(t); t = setTimeout(() => { nbPaint(); save(); }, 220); }; })();
+function nbOnInput() { const n = nbGet(NB.sel), ta = $("#nb-ta"); if (!n || !ta || n.trashed) return; n.body = ta.value; n.updated = Date.now(); nbFit(); nbMenuCheck(ta); nbSoon(); }
+function nbIns(ta, text) { ta.focus(); let ok = false; try { ok = document.execCommand("insertText", false, text); } catch {} if (!ok) { ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, "end"); nbOnInput(); } }
+function nbDel(ta, a, b) { ta.focus(); ta.setSelectionRange(a, b); if (a === b) return; let ok = false; try { ok = document.execCommand("delete"); } catch {} if (!ok) { ta.setRangeText("", a, b, "end"); nbOnInput(); } }
+function nbBlock(ta, text) { const v = ta.value, s = ta.selectionStart; nbIns(ta, (s > 0 && v[s - 1] !== "\n" ? "\n" : "") + text); }
+function nbFmt(k) {
+  const ta = $("#nb-ta"); if (!ta || ta.readOnly) return; ta.focus(); const v = ta.value, s = ta.selectionStart, e = ta.selectionEnd, sel = v.slice(s, e);
+  const wrap = (p, q, ph) => { if (sel && v.slice(s - p.length, s) === p && v.slice(e, e + q.length) === q) { ta.setSelectionRange(s - p.length, e + q.length); nbIns(ta, sel); ta.setSelectionRange(s - p.length, s - p.length + sel.length); return; } nbIns(ta, p + (sel || ph) + q); ta.setSelectionRange(s + p.length, s + p.length + (sel || ph).length); };
+  const lines = (pre, ord) => { const a = v.lastIndexOf("\n", s - 1) + 1; let b = v.indexOf("\n", e); if (b < 0) b = v.length; const blk = v.slice(a, b).split("\n"), has = l => ord ? /^\d+\.\s/.test(l) : l.startsWith(pre), all = blk.every(has), strip = l => l.replace(/^(#{1,6}\s|[-*+]\s(\[[ xX]\]\s)?|>\s?|\d+\.\s)/, ""); ta.setSelectionRange(a, b); nbIns(ta, blk.map((l, i) => all ? (ord ? l.replace(/^\d+\.\s/, "") : l.slice(pre.length)) : (ord ? (i + 1) + ". " : pre) + strip(l)).join("\n")); };
+  ({ b: () => wrap("**", "**", "negrito"), i: () => wrap("*", "*", "itálico"), s: () => wrap("~~", "~~", "riscado"), hl: () => wrap("==", "==", "destaque"), code: () => sel.includes("\n") ? wrap("```\n", "\n```", "") : wrap("`", "`", "código"), link: () => { wrap("[[", "]]", "nota"); nbMenuCheck(ta); },
+    h1: () => lines("# "), h2: () => lines("## "), h3: () => lines("### "), ul: () => lines("- "), ol: () => lines("", true), todo: () => lines("- [ ] "), quote: () => lines("> "),
+    callout: () => nbBlock(ta, "> [!tip] Dica\n> "), warn: () => nbBlock(ta, "> [!warn] Atenção\n> "), codeblock: () => nbBlock(ta, "```\n" + sel + "\n```\n"), hr: () => nbBlock(ta, "\n---\n"),
+    table: () => nbBlock(ta, "| Coluna 1 | Coluna 2 |\n| --- | --- |\n|  |  |\n"), date: () => nbIns(ta, new Date().toLocaleDateString("pt-BR")), time: () => nbIns(ta, new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })),
+    wiki: () => nbIns(ta, "[["), task: () => nbMakeTask(), live: () => nbBlock(ta, "{{tarefas-hoje}}\n") }[k] || (() => 0))();
+}
+function nbMakeTask() {
+  const ta = $("#nb-ta"); if (!ta) return; const v = ta.value, s = ta.selectionStart, a = v.lastIndexOf("\n", s - 1) + 1; let b = v.indexOf("\n", s); if (b < 0) b = v.length;
+  const raw = ta.selectionStart !== ta.selectionEnd ? v.slice(ta.selectionStart, ta.selectionEnd).split("\n")[0] : v.slice(a, b), title = raw.replace(/^\s*([-*+]|\d+[.)])\s+(\[[ xX]\]\s+)?/, "").replace(/\[\[#?|\]\]/g, "").trim();
+  if (!title) return toast("Escreva o título da tarefa nesta linha e tente de novo");
+  const t = addTask(null, { title }); save(); ta.setSelectionRange(a, b); nbIns(ta, `- [ ] [[#${t.ticket || t.title}]]`); toast("Tarefa criada no quadro", "Abrir", () => openTask(t.id)); haptic(8);
+}
+function nbEnter(ta) {
+  const v = ta.value, s = ta.selectionStart; if (s !== ta.selectionEnd) return false; const a = v.lastIndexOf("\n", s - 1) + 1, line = v.slice(a, s), m = line.match(/^(\s*)(?:([-*+])|(\d+)([.)]))\s(\[[ xX]\]\s)?(.*)$/); if (!m) return false;
+  if (!m[6].trim()) { nbDel(ta, a, s); return true; }
+  nbIns(ta, "\n" + m[1] + (m[2] || (+m[3] + 1) + m[4]) + " " + (m[5] ? "[ ] " : "")); return true;
+}
+function nbKey(e) {
+  const ta = e.target, m = NB.menu;
+  if (m && m.items.length) {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); m.i = (m.i + (e.key === "ArrowDown" ? 1 : m.items.length - 1)) % m.items.length; nbMenuPaint(ta); return; }
+    if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); e.stopPropagation(); nbPick(m.i); return; }
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); nbMenuClose(); return; }
+  }
+  if (e.key === "Escape" && NB.focus) { e.stopPropagation(); NB.focus = false; const el = $(".nb"); if (el) el.classList.remove("focus"); return; }
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && !e.shiftKey && !e.altKey) { const k = e.key.toLowerCase(); if (k === "b" || k === "i" || k === "k") { e.preventDefault(); e.stopPropagation(); return nbFmt(k === "k" ? "link" : k); } }
+  if (e.key === "Tab" && !mod) { e.preventDefault(); const v = ta.value, s = ta.selectionStart, en = ta.selectionEnd, a = v.lastIndexOf("\n", s - 1) + 1; if (/^\s*([-*+]|\d+[.)])\s/.test(v.slice(a, v.indexOf("\n", s) < 0 ? v.length : v.indexOf("\n", s))) || s !== en) { let b = v.indexOf("\n", en); if (b < 0) b = v.length; const blk = v.slice(a, b).split("\n").map(l => e.shiftKey ? l.replace(/^( {1,2}|\t)/, "") : "  " + l).join("\n"); ta.setSelectionRange(a, b); nbIns(ta, blk); } else if (!e.shiftKey) nbIns(ta, "  "); return; }
+  if (e.key === "Enter" && !e.shiftKey && !mod && nbEnter(ta)) e.preventDefault();
+}
+function nbCaret(ta) {
+  const d = document.createElement("div"), cs = getComputedStyle(ta); ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "paddingTop", "paddingLeft", "paddingRight", "paddingBottom", "borderLeftWidth", "borderTopWidth", "boxSizing", "width", "tabSize"].forEach(p => d.style[p] = cs[p]);
+  d.style.position = "absolute"; d.style.visibility = "hidden"; d.style.whiteSpace = "pre-wrap"; d.style.wordWrap = "break-word"; d.style.top = "0"; d.style.left = "0"; d.textContent = ta.value.slice(0, ta.selectionStart);
+  const sp = document.createElement("span"); sp.textContent = "​"; d.append(sp); ta.parentNode.append(d); const r = { x: sp.offsetLeft, y: sp.offsetTop + (parseFloat(cs.lineHeight) || 24) }; d.remove(); return r;
+}
+function nbMenuCheck(ta) {
+  const s = ta.selectionStart; if (s !== ta.selectionEnd) return nbMenuClose(); const a = ta.value.lastIndexOf("\n", s - 1) + 1, line = ta.value.slice(a, s); let m;
+  if ((m = line.match(/\[\[([^\]\n]*)$/))) {
+    const q = m[1], from = s - q.length - 2; let items;
+    if (q.startsWith("#")) { const k = norm(q.slice(1)); items = state.tasks.filter(t => !t.archived && (!k || norm(t.title + " " + t.ticket).includes(k))).slice(0, 7).map(t => ({ n: (t.ticket ? "#" + t.ticket + " · " : "") + t.title, i: "▢", ins: "[[#" + (t.ticket || t.title) + "]]" })); }
+    else { const k = norm(q); items = nbLive().filter(x => x.id !== NB.sel && (!k || norm(nbTitle(x)).includes(k))).slice(0, 6).map(x => ({ n: nbTitle(x), i: x.icon || "📝", ins: "[[" + nbTitle(x) + "]]" })); if (q.trim() && !nbResolve(q.trim())) items.push({ n: "Nova nota “" + q.trim() + "”", i: "＋", ins: "[[" + q.trim() + "]]" }); }
+    NB.menu = { kind: "link", from, items, i: 0 };
+  } else if ((m = line.match(/(^|\s)\/([\p{L}0-9]*)$/u))) {
+    const q = norm(m[2]); NB.menu = { kind: "slash", from: s - m[2].length - 1, items: NB_CMDS.filter(c => !q || norm(c.n + " " + c.k).includes(q)).slice(0, 8).map(c => ({ n: c.n, i: c.i, f: c.f })), i: 0 };
+  } else return nbMenuClose();
+  if (!NB.menu.items.length) return nbMenuClose(); nbMenuPaint(ta);
+}
+function nbMenuPaint(ta) {
+  const el = $("#nb-menu"), m = NB.menu; if (!el || !m) return; el.hidden = false;
+  el.innerHTML = `<div class="nb-mh">${m.kind === "slash" ? "Blocos" : "Ligar a…"}</div>` + m.items.map((it, i) => `<button type="button" role="option" class="${i === m.i ? "on" : ""}" data-act="nbPick" data-i="${i}"><span>${it.i}</span>${esc(it.n)}</button>`).join("");
+  const xy = nbCaret(ta || $("#nb-ta")), w = el.parentNode.clientWidth; el.style.left = Math.max(0, Math.min(xy.x, w - 250)) + "px"; el.style.top = xy.y + 4 + "px";
+  const r = el.getBoundingClientRect(), vh = innerHeight; if (r.bottom > vh - 8) el.style.top = Math.max(0, xy.y - r.height - 30) + "px";
+  const on = $(".on", el); if (on) on.scrollIntoView({ block: "nearest" });
+}
+function nbMenuClose() { NB.menu = null; const el = $("#nb-menu"); if (el) el.hidden = true; }
+function nbPick(i) {
+  const m = NB.menu; if (!m || !m.items[i]) return; const it = m.items[i], ta = $("#nb-ta"); nbMenuClose(); if (!ta) return; ta.focus(); nbDel(ta, m.from, ta.selectionStart);
+  if (m.kind === "link") nbIns(ta, it.ins); else nbFmt(it.f);
+}
+
+/* ---------- ações de dados ---------- */
+function nbNew(k, props) {
+  const t = NB_TPL.find(x => x.k === k) || NB_TPL[0], now = Date.now(), nbId = props && props.nb || t.nb || (state.notebooks.some(b => b.id === NB.nb) ? NB.nb : "nb_pessoal"), n = Object.assign({ id: "nt_" + uid(), title: nbFill(t.title || ""), body: nbFill(t.body), nb: nbBook(nbId) ? nbId : state.notebooks[0].id, tags: [], icon: "", cover: null, fav: false, pin: false, created: now, updated: now }, props || {});
+  state.notes.unshift(n); save(); nbShow(n.id, true); return n;
+}
+function nbShow(id, fresh) { const n = nbGet(id); if (!n) return; NB.sel = id; NB.graph = false; NB.pane = "edit"; NB.side = false; NB.tpl = false; NB.emo = false; NB.fresh = !!fresh; if (n.trashed) NB.nb = "trash"; else if (NB.nb !== "all" && NB.nb !== "fav" && NB.nb !== n.nb) NB.nb = "all"; NB.q = ""; NB.tag = ""; if (ui.view !== "notas") location.hash = "notas"; else render(); }
+function nbDaily(key) {
+  key = key || dkey(Date.now()); let n = nbLive().find(x => x.date === key);
+  if (!n) { n = nbNew("diario", { title: nbDateLong(key), date: key, nb: nbBook("nb_diario") ? "nb_diario" : state.notebooks[0].id, icon: "📔", cover: null }); return; }
+  nbShow(n.id);
+}
+function nbMdFile(n) { const b = nbBook(n.nb); return `---\ntitle: ${nbTitle(n)}\ncaderno: ${b ? b.name : ""}\ntags: [${nbTagsOf(n).join(", ")}]\ncriada: ${new Date(n.created).toISOString()}\natualizada: ${new Date(n.updated).toISOString()}\n---\n\n${n.body}\n`; }
+function nbImportText(name, txt) {
+  let body = String(txt).replace(/\r/g, ""), title = name.replace(/\.(md|markdown|txt)$/i, ""), tags = []; const fm = body.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (fm) { body = body.slice(fm[0].length).replace(/^\n+/, ""); const t = fm[1].match(/^title:\s*(.+)$/m), g = fm[1].match(/^tags:\s*\[?(.*?)\]?\s*$/m); if (t) title = t[1].trim(); if (g) tags = g[1].split(",").map(x => x.trim().replace(/^#/, "")).filter(Boolean); }
+  const now = Date.now(); state.notes.unshift({ id: "nt_" + uid(), title, body, nb: state.notebooks.some(b => b.id === NB.nb) ? NB.nb : "nb_pessoal", tags, icon: "", cover: null, fav: false, pin: false, created: now, updated: now });
+}
+
+/* ---------- mapa de notas (grafo) ---------- */
+function nbGraphHtml() {
+  return `<div class="nb-bar"><b>🕸️ Mapa de notas</b><span class="spacer"></span><span class="meta nb-gleg">${state.notebooks.map(b => `<span><i style="--ch:${b.hue}"></i>${esc(b.name)}</span>`).join("")}</span><button class="btn sm" data-act="nbGraph">Fechar</button></div><div class="nb-gwrap"><svg id="nb-g" role="img" aria-label="Mapa das ligações entre as notas"></svg><div class="nb-gtip" id="nb-gtip" hidden></div><p class="meta nb-ghint" id="nb-ghint"></p></div>`;
+}
+function nbGraphStart() {
+  const svg = $("#nb-g"); if (!svg) return; const W = svg.clientWidth || 800, H = svg.clientHeight || 500; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const ns = nbLive().slice(0, 150), idx = new Map(ns.map((n, i) => [n.id, i])), ed = [], seen = new Set(), deg = ns.map(() => 0);
+  ns.forEach((n, i) => nbLinkNames(n).forEach(nm => { const t = nbResolve(nm); if (!t || !idx.has(t.id) || t.id === n.id) return; const j = idx.get(t.id), key = Math.min(i, j) + "_" + Math.max(i, j); if (seen.has(key)) return; seen.add(key); ed.push([i, j]); deg[i]++; deg[j]++; }));
+  $("#nb-ghint").textContent = ns.length ? (ed.length ? `${ns.length} notas · ${ed.length} ligações. Arraste os pontos; clique para abrir.` : "Ainda sem ligações. Escreva [[nome de outra nota]] dentro de uma nota para conectá-las.") : "Crie notas para ver o mapa.";
+  const P = ns.map((n, i) => ({ x: W / 2 + Math.cos(i * 2.4) * (30 + i * 5), y: H / 2 + Math.sin(i * 2.4) * (30 + i * 5), vx: 0, vy: 0 })), R = i => 6 + Math.min(deg[i], 8) * 1.6;
+  svg.innerHTML = `<g>${ed.map(([a, b]) => `<line class="nb-ge"/>`).join("")}</g><g>${ns.map((n, i) => { const b = nbBook(n.nb); return `<g class="nb-gn${n.id === NB.sel ? " cur" : ""}" data-i="${i}" style="--ch:${b ? b.hue : 190}" tabindex="0" role="button" aria-label="${esc(nbTitle(n))}"><circle r="${R(i)}"/><text y="${R(i) + 12}" text-anchor="middle">${esc(nbTitle(n).slice(0, 22))}</text></g>`; }).join("")}</g>`;
+  const lines = $$(".nb-ge", svg), nodes = $$(".nb-gn", svg); let it = 0, drag = -1, moved = 0;
+  const paint = () => { ed.forEach(([a, b], k) => { const l = lines[k]; l.setAttribute("x1", P[a].x); l.setAttribute("y1", P[a].y); l.setAttribute("x2", P[b].x); l.setAttribute("y2", P[b].y); }); nodes.forEach((g, i) => g.setAttribute("transform", `translate(${P[i].x.toFixed(1)} ${P[i].y.toFixed(1)})`)); };
+  const sim = () => {
+    const k = Math.max(.15, 1 - it / 320);
+    for (let i = 0; i < P.length; i++) { for (let j = i + 1; j < P.length; j++) { let dx = P[i].x - P[j].x, dy = P[i].y - P[j].y, d2 = dx * dx + dy * dy + .5; const f = 700 / d2; dx *= f; dy *= f; P[i].vx += dx; P[i].vy += dy; P[j].vx -= dx; P[j].vy -= dy; } P[i].vx += (W / 2 - P[i].x) * .03; P[i].vy += (H / 2 - P[i].y) * .03; }
+    ed.forEach(([a, b]) => { const dx = P[b].x - P[a].x, dy = P[b].y - P[a].y, d = Math.hypot(dx, dy) || 1, f = (d - 80) * .03; P[a].vx += dx / d * f; P[a].vy += dy / d * f; P[b].vx -= dx / d * f; P[b].vy -= dy / d * f; });
+    P.forEach((p, i) => { if (i === drag) { p.vx = p.vy = 0; return; } p.vx *= .8; p.vy *= .8; p.x = clamp(p.x + p.vx * k, 60, W - 60); p.y = clamp(p.y + p.vy * k, 20, H - 28); }); it++;
+  };
+  const step = () => { if (!document.body.contains(svg)) return; sim(); paint(); if (it < 340 || drag >= 0) requestAnimationFrame(step); };
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches || state.settings.calm; if (reduced) { for (let q = 0; q < 300; q++) sim(); it = 340; paint(); } else requestAnimationFrame(step);
+  const pt = e => { const r = svg.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; };
+  svg.onpointerdown = e => { const g = e.target.closest(".nb-gn"); if (!g) return; drag = +g.dataset.i; moved = 0; svg.setPointerCapture(e.pointerId); it = Math.min(it, 200); requestAnimationFrame(step); };
+  svg.onpointermove = e => { if (drag < 0) return; const [x, y] = pt(e); moved += Math.abs(x - P[drag].x) + Math.abs(y - P[drag].y); P[drag].x = clamp(x, 40, W - 40); P[drag].y = clamp(y, 20, H - 28); };
+  svg.onpointerup = () => { if (drag < 0) return; const i = drag; drag = -1; if (moved < 6) nbShow(ns[i].id); };
+  svg.onkeydown = e => { if (e.key === "Enter") { const g = e.target.closest(".nb-gn"); if (g) nbShow(ns[+g.dataset.i].id); } };
+  svg.onpointerover = e => { const g = e.target.closest(".nb-gn"); svg.classList.toggle("hov", !!g); nodes.forEach(x => x.classList.remove("hi")); lines.forEach(x => x.classList.remove("hi")); if (!g) return; const i = +g.dataset.i; g.classList.add("hi"); ed.forEach(([a, b], k) => { if (a === i || b === i) { lines[k].classList.add("hi"); nodes[a].classList.add("hi"); nodes[b].classList.add("hi"); } }); };
+  svg.onpointerleave = () => { svg.classList.remove("hov"); $$(".hi", svg).forEach(x => x.classList.remove("hi")); };
+}
+document.addEventListener("mousedown", e => { if (e.target.closest("#nb-menu, .nb-tb, .nb-emo-g button")) e.preventDefault(); });
+
+const nbSideRefresh = () => { const a = $(".nb-side"); if (a) a.innerHTML = nbSide(); };
+const nbReEsc = x => String(x).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /* ---------- configurações, ajuda, pendências ---------- */
 
@@ -2999,7 +3430,7 @@ function openSettings() {
 function openHelp() {
   ui.overlay = "help"; const row = (k, d) => `<div class="set-row"><span style="width:150px">${k.split(" ").map(x => `<kbd>${x}</kbd>`).join(" ")}</span><span>${d}</span></div>`;
   $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Atalhos"><div class="d-head" style="border-top:0"><h2>Atalhos e truques</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body"><section>
-  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Roda do mouse / deslizar", "Sobre o nome do quadro: alterna entre os quadros")}${row("Alt L", "Bloquear o app")}${row("Alt N", "Nova tarefa de qualquer lugar")}${row("Alt Q", "Novo quadro")}${row("Alt Shift C", "Abrir as configurações")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 a 7", "Quadro, Órbita, Lista, Agenda, Foco do dia, Relatórios, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
+  ${row("Ctrl K ou Ctrl Espaço", "Spotlight: buscar tarefas, comandos e fazer contas")}${row("Ctrl Shift D", "Alternar layout Celular / Computador")}${row("Roda do mouse / deslizar", "Sobre o nome do quadro: alterna entre os quadros")}${row("Alt L", "Bloquear o app")}${row("Alt N", "Nova tarefa de qualquer lugar")}${row("Alt Q", "Novo quadro")}${row("Alt Shift C", "Abrir as configurações")}${row("Ctrl Alt R", "Atualizar o app (sem apagar dados)")}${row("Ctrl S", "Gravar no arquivo de dados agora")}${row("N", "Nova tarefa")}${row("1 a 8", "Quadro, Órbita, Lista, Agenda, Foco do dia, Relatórios, Notebook, Manual")}${row("?", "Abrir esta ajuda")}${row("Botão direito", "No cartão: prioridade, prazo, mover, tags e mais")}${row("Esc", "Fechar janelas")}</section>
   <section><h3>Captura rápida</h3><p style="margin:0">No campo no fim de cada coluna, ou no Ctrl K, escreva tudo em uma linha:</p><p class="mono" style="margin:6px 0">Trocar toner #CH-48300 !alta @amanha +Hardware</p>
   ${row("#texto", "número do chamado")}${row("!alta", "prioridade: critica, alta, media, baixa ou 1 a 4")}${row("@hoje", "prazo: hoje, amanha, +3 (dias) ou 25/12")}${row("+tag", "adiciona a tag e cria se não existir")}</section></div></div>`;
 }
@@ -3308,6 +3739,43 @@ const acts = {
   fSave: () => { const f = ui.f; if (!(f.pri.size || f.tags.size || f.due)) return; const nm = [...[...f.pri].sort().map(i => PRI[i]), ...[...f.tags].map(id => (tag(id) || {}).name).filter(Boolean), ({ over: "Atrasadas", today: "Hoje", week: "7 dias" })[f.due]].filter(Boolean).join(" + "); state.settings.savedF.push({ id: uid(), name: nm, pri: [...f.pri], tags: [...f.tags], due: f.due }); save(); render(); toast("Filtro salvo como “" + nm + "”. Renomeie em Configurações › Atendimento"); },
   fApply: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (!x) return; ui.f = { pri: new Set(x.pri), tags: new Set(x.tags.filter(id => tag(id))), due: x.due || "" }; render(); },
   fsDel: el => { snapshotUndo("Filtro apagado"); state.settings.savedF = state.settings.savedF.filter(x => x.id !== el.dataset.id); save(); openSettings(); render(); },
+  nbNew: el => { NB.tpl = false; nbNew(el.dataset.v); },
+  nbTplToggle: () => { NB.tpl = !NB.tpl; nbSideRefresh(); },
+  nbDaily: el => nbDaily(el.dataset.v),
+  nbBook: el => { NB.nb = el.dataset.id; NB.graph = false; NB.tag = ""; NB.side = false; NB.pane = "list"; NB.sel = null; render(); },
+  nbBookEdit: el => { NB.editBook = NB.editBook === el.dataset.id ? null : el.dataset.id; nbSideRefresh(); },
+  nbBookAdd: () => { const b = { id: "nb_" + uid(), name: "Novo caderno", icon: NB_EMO[(state.notebooks.length * 3) % NB_EMO.length], hue: NB_COV[state.notebooks.length % NB_COV.length] }; state.notebooks.push(b); NB.editBook = b.id; save(); nbSideRefresh(); setTimeout(() => { const i = $(".nb-bedit input"); if (i) { i.focus(); i.select(); } }, 30); },
+  nbBookDel: el => { const b = nbBook(el.dataset.id); if (!b) return; if (state.notebooks.length < 2) return toast("Mantenha pelo menos um caderno"); const to = state.notebooks.find(x => x.id !== b.id); snapshotUndo("Caderno “" + b.name + "” excluído. As notas foram para “" + to.name + "”"); state.notes.forEach(n => { if (n.nb === b.id) { n.nb = to.id; n.updated = Date.now(); } }); state.notebooks = state.notebooks.filter(x => x !== b); tomb(b.id); NB.editBook = null; if (NB.nb === b.id) NB.nb = "all"; save(); render(); },
+  nbBookIcon: el => { const b = nbBook(el.dataset.id); if (b) { b.icon = el.dataset.v; save(); render(); } },
+  nbBookHue: el => { const b = nbBook(el.dataset.id); if (b) { b.hue = +el.dataset.v; save(); render(); } },
+  nbSel: el => { NB.sel = el.dataset.id; NB.pane = "edit"; NB.emo = false; render(); },
+  nbGo: el => nbShow(el.dataset.id),
+  nbMake: el => { const c = nbGet(NB.sel); nbNew("blank", Object.assign({ title: el.dataset.v }, c ? { nb: c.nb } : {})); },
+  nbTag: el => { NB.tag = NB.tag === el.dataset.v ? "" : el.dataset.v; NB.graph = false; NB.pane = "list"; NB.side = false; if (ui.view !== "notas") location.hash = "notas"; else render(); },
+  nbFav: () => { const n = nbGet(NB.sel); if (n) { n.fav = !n.fav; save(); render(); } },
+  nbPin: () => { const n = nbGet(NB.sel); if (n) { n.pin = !n.pin; save(); render(); } },
+  nbFocus: () => { NB.focus = !NB.focus; const e = $(".nb"); if (e) e.classList.toggle("focus", NB.focus); if (NB.focus) toast("Modo escrita. Esc ou ⛶ para sair"); },
+  nbMode: el => { NB.mode = el.dataset.v; const ed = $(".nb-ed"); if (ed) ed.dataset.mode = NB.mode; $$(".nb-seg button").forEach(b => b.classList.toggle("on", b.dataset.v === NB.mode)); nbPaint(true); },
+  nbFmt: el => nbFmt(el.dataset.v),
+  nbPick: el => nbPick(+el.dataset.i),
+  nbCopy: async el => { if (await copyText(NB.codes[+el.dataset.i] || "")) { el.textContent = "Copiado ✓"; setTimeout(() => { el.textContent = "Copiar"; }, 1200); } },
+  nbIcon: el => { const n = nbGet(NB.sel); if (n) { n.icon = el.dataset.v; NB.emo = false; save(); render(); } },
+  nbEmo: () => { NB.emo = !NB.emo; render(); },
+  nbCover: el => { const n = nbGet(NB.sel); if (!n) return; if (el.dataset.v === "x") n.cover = null; else { const i = NB_COV.indexOf(n.cover); n.cover = i < 0 ? NB_COV[0] : i + 1 < NB_COV.length ? NB_COV[i + 1] : null; } save(); render(); },
+  nbDel: () => { const n = nbGet(NB.sel); if (!n) return; n.trashed = Date.now(); NB.sel = null; save(); render(); toast("Nota movida para a lixeira", "Desfazer", () => { n.trashed = null; save(); render(); }); },
+  nbRestore: () => { const n = nbGet(NB.sel); if (n) { n.trashed = null; NB.nb = "all"; save(); render(); toast("Nota restaurada"); } },
+  nbPurgeOne: () => { const n = nbGet(NB.sel); if (!n) return; tomb(n.id); state.notes = state.notes.filter(x => x !== n); NB.sel = null; save(); render(); },
+  nbEmpty: () => { const t = state.notes.filter(n => n.trashed); if (!t.length) return; snapshotUndo("Lixeira de notas esvaziada"); tomb(...t.map(n => n.id)); state.notes = state.notes.filter(n => !n.trashed); NB.sel = null; save(); render(); },
+  nbGraph: () => { NB.graph = !NB.graph; NB.side = false; NB.pane = "edit"; render(); },
+  nbExport: () => { const n = nbGet(NB.sel); if (n) saveFile(nbSlug(nbTitle(n)) + ".md", nbMdFile(n)); },
+  nbExportAll: () => { const a = nbLive(); if (!a.length) return toast("Nenhuma nota para exportar"); saveFile("orbita-notas-" + dkey(Date.now()) + ".md", a.map(nbMdFile).join("\n\n<!-- ======== -->\n\n")); },
+  nbImport: () => { const i = document.createElement("input"); i.type = "file"; i.multiple = true; i.accept = ".md,.markdown,.txt,text/plain,text/markdown"; i.onchange = async () => { let c = 0; for (const f of i.files) { try { nbImportText(f.name, await f.text()); c++; } catch {} } if (c) { save(); NB.nb = "all"; NB.sel = null; render(); toast(c + " nota(s) importada(s)"); } }; i.click(); },
+  nbSide: () => { NB.side = !NB.side; const e = $(".nb"); if (e) e.classList.toggle("side-open", NB.side); },
+  nbBack: () => { NB.pane = "list"; render(); },
+  nbCalNav: el => { const d = new Date(NB.cal || Date.now()); d.setDate(1); d.setMonth(d.getMonth() + +el.dataset.v); NB.cal = +d; nbSideRefresh(); },
+  nbDup: () => { const n = nbGet(NB.sel); if (!n) return; const now = Date.now(), c = Object.assign(JSON.parse(JSON.stringify(n)), { id: "nt_" + uid(), title: nbTitle(n) + " (cópia)", date: undefined, created: now, updated: now, pin: false }); state.notes.unshift(c); save(); nbShow(c.id); },
+  nbCopyNote: async () => { const n = nbGet(NB.sel); if (n && await copyText(n.body)) toast("Texto copiado"); },
+  nbLink: el => { const m = nbGet(el.dataset.id), t = nbGet(el.dataset.v); if (!m || !t) return; const re = new RegExp(nbReEsc(t.title.trim()), "i"); if (!re.test(m.body)) return toast("Não consegui localizar o trecho exato"); m.body = m.body.replace(re, x => "[[" + x + "]]"); m.updated = Date.now(); save(); nbPaint(); toast("Link criado em “" + nbTitle(m) + "”"); },
   depDel: el => { const t = cur(); t.dep = (t.dep || []).filter(x => x !== el.dataset.id); save(); render(); renderDrawer(); },
   snooze: el => { const t = task(el.dataset.id); if (!t) return; const h = el.dataset.h; if (h === "tm") { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); t.snooze = +d; } else t.snooze = Date.now() + (+h) * 36e5; save(); openBell(); renderChrome(); toast("Aviso adiado"); },
   dailyToggle: el => { state.settings.daily = state.settings.daily === false; save(); openSettings(); },
@@ -3396,6 +3864,9 @@ document.addEventListener("click", e => {
 const ins = {
   manQ: el => { const q = norm(el.value.trim()), man = $(".man"); if (!man) return; let n = 0; $$(".man-sec", man).forEach(s => { const hit = !q || norm(s.textContent).includes(q); s.hidden = !hit; if (hit) { n++; s.classList.add("in"); } }); $$(".man-toc a[data-sec]", man).forEach(a => { const s = $("#m-" + a.dataset.sec, man); a.hidden = !!s && s.hidden; }); $(".man-empty", man).hidden = n > 0; $(".man-hero", man).hidden = !!q; },
   infoName: el => { el.value = el.value.replace(/\n/g, " "); fitName(el); el.title = (el.value || "Campo") + " (toque para renomear)"; const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (f) { f.name = el.value.trim() || "Campo"; save(); } },
+  nbQ: el => { NB.q = el.value; const l = $("#nb-items"); if (l) l.innerHTML = nbItems(); },
+  nbTitle: el => { const n = nbGet(el.dataset.id); if (!n) return; n.title = el.value; n.updated = Date.now(); nbSoon(); },
+  nbBookName: el => { const b = nbBook(el.dataset.id); if (b) { b.name = el.value.trim() || "Caderno"; save(); } },
   mName: el => { const m = modelOf(cur()); m.name = el.value.trim() || "Modelo"; save(); const o = $("#d_model option:checked"); if (o) o.textContent = m.name; },
   tRich: el => { const t = cur(); if (!t) return; t.info = t.info || {}; const h = cleanHTML(el.innerHTML); t.info[el.dataset.v] = plain(h) ? h : ""; save(); },
   dHtml: el => { const t = cur(), e = t && (t.diary || []).find(x => x.id === el.dataset.e); if (!e) return; const h = cleanHTML(el.innerHTML); e.html = plain(h) ? h : ""; save(); },
@@ -3441,6 +3912,9 @@ const chg = {
   dTheme: el => { const t = cur(), e = t.diary.find(x => x.id === el.dataset.e); if (e) { e.theme = el.value.trim() || "Geral"; save(); renderDrawer(); } },
   cxDate: el => { const t = task(ctxId); if (!t) return; const tm = t.due.slice(11); t.due = el.value ? el.value + (tm ? "T" + tm : "") : ""; save(); render(); closeCtx(); },
   tBlock: el => { const t = cur(), b = blockOf(t); b[el.dataset.k] = el.dataset.k === "m" ? +el.value : el.value; if (!b.d || !b.s) return; t.block = b; save(); render(); renderDrawer(); },
+  nbTitle: el => { const n = nbGet(el.dataset.id), old = (el.dataset.old || "").trim(), nw = el.value.trim(); if (!n || old === nw) return; let c = 0; if (old && nw) { const re = new RegExp("\\[\\[" + nbReEsc(old) + "(\\||\\]\\])", "gi"); state.notes.forEach(m => { if (m !== n && re.test(m.body)) { m.body = m.body.replace(re, (_, e) => "[[" + nw + e); m.updated = Date.now(); c++; } }); } el.dataset.old = el.value; save(); nbPaint(); if (c) toast("Links atualizados em " + c + " nota(s)"); },
+  nbMove: el => { const n = nbGet(NB.sel); if (n) { n.nb = el.value; n.updated = Date.now(); save(); nbPaint(); nbSideRefresh(); } },
+  nbCk: el => { const n = nbGet(NB.sel); if (!n) return; const L = n.body.split("\n"), i = +el.dataset.ln; if (L[i] === undefined) return; L[i] = el.checked ? L[i].replace(/\[ \]/, "[x]") : L[i].replace(/\[[xX]\]/, "[ ]"); n.body = L.join("\n"); n.updated = Date.now(); const ta = $("#nb-ta"); if (ta) ta.value = n.body; nbSoon(); haptic(6); },
   depAdd: el => { if (!el.value) return; const t = cur(); (t.dep = t.dep || []).push(el.value); save(); render(); renderDrawer(); },
   subDone: el => { const k = task(el.dataset.id); if (!k) return; const dc = cols(boardOf(k)).find(c => c.done), fc = cols(boardOf(k)).find(c => !c.done); setCol(k, el.checked ? (dc || fc).id : fc.id); save(); render(); renderDrawer(); },
   quietS: el => { state.settings.quiet.s = el.value || "22:00"; save(); },
@@ -3489,7 +3963,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "n" || e.key === "N") { e.preventDefault(); acts.newTask(); }
   else if (e.key === "/") { e.preventDefault(); openPalette(); }
   else if (e.key === "?") openHelp();
-  else if (/^[1-7]$/.test(e.key)) location.hash = VIEWS[+e.key - 1][0];
+  else if (/^[1-8]$/.test(e.key)) location.hash = VIEWS[+e.key - 1][0];
 });
 
 /* ---------- arrastar e soltar com profundidade ---------- */
