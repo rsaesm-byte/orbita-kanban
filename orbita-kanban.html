@@ -813,6 +813,9 @@ body[data-view="manual"] #strip { display: none; }
   .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
 }
 .tab-x { }
+.ls-bio { margin-top: 4px; } .ls-bio svg { margin-right: 6px; }
+#ptr { position: fixed; left: 50%; top: 0; z-index: 9000; width: 40px; height: 40px; margin-left: -20px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: 0 4px 16px rgb(0 0 0 / .3); border: 1px solid var(--line); pointer-events: none; opacity: 0; transform: translateY(-50px); font-size: 20px; line-height: 1; }
+#ptr.on { opacity: 1; } #ptr.rdy { background: var(--accent); color: #fff; } #ptr.spin i { display: block; animation: ptrSpin .8s linear infinite; } #ptr i { display: block; font-style: normal; transition: transform .15s; } @keyframes ptrSpin { to { transform: rotate(360deg); } }
 .ic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; } .ic-opt { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; cursor: pointer; color: var(--ink2); } .ic-opt span { width: 56px; height: 56px; } .ic-opt svg { width: 100%; height: 100%; border-radius: 14px; } .ic-opt small { font-size: 11px; } .ic-opt.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; color: var(--ink); }
 .logo.ic-custom { background: none; box-shadow: none; } .logo.ic-custom svg { width: 100%; height: 100%; border-radius: 11px; }
 .ag-bar { display: flex; align-items: center; gap: 6px; margin: 4px 0 10px; flex-wrap: wrap; } .ag-title { margin: 0 6px; font-size: 18px; min-width: 150px; text-align: center; }
@@ -2445,6 +2448,18 @@ const MANUAL = () => {
     + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
     "Mais um cuidado: sua segurança e seus dados.");
 
+  add("Ajustes", "puxar", "bell", "Puxar para atualizar (celular)", "Para pegar a versão mais nova do app sem sair dele.",
+    step(`No celular, com a tela no topo, <b>deslize o dedo para baixo</b> em uma área vazia (a barra do topo ou a faixa de filtros funcionam bem).`, `Quando o círculo ficar colorido, <b>solte</b>. O app limpa o cache antigo e recarrega já na versão nova.`)
+    + tip("Seus dados não são apagados: só o cache do aplicativo é renovado. Antes de recarregar, o app salva tudo.")
+    + warn("Não funciona começando em cima de cartões, campos de texto ou janelas abertas, para não atrapalhar o arrastar de tarefas."),
+    "Veja também como trocar o ícone do app.");
+
+  add("Ajustes", "biometria", "lock", "Desbloquear com biometria", "Use a digital ou o rosto do aparelho em vez de digitar o código.",
+    step(`Ative o bloqueio por senha ou padrão em <b>Configurações → Bloqueio</b>.`, `No mesmo bloco, toque em <b>Ligar impressão digital / rosto</b> e confirme com a biometria do aparelho.`, `Ao abrir ou bloquear o app, ele já pede a biometria. O botão <b>Usar biometria</b> aparece na tela de bloqueio, e a senha ou o padrão continuam valendo.`)
+    + warn("A biometria vale só <b>neste aparelho</b> e precisa de digital ou rosto já cadastrados no Android. Em outro aparelho, ligue de novo. O app precisa estar aberto pelo endereço https (o do GitHub Pages), não por arquivo.")
+    + tip("Se a biometria falhar, é só digitar a senha ou desenhar o padrão."),
+    "Veja também como trocar o ícone do app.");
+
   add("Dados e segurança", "lixeira", "trash", "Lixeira e backups automáticos", "Apagou sem querer? Quase nada se perde: o app guarda o que você apaga e faz cópias sozinho.",
     step(`Apague uma tarefa (ou um quadro inteiro) normalmente. Ela vai para a <b>lixeira</b> e fica lá por <b>30 dias</b>.`, `Abra <b>Configurações → 🛟 Segurança dos dados</b>. Em <b>Lixeira</b>, toque em <b>Restaurar</b> para a tarefa voltar para a coluna de onde saiu (ou para a primeira, se a coluna não existir mais).`, `Use o botão da lixeira ao lado para apagar de vez, ou <b>Esvaziar lixeira</b> (pede um segundo clique).`)
     + grid(["Backups automáticos", "O app guarda as <b>últimas 10 versões</b> neste aparelho: uma poucos segundos depois de abrir e depois no máximo uma por hora, se algo mudou."], ["Restaurar um backup", "Toque em <b>Restaurar</b> e confirme no segundo clique. O estado atual é guardado antes, e dá para <b>Desfazer</b> pelo aviso que aparece."], ["Estado da sincronização", "No topo da seção: <i>Sincronizado</i>, <i>Alterações pendentes</i> ou <i>Sem sincronizar</i>. Se dois aparelhos mudarem juntos, o app combina os dois lados sozinho."], ["Anexos", "Os arquivos anexados a tarefas na lixeira são mantidos até o fim dos 30 dias."])
@@ -2654,7 +2669,7 @@ function lkLocked() { return document.documentElement.dataset.locked === "1"; }
 function lkAnim() { return !(state.settings.calm || matchMedia("(prefers-reduced-motion: reduce)").matches); }
 function lkMirror() {
   if (!LK.ready) return;
-  try { const L = state.settings.lock; if (L && L.h) localStorage.setItem("orbita_lock", JSON.stringify({ t: L.t, s: L.s, h: L.h })); else { localStorage.removeItem("orbita_lock"); if (lkLocked()) lkReveal(false); } } catch {}
+  try { const L = state.settings.lock; if (L && L.h) localStorage.setItem("orbita_lock", JSON.stringify({ t: L.t, s: L.s, h: L.h })); else { localStorage.removeItem("orbita_lock"); localStorage.removeItem("orbita_bio"); if (lkLocked()) lkReveal(false); } } catch {}
 }
 async function lkHash(secret, salt) {
   const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join(""), te = new TextEncoder();
@@ -2680,6 +2695,7 @@ function lkRender(boot) {
   const L = lkCfg(); if (!L) return; const el = $("#lockscreen"), pat = L.t === "pat";
   el.className = boot && lkAnim() ? "boot" : "";
   el.innerHTML = `<div class="ls-in">${LK_SVG}<h2>Órbita bloqueado</h2><p class="ls-msg" id="ls-msg">${pat ? "Desenhe seu padrão para entrar" : "Digite sua senha para entrar"}</p>${pat ? PAT_SVG : `<form class="ls-form" id="ls-form" autocomplete="off"><input type="password" id="ls-pw" class="inp" placeholder="Senha" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Senha"><button class="btn main" type="submit">Entrar</button></form>`}</div>`;
+  if (bioId() && bioOk()) { $(".ls-in", el).insertAdjacentHTML("beforeend", `<button class="btn ls-bio" id="ls-bio" type="button">${ic("lock")}Usar biometria</button>`); $("#ls-bio").addEventListener("click", () => lkBio(false)); setTimeout(() => lkBio(true), boot && lkAnim() ? 1100 : 500); }
   if (pat) { const pad = patPad(el, seq => lkTry("P:" + seq.join(""), pad)); }
   else { const f = $("#ls-form"), i = $("#ls-pw"); f.addEventListener("submit", e => { e.preventDefault(); if (i.value) lkTry("S:" + i.value, { flash: c => { f.classList.add(c); setTimeout(() => { f.classList.remove(c); i.value = ""; i.focus(); }, 500); } }); }); setTimeout(() => i.focus({ preventScroll: true }), boot && lkAnim() ? 900 : 50); }
 }
@@ -2710,6 +2726,24 @@ function lkLock(animate) {
     const el = $("#lockscreen"), pl = $(".padlock", el); if (pl && lkAnim() && animate) { el.classList.add("closing"); pl.classList.add("open"); setTimeout(() => pl.classList.remove("open"), 260); setTimeout(() => pl.classList.add("clack"), 760); } LK.busy2 = false; };
   if (animate && lkAnim()) { LK.busy2 = true; r.classList.add("crt"); b.classList.add("crt-off"); fx.className = "off"; setTimeout(go, 760); } else go();
 }
+/* ===== biometria (WebAuthn, autenticador do aparelho) ===== */
+const b64 = u => btoa(String.fromCharCode(...new Uint8Array(u))), unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+const bioId = () => { try { return localStorage.getItem("orbita_bio") || ""; } catch { return ""; } };
+const bioOk = () => !!(window.PublicKeyCredential && navigator.credentials && window.isSecureContext);
+async function bioEnroll() {
+  const ch = crypto.getRandomValues(new Uint8Array(32)), cr = await navigator.credentials.create({ publicKey: { challenge: ch, rp: { name: "Órbita Kanban", id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: "orbita", displayName: "Órbita" }, pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }], authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required", residentKey: "discouraged" }, timeout: 60000, attestation: "none" } });
+  localStorage.setItem("orbita_bio", b64(cr.rawId));
+}
+async function bioCheck() {
+  const id = bioId(); if (!id) return false;
+  const a = await navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rpId: location.hostname, allowCredentials: [{ type: "public-key", id: unb64(id), transports: ["internal"] }], userVerification: "required", timeout: 60000 } });
+  return !!a;
+}
+async function lkBio(auto) {
+  if (LK.bioBusy || !lkLocked() || Date.now() < LK.until) return; LK.bioBusy = true;
+  try { if (await bioCheck()) { LK.fails = 0; LK.bioBusy = false; return lkUnlock(); } } catch (e) { if (!auto || (e && e.name !== "NotAllowedError")) lkMsg("Biometria não reconhecida. Use o código", true); }
+  LK.bioBusy = false;
+}
 function lkSection() {
   const L = state.settings.lock, on = !!(L && L.h), seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(L && L.auto || "manual") === String(v) ? "on" : ""}" data-act="lkAuto" data-v="${v}">${l}</button>`).join("")}</div>`;
   if (!on) return `<p class="meta" style="margin:0 0 8px">Proteja o app com uma <b>senha</b> ou um <b>padrão</b> de pontos, como no Android. Ao abrir o app (ou ao tocar em bloquear) ele pede o código, com a animação de TV de tubo e cadeado.</p>
@@ -2717,6 +2751,7 @@ function lkSection() {
     <p class="meta" style="margin:8px 0 0">Aviso: é uma trava de privacidade na tela. Ela não criptografa os dados guardados no navegador. Se esquecer o código, será preciso limpar os dados do site (faça antes um backup ou use a sincronização).</p>`;
   return `<div class="set-row"><span class="lk-state">${ic("lock")} Ativo · ${L.t === "pat" ? "padrão" : "senha"}</span><button class="btn" data-act="lock">Bloquear agora</button></div>
     <div class="set-row"><span class="lbl" style="width:110px">Bloquear sozinho</span>${seg("auto", [["manual", "Só manual"], ["hide", "Ao sair do app"], ["1", "Após 1 min"], ["5", "Após 5 min"], ["15", "Após 15 min"]])}</div>
+    ${bioOk() ? `<div class="set-row"><span class="lbl" style="width:110px">Biometria</span><button class="btn ${bioId() ? "on" : ""}" data-act="bioToggle">${bioId() ? "Ligada neste aparelho · desligar" : "Ligar impressão digital / rosto"}</button></div>` : ""}
     <div class="set-row"><button class="btn" data-act="lkSetup" data-v="pwd">Trocar por senha</button><button class="btn" data-act="lkSetup" data-v="pat">Trocar por padrão</button><button class="btn danger" data-act="lkSetup" data-v="off">Remover bloqueio</button></div>
     <p class="meta" style="margin:6px 0 0">Ao abrir o app ele sempre pede o código. Atalho para bloquear: <kbd>Alt</kbd> + <kbd>L</kbd>.</p>`;
 }
@@ -3174,6 +3209,7 @@ const acts = {
   palRun: el => palRun(+el.dataset.v),
   lock: () => { if (!lkOn()) { toast("Defina uma senha ou padrão para poder bloquear o app"); openSettings(); setTimeout(() => { const e = $("#sec-lock"); if (e) e.scrollIntoView({ block: "start" }); }, 60); return; } lkLock(true); },
   lkSetup: el => lkFlow(el.dataset.v),
+  bioToggle: async el => { if (bioId()) { try { localStorage.removeItem("orbita_bio"); } catch {} toast("Biometria desligada"); return openSettings(); } try { await bioEnroll(); toast("Biometria ligada. Na próxima vez o app pede a digital ou o rosto"); } catch (e) { toast(e && e.name === "NotAllowedError" ? "Cancelado ou sem biometria cadastrada no aparelho" : "Este aparelho/navegador não permite biometria aqui"); } openSettings(); },
   lkAuto: el => { if (!state.settings.lock) return; state.settings.lock.auto = el.dataset.v; save(); const sec = $("#sec-lock"); if (sec) sec.innerHTML = `<h3>🔒 Bloqueio do app</h3>${lkSection()}`; },
   skinSet: el => { const v = el.dataset.v; state.settings.skin = v; save(); applySettings(); render(); const g = $("#skin-grid"); if (g) g.innerHTML = skinGrid(); },
   setOpt: el => { const k = el.dataset.k, v = el.dataset.v; state.settings[k] = k === "accent" || k === "depth" ? +v : v; save(); applySettings(); openSettings(); },
@@ -3474,6 +3510,20 @@ document.documentElement.addEventListener("mouseleave", () => { $("#spot").class
 let installEv = null;
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEv = e; });
 addEventListener("appinstalled", () => { installEv = null; toast("App instalado"); });
+/* ===== puxar para atualizar (celular) ===== */
+(function ptr() {
+  const el = document.createElement("div"); el.id = "ptr"; el.setAttribute("aria-hidden", "true"); el.innerHTML = "<i>↓</i>"; document.body.append(el);
+  const TH = 80; let st = null;
+  const skip = t => t.closest && t.closest(".card, .ag-t, input, textarea, select, .modal, #layer, .drawer, #lockscreen, canvas, .pat-svg, [contenteditable], .ck-scroll, dialog, [role=dialog]");
+  const scrolled = t => { for (let n = t; n && n !== document.body; n = n.parentElement) { if (n.scrollTop > 0) return true; } return false; };
+  addEventListener("touchstart", e => { st = null; if (e.touches.length !== 1 || lkLocked() || ui.overlay || ui.drawer || skip(e.target) || scrolled(e.target) || el.classList.contains("spin")) return; st = { x: e.touches[0].clientX, y: e.touches[0].clientY, on: false, d: 0 }; }, { passive: true });
+  addEventListener("touchmove", e => { if (!st) return; const t = e.touches[0], dy = t.clientY - st.y, dx = t.clientX - st.x;
+    if (!st.on) { if (dy < 0 || Math.abs(dx) > 12 && Math.abs(dx) > dy) { st = null; return; } if (dy > 14 && dy > Math.abs(dx) * 1.5) st.on = true; else return; }
+    e.preventDefault(); st.d = Math.min(dy * .55, 120); el.classList.add("on"); el.style.transform = `translateY(${st.d - 30 + 16}px)`; el.firstChild.style.transform = `rotate(${Math.min(st.d / TH, 1) * 180}deg)`;
+    const rdy = st.d >= TH; if (rdy && !el.classList.contains("rdy")) haptic(10); el.classList.toggle("rdy", rdy); }, { passive: false });
+  const end = () => { if (!st) return; const go = st.on && st.d >= TH; st = null; if (go) { el.classList.add("spin"); el.firstChild.style.transform = ""; el.firstChild.textContent = "⟳"; el.style.transform = "translateY(64px)"; acts.appUpdate(); } else { el.classList.remove("on", "rdy"); el.style.transform = ""; } };
+  addEventListener("touchend", end); addEventListener("touchcancel", end);
+})();
 if ("serviceWorker" in navigator && /^https?:/.test(location.protocol) && !EMBED) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 
 /* colunas: barra de navegação e coluna ativa (celular) */
