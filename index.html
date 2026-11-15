@@ -814,6 +814,8 @@ body[data-view="manual"] #strip { display: none; }
   .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
 }
 .tab-x { }
+.note-wrap { display: grid; gap: 2px; } .snz { display: flex; gap: 6px; align-items: center; padding: 0 10px 6px; flex-wrap: wrap; } .snz .chip { padding: 2px 8px; font-size: 12px; }
+.linkb { border: 0; background: none; color: var(--accent); cursor: pointer; text-align: left; font: inherit; padding: 2px 0; } .linkb.dn { text-decoration: line-through; opacity: .6; } .sub-row { gap: 8px; align-items: center; }
 .logo svg *, .ic-opt svg * { transform-box: fill-box; transform-origin: center; }
 @keyframes aTw { 0%, 100% { opacity: 1 } 50% { opacity: .25 } } @keyframes aWob { 0%, 100% { transform: translateX(-8px) } 50% { transform: translateX(8px) } } @keyframes aSway { 0%, 100% { transform: rotate(-5deg) } 50% { transform: rotate(5deg) } } @keyframes aSway2 { 0%, 100% { transform: rotate(-6deg) } 50% { transform: rotate(6deg) } }
 @keyframes aGrow { 0%, 100% { transform: scaleY(.55) } 50% { transform: scaleY(1) } } @keyframes aDraw { 0% { stroke-dashoffset: 100 } 55%, 100% { stroke-dashoffset: 0 } } @keyframes aFlash { 0%, 70%, 100% { opacity: 1; transform: scale(1) } 80% { opacity: .35; transform: scale(1.08) } 90% { opacity: 1; transform: scale(.97) } }
@@ -1376,7 +1378,7 @@ function normalize(s) {
   s.models = s.models.filter(m => m && m.id).map(m => ({ id: String(m.id), name: String(m.name || "Modelo"), diary: !!m.diary, fields: (Array.isArray(m.fields) ? m.fields : []).filter(f => f && f.id).map(f => ({ id: String(f.id), name: String(f.name || "Campo"), type: FT.includes(f.type) ? f.type : "text", pin: !!f.pin, ...(f.type === "select" ? { opts: Array.isArray(f.opts) ? f.opts.map(String) : [] } : {}) })) }));
   if (!s.models.length) s.models = defaultModels();
   s.boards.forEach(b => { if (b.model && !s.models.some(m => m.id === b.model)) delete b.model; });
-  s.settings = Object.assign({}, d.settings, s.settings); if (!Array.isArray(s.settings.savedF)) s.settings.savedF = []; s.settings.sla = Object.assign({ on: false, h: [4, 8, 24, 72] }, s.settings.sla); if (typeof s.settings.sig !== "string") s.settings.sig = "Ricardo Saes – Suporte de TI\nRamal: 4700 | Opção 1 > 2"; if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
+  s.settings = Object.assign({}, d.settings, s.settings); if (!Array.isArray(s.settings.savedF)) s.settings.savedF = []; s.settings.quiet = Object.assign({ on: false, s: "22:00", e: "07:00" }, s.settings.quiet); if (s.settings.daily === undefined) s.settings.daily = true; s.settings.sla = Object.assign({ on: false, h: [4, 8, 24, 72] }, s.settings.sla); if (typeof s.settings.sig !== "string") s.settings.sig = "Ricardo Saes – Suporte de TI\nRamal: 4700 | Opção 1 > 2"; if (!s.settings.fx3) { s.settings.depth = 2; s.settings.fx3 = 1; } s.timer = s.timer || null;
   if (!s.columns.length) s.columns = d.columns;
   s.columns.forEach(c => { if (!s.boards.some(b => b.id === c.board)) c.board = s.boards[0].id; });
   s.boards.forEach(b => { if (!s.columns.some(c => c.board === b.id)) s.columns.push(...newCols(b.id)); });
@@ -1455,6 +1457,69 @@ async function applyIcon() {
   if (0) { const mf = { name: "Órbita Kanban", short_name: "Órbita", start_url: new URL("./orbita-kanban.html", location.href).href, scope: new URL("./", location.href).href, display: "standalone", background_color: "#000000", theme_color: "#000000", icons: [{ src: p192, sizes: "192x192", type: "image/png", purpose: "any" }, { src: p512, sizes: "512x512", type: "image/png", purpose: "any" }] }; man.setAttribute("href", URL.createObjectURL(new Blob([JSON.stringify(mf)], { type: "application/manifest+json" }))); }
 }
 const iconGrid = () => APP_ICONS.map(([id, n]) => `<button class="ic-opt ${(state.settings.appIcon || "orbita") === id ? "on" : ""}" data-act="iconSet" data-id="${id}" aria-pressed="${(state.settings.appIcon || "orbita") === id}" aria-label="Ícone ${n}"><span>${iconSvg(id, "g" + id)}</span><small>${n}</small></button>`).join("");
+const kids = t => state.tasks.filter(x => x.parent === t.id && !x.archived);
+const depsOf = t => (t.dep || []).map(task).filter(Boolean);
+const blockedBy = t => depsOf(t).filter(d => !isDone(d) && !d.archived);
+function depBlock(t) {
+  const ks = kids(t), kd = ks.filter(isDone).length, dp = depsOf(t), par = t.parent && task(t.parent);
+  const cand = allLive().filter(x => x.id !== t.id && !isDone(x) && !(t.dep || []).includes(x.id) && x.parent !== t.id && boardOf(x) === boardOf(t)).slice(0, 80);
+  return `<div class="field" data-bf="deps"><span class="lbl">Subtarefas ${ks.length ? kd + "/" + ks.length : ""}</span>
+    ${par ? `<span class="meta">Subtarefa de <button type="button" class="linkb" data-act="open" data-id="${par.id}">${esc(par.title)}</button></span>` : ""}
+    ${ks.map(k => `<div class="set-row sub-row"><input type="checkbox" data-in="subDone" data-id="${k.id}" ${isDone(k) ? "checked" : ""} aria-label="Concluir subtarefa"><button type="button" class="linkb ${isDone(k) ? "dn" : ""}" data-act="open" data-id="${k.id}">${esc(k.title)}</button></div>`).join("")}
+    <input class="inp" id="d_newsub" placeholder="+ Adicionar subtarefa e pressionar Enter" data-in="subNew">
+    <span class="lbl" style="margin-top:8px">Depende de ${dp.length ? "(" + blockedBy(t).length + " em aberto)" : ""}</span>
+    ${dp.map(d => `<div class="set-row sub-row"><span>${isDone(d) ? "✓" : "⏳"}</span><button type="button" class="linkb ${isDone(d) ? "dn" : ""}" data-act="open" data-id="${d.id}">${esc(d.title)}</button><button type="button" class="btn sm ghost" data-act="depDel" data-id="${d.id}" aria-label="Remover dependência">${ic("x")}</button></div>`).join("")}
+    <select class="inp" data-in="depAdd" aria-label="Adicionar dependência"><option value="">+ Tarefa que precisa terminar antes…</option>${cand.map(x => `<option value="${x.id}">${x.ticket ? "#" + esc(x.ticket) + " " : ""}${esc(x.title.slice(0, 60))}</option>`).join("")}</select></div>`;
+}
+const inQuiet = () => { const q = state.settings.quiet; if (!q || !q.on) return false; const n = new Date(), m = n.getHours() * 60 + n.getMinutes(), f = x => { const [h, mi] = String(x).split(":").map(Number); return h * 60 + (mi || 0); }, a = f(q.s), b = f(q.e); return a <= b ? m >= a && m < b : m >= a || m < b; };
+function dailySummary() {
+  if (state.settings.daily === false || !LK.ready) return; const k = dkey(Date.now()); try { if (localStorage.getItem("orbita_daily") === k) return; } catch {}
+  if (lkLocked() || inQuiet()) return void setTimeout(dailySummary, 20000);
+  const o = allLive().filter(t => !isDone(t)), over = o.filter(t => { const d = dueInfo(t); return d && d.ms < 0; }).length, tod = o.filter(t => { const d = dueInfo(t); return d && d.ms >= 0 && d.day === 0; }).length;
+  try { localStorage.setItem("orbita_daily", k); } catch {} if (!over && !tod) return;
+  const h = new Date().getHours(), msg = `${h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"}! Hoje: ${tod} para hoje e ${over} atrasada${over === 1 ? "" : "s"}.`;
+  toast(msg, "Foco do dia", () => { location.hash = "foco"; }); try { if ("Notification" in window && Notification.permission === "granted") new Notification("Órbita Kanban", { body: msg }); } catch {}
+}
+/* ===== relatório em PDF (gerado aqui, sem bibliotecas) ===== */
+function pdfDoc(items) {
+  const W = 595, H = 842, M = 48, pages = [[]]; let y = H - M;
+  const cl = x => String(x ?? "").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[•·]/g, "-").replace(/[^\x20-\x7E\xA0-\xFF]/g, "").replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  const wrap = (t, sz, w) => { const max = Math.floor(w / (sz * .5)), out = []; let ln = ""; String(t).split(/\s+/).forEach(wd => { if ((ln + " " + wd).trim().length > max) { if (ln) out.push(ln); ln = wd; } else ln = (ln + " " + wd).trim(); }); if (ln) out.push(ln); return out.length ? out : [""]; };
+  const need = h => { if (y - h < M) { pages.push([]); y = H - M; } }, cur = () => pages[pages.length - 1];
+  items.forEach(it => {
+    if (it.gap) { y -= it.gap; return; }
+    if (it.bar) { need(16); const w = 200, v = it.max ? it.n / it.max * w : 0; cur().push(`BT /F1 9 Tf ${M} ${y - 9} Td (${cl(it.label).slice(0, 34)}) Tj ET`, `0.75 0.8 0.85 rg ${M + 170} ${y - 10} ${w} 9 re f`, `0.1 0.5 0.5 rg ${M + 170} ${y - 10} ${Math.max(v, it.n ? 2 : 0)} 9 re f`, `0 g BT /F2 9 Tf ${M + 380} ${y - 9} Td (${it.n}) Tj ET`); y -= 15; return; }
+    const sz = it.h === 1 ? 18 : it.h === 2 ? 12.5 : 10, f = it.h ? "F2" : "F1", ind = it.li ? 12 : 0, lh = sz * 1.35;
+    if (it.h === 2) { need(30); y -= 8; }
+    wrap((it.li ? "- " : "") + it.t, sz, W - 2 * M - ind).forEach(l => { need(lh); y -= lh; cur().push(`BT /${f} ${sz} Tf ${M + ind} ${y + 3} Td (${cl(l)}) Tj ET`); });
+    if (it.h) y -= 3;
+  });
+  const objs = [], add = o => objs.push(o) && objs.length; add("<< /Type /Catalog /Pages 2 0 R >>"); add(""); add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"); add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  const kidsRef = [];
+  pages.forEach((ops, i) => { const st = ops.concat([`BT /F1 8 Tf ${W - M - 40} 24 Td (Pagina ${i + 1}/${pages.length}) Tj ET`]).join("\n"), cid = objs.length + 2; kidsRef.push(objs.length + 1 + " 0 R"); add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${cid} 0 R >>`); add(`<< /Length ${st.length} >>\nstream\n${st}\nendstream`); });
+  objs[1] = `<< /Type /Pages /Kids [${kidsRef.join(" ")}] /Count ${pages.length} >>`;
+  let out = "%PDF-1.4\n", xr = []; objs.forEach((o, i) => { xr.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+  const xs = out.length; out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + xr.map(n => String(n).padStart(10, "0") + " 00000 n \n").join("") + `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xs}\n%%EOF`;
+  return Uint8Array.from(out, c => c.charCodeAt(0) & 255);
+}
+function reportItems() {
+  const r = reportData(), today = sod(Date.now()), from = today - (r.N - 1) * DAY, all = boardTasks(), fmt = t => (t.ticket ? "#" + t.ticket + " " : "") + t.title;
+  const doneL = all.filter(t => t.doneAt && t.doneAt >= from).sort((a, b) => a.doneAt - b.doneAt), overL = all.filter(t => !t.archived && !isDone(t) && (dueInfo(t) || {}).ms < 0), nextL = all.filter(t => !t.archived && !isDone(t) && dueInfo(t) && dueInfo(t).ms >= 0 && dueInfo(t).day <= 7).sort((a, b) => dueInfo(a).ms - dueInfo(b).ms);
+  const bars = l => { const m = Math.max(1, ...l.map(x => x.n)); return l.map(x => ({ bar: 1, label: x.name, n: x.n, max: m })); };
+  const lead = r.lead ? (r.lead >= DAY ? (r.lead / DAY).toFixed(1).replace(".", ",") + " dias" : fmtDur(r.lead)) : "-";
+  return [{ h: 1, t: "Relatorio - " + board().name }, { t: `${new Date().toLocaleDateString("pt-BR")} - ultimos ${r.N} dias` }, { gap: 6 },
+    { t: `Abertas: ${r.open}    Atrasadas: ${r.over}    Criadas: ${r.created}    Concluidas: ${r.done}` }, { t: `Tempo ate concluir (media): ${lead}    Tempo cronometrado: ${fmtDur(r.time)}` },
+    { h: 2, t: "Tarefas por coluna" }, ...bars(r.byCol), { h: 2, t: "Abertas por prioridade" }, ...bars(r.byPri), ...(r.byTag.length ? [{ h: 2, t: "Abertas por tag" }, ...bars(r.byTag.slice(0, 8))] : []),
+    { h: 2, t: `Concluidas no periodo (${doneL.length})` }, ...(doneL.length ? doneL.map(t => ({ li: 1, t: `${dm(t.doneAt)} - ${fmt(t)}` })) : [{ t: "Nenhuma." }]),
+    { h: 2, t: `Atrasadas agora (${overL.length})` }, ...(overL.length ? overL.map(t => ({ li: 1, t: `${fmt(t)} - prazo ${t.due.replace("T", " ")}` })) : [{ t: "Nenhuma." }]),
+    { h: 2, t: `Proximos 7 dias (${nextL.length})` }, ...(nextL.length ? nextL.map(t => ({ li: 1, t: `${fmt(t)} - ${t.due.replace("T", " ")}` })) : [{ t: "Nada com prazo." }])];
+}
+function reportCsv() {
+  const r = reportData(), q = x => '"' + String(x ?? "").replace(/"/g, '""') + '"', L = [["Secao", "Item", "Valor"]];
+  L.push(["Resumo", "Quadro", board().name], ["Resumo", "Periodo (dias)", r.N], ["Resumo", "Abertas", r.open], ["Resumo", "Atrasadas", r.over], ["Resumo", "Criadas", r.created], ["Resumo", "Concluidas", r.done], ["Resumo", "Tempo cronometrado (min)", Math.round(r.time / 6e4)]);
+  r.byCol.forEach(x => L.push(["Por coluna", x.name, x.n])); r.byPri.forEach(x => L.push(["Por prioridade", x.name, x.n])); r.byTag.forEach(x => L.push(["Por tag", x.name, x.n])); r.days.forEach(d => L.push(["Criadas por dia", dkey(d.ts), d.c], ["Concluidas por dia", dkey(d.ts), d.d]));
+  return "\ufeff" + L.map(l => l.map(q).join(";")).join("\r\n");
+}
 const TRASH_DAYS = 30;
 function toTrash(t, from) { state.trash = state.trash || []; const c = col(t.col); state.trash.unshift({ id: "tr_" + uid(), deletedAt: Date.now(), from: from || "", colName: c ? c.name : "", task: JSON.parse(JSON.stringify(t)) }); if (state.trash.length > 300) { const gone = state.trash.splice(300); tomb(...gone.map(e => e.id)); } }
 function trashPurge() { const lim = Date.now() - TRASH_DAYS * 864e5, old = (state.trash || []).filter(e => e.deletedAt < lim); if (!old.length) return; tomb(...old.map(e => e.id)); state.trash = state.trash.filter(e => e.deletedAt >= lim); save(); gcAnexos(); }
@@ -1708,7 +1773,7 @@ async function iniciarSalvamento() {
   if (!temDados) { try { const old = JSON.parse(localStorage.getItem(LS)); if (valido(old) && old.updatedAt) { state = normalize(old); rev = 1; persistir(); temDados = true; } } catch {} }
   if (!temDados) state = normalize(demoState());
   LK.ready = true; revAoAbrir = rev; applySettings(); route(); checkDue(true);
-  await iniciarArquivo(); gistStart(); initRemote(); setTimeout(gcAnexos, 4000); setTimeout(() => { trashPurge(); bakSnap(); }, 6000); setInterval(() => bakSnap(), 30 * 6e4);
+  await iniciarArquivo(); gistStart(); initRemote(); setTimeout(gcAnexos, 4000); setTimeout(() => { trashPurge(); bakSnap(); }, 6000); setTimeout(dailySummary, 4000); setInterval(() => bakSnap(), 30 * 6e4);
   if (!EMBED && !handle && !pendingHandle && !localStorage.getItem(SAVE_CFG.lsKey + "_wizard")) {   // primeiro acesso: já salva e baixa o arquivo de dados sozinho
     try { localStorage.setItem(SAVE_CFG.lsKey + "_wizard", "1"); } catch {}
     if (!rev) { rev = 1; persistir(); }
@@ -1797,7 +1862,7 @@ function repSpawn(t) {                              // ao concluir uma tarefa qu
   state.tasks.push(k); t.repNext = k.id; t.repSaved = r; t.rep = null;
   toast("Repete: próxima em " + fmtD(k.due.slice(0, 10)));
 }
-function setCol(t, colId) { const was = isDone(t); t.col = colId; const now = isDone(t); if (now && !was) { t.doneAt = Date.now(); playSound("done"); if (t.rep) repSpawn(t); if (state.timer && state.timer.id === t.id) stopTimer(); } if (!now) { t.doneAt = null; if (was && t.repNext) { const n = state.tasks.find(x => x.id === t.repNext); if (n && !isDone(n)) state.tasks.splice(state.tasks.indexOf(n), 1); t.rep = t.repSaved || null; t.repNext = null; t.repSaved = null; } } }
+function setCol(t, colId) { const was = isDone(t); t.col = colId; const now = isDone(t); if (now && !was && blockedBy(t).length) toast("Atenção: depende de “" + blockedBy(t)[0].title + "”, ainda em aberto"); if (now && !was) { t.doneAt = Date.now(); playSound("done"); if (t.rep) repSpawn(t); if (state.timer && state.timer.id === t.id) stopTimer(); } if (!now) { t.doneAt = null; if (was && t.repNext) { const n = state.tasks.find(x => x.id === t.repNext); if (n && !isDone(n)) state.tasks.splice(state.tasks.indexOf(n), 1); t.rep = t.repSaved || null; t.repNext = null; t.repSaved = null; } } }
 function moveTask(id, colId, beforeId) {
   const t = task(id); if (!t) return;
   state.tasks.splice(state.tasks.indexOf(t), 1); setCol(t, colId);
@@ -1834,7 +1899,7 @@ function applySettings() {
 }
 function pending() {
   const h = (state.settings.notifyHours || 24) * 36e5, out = [];
-  allLive().forEach(t => { if (isDone(t)) return; const di = dueInfo(t); if (!di) return; if (di.ms < 0) out.push({ t, di, st: "over" }); else if (di.ms <= h || di.day === 0) out.push({ t, di, st: "soon" }); });
+  allLive().forEach(t => { if (isDone(t) || (t.snooze && t.snooze > Date.now())) return; const di = dueInfo(t); if (!di) return; if (di.ms < 0) out.push({ t, di, st: "over" }); else if (di.ms <= h || di.day === 0) out.push({ t, di, st: "soon" }); });
   return out.sort((a, b) => a.di.ms - b.di.ms);
 }
 function renderChrome() {
@@ -1997,7 +2062,7 @@ function bdPlay() {
 function cardHTML(t, j) {
   const di = dueInfo(t), done = isDone(t), ck = t.check.length, ckd = t.check.filter(c => c.d).length, run = state.timer && state.timer.id === t.id, sp = spent(t);
   const tags = t.tags.map(tag).filter(Boolean).map(g => `<span class="tag" style="--h:${g.hue}">${esc(g.name)}</span>`).join("");
-  const meta = `${t.ticket ? `<span class="tk">#${esc(t.ticket)}</span>` : ""}${t.priority !== 2 ? `<span class="pri">${PRI[t.priority]}</span>` : ""}${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${pinChips(t)}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || (t.diary || []).length || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
+  const meta = `${kids(t).length ? `<span class="pct${kids(t).every(isDone) ? " all" : ""}" title="Subtarefas">⤷ ${kids(t).filter(isDone).length}/${kids(t).length}</span>` : ""}${blockedBy(t).length && !done ? `<span class="due soon" title="Aguardando: ${esc(blockedBy(t).map(x => x.title).join(", "))}">🔒 aguarda ${blockedBy(t).length}</span>` : ""}${t.parent && task(t.parent) ? `<span class="pct" title="Subtarefa de ${esc(task(t.parent).title)}">↳ ${esc(task(t.parent).title.slice(0, 18))}</span>` : ""}${t.ticket ? `<span class="tk">#${esc(t.ticket)}</span>` : ""}${t.priority !== 2 ? `<span class="pri">${PRI[t.priority]}</span>` : ""}${di && !done ? `<span class="due ${di.cls}">${ic("clock")}${di.label}</span>` : ""}${ck ? `<span class="pct${ckd === ck ? " all" : ""}" title="Checklist: ${ckd} de ${ck} itens">${ic("check")}${ckd}/${ck} · ${Math.round(ckd / ck * 100)}%</span>` : ""}${pinChips(t)}${t.files.length ? `<span title="Anexos">${ic("clip")}${t.files.length}</span>` : ""}${t.notes || (t.diary || []).length || t.extra.some(x => x.k || x.v) ? `<span title="Tem observações ou informações adicionais">${ic("note")}</span>` : ""}${sp >= 6e4 || run ? `<span>${ic("timer")}<span ${run ? `data-timer="${t.id}"` : ""}>${run ? fmtClock(sp) : fmtDur(sp)}</span></span>` : ""}
       ${t.block && !done ? `<span title="Bloco reservado no calendário">${ic("cal")}${t.block.d.slice(8)}/${t.block.d.slice(5, 7)} ${t.block.s}</span>` : ""}${t.rep && !done ? `<span class="repb" title="Repete: ${esc(repLabel(t.rep))}">↻ ${esc(repLabel(t.rep))}</span>` : ""}`;
   return `<article class="card p${t.priority}${ui.flipped.has(t.id) ? " flipped" : ""}${done ? " done" : ""}${run ? " running" : ""}${di && di.ms < 0 && !done ? " late" : ""}" data-id="${t.id}" style="--j:${j || 0};--p:${t.priority}" tabindex="0" aria-label="${esc(t.title)}">
   <div class="card-in"><div class="face front">
@@ -2199,7 +2264,7 @@ function renderReports() {
   const tot = r.byPri.reduce((a, x) => a + x.n, 0), C = 2 * Math.PI * 54; let off = 0, arcs = "";
   r.byPri.forEach((x, i) => { if (!x.n) return; const len = x.n / tot * C; arcs += `<circle cx="75" cy="75" r="54" fill="none" stroke="var(--p${i})" stroke-width="20" stroke-dasharray="${Math.max(0, len - 2)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)" data-tip="${x.name}: ${x.n}"/>`; off += len; });
   const leadTxt = r.lead ? (r.lead >= DAY ? (r.lead / DAY).toFixed(1).replace(".", ",") + " dias" : fmtDur(r.lead)) : "–";
-  $("#view").innerHTML = `<div class="pad enter"><div class="rep-head"><h2>Relatório</h2><div class="seg">${[7, 14, 30].map(n => `<button class="${r.N === n ? "on" : ""}" data-act="period" data-v="${n}">${n} dias</button>`).join("")}</div><span class="spacer"></span><button class="btn" data-act="copyRep">${ic("copy")}Copiar resumo</button><button class="btn" data-act="csv">Baixar CSV</button></div>
+  $("#view").innerHTML = `<div class="pad enter"><div class="rep-head"><h2>Relatório</h2><div class="seg">${[7, 14, 30].map(n => `<button class="${r.N === n ? "on" : ""}" data-act="period" data-v="${n}">${n} dias</button>`).join("")}</div><span class="spacer"></span><button class="btn" data-act="copyRep">${ic("copy")}Copiar resumo</button><button class="btn" data-act="repPdf">Relatório em PDF</button><button class="btn" data-act="repCsv">Relatório em CSV</button><button class="btn" data-act="csv">CSV das tarefas</button></div>
   <div class="kpis">
     <div class="kpi"><small>Abertas</small><b>${r.open}</b><span>em ${cols().filter(c => !c.done).length} colunas</span></div>
     <div class="kpi"><small>Concluídas</small><b>${r.done}</b><span>nos últimos ${r.N} dias</span></div>
@@ -2398,8 +2463,22 @@ const MANUAL = () => {
   add("Visões", "relatorios", "bell", "Relatórios", "Números e gráficos para entender seu ritmo e mostrar resultado.",
     grid(["Cartões de números", "Abertas, atrasadas, concluídas, criadas, tempo até concluir e tempo cronometrado."], ["Gráficos", "Abertas por prioridade e por tag, criadas e concluídas por dia, tarefas por coluna. Passe o mouse nas barras para ver o valor."])
     + tip(`Use o comando <b>Copiar resumo do relatório</b> (${k("Ctrl")} ${k("K")}) para colar um resumo pronto em e-mail ou chamado.`)
+    + grid(["Relatório em PDF", "Botão <b>Relatório em PDF</b> no topo: gera um arquivo com os números, as tarefas concluídas no período, as atrasadas e as dos próximos 7 dias. Pronto para anexar em e-mail ou chamado."], ["Relatório em CSV", "Botão <b>Relatório em CSV</b>: os mesmos números em planilha (Excel). O botão <b>CSV das tarefas</b> continua baixando a lista completa de tarefas."])
+    + tip("O período do relatório (7, 14 ou 30 dias) é o que está selecionado na tela quando você clica em baixar.")
     + `<p class="man-try-row">${go("Ir para os Relatórios", "view:relatorios")}</p>`,
     "Agora um assunto importante: onde seus dados ficam guardados.");
+
+  add("Visões", "subtarefas", "tick", "Subtarefas e dependências", "Quebre uma tarefa grande em partes e avise quando uma depende de outra.",
+    step("Abra uma tarefa e, no bloco <b>Subtarefas</b>, escreva o título e pressione <b>Enter</b>. Cada subtarefa vira um cartão normal, ligado à tarefa principal.", "Marque a caixinha ao lado da subtarefa para concluí-la. No cartão principal aparece o andamento, como <b>⤷ 2/3</b>.")
+    + grid(["Depende de", "No mesmo bloco, escolha a tarefa que precisa terminar antes. O cartão mostra <b>🔒 aguarda 1</b> enquanto ela estiver aberta."], ["Aviso, não bloqueio", "Se você concluir uma tarefa cujas dependências ainda estão abertas, o app avisa, mas deixa concluir."])
+    + tip("Clique no nome da subtarefa ou da dependência para abri-la direto."),
+    "Veja também como adiar avisos.");
+
+  add("Ajustes", "avisos2", "bell", "Resumo do dia, soneca e silêncio", "Menos barulho, mais controle sobre os avisos de prazo.",
+    grid(["Resumo do dia", "Ao abrir o app pela primeira vez no dia, ele mostra quantas tarefas vencem hoje e quantas estão atrasadas, com atalho para o <b>Foco do dia</b>. Desligue em <b>Configurações → Avisos</b>."], ["Soneca", "No sino, cada aviso tem <b>1 h</b>, <b>3 h</b> e <b>Amanhã 8h</b>. A tarefa some dos avisos até lá."])
+    + grid(["Horário de silêncio", "Em <b>Configurações → Avisos</b> escolha o intervalo (ex.: 22:00 até 07:00). Nesse período não há sons nem notificações."], ["Busca melhor", "A busca (Ctrl+K) agora também encontra texto de checklist, nomes de anexos e subtarefas."])
+    + warn("Sem servidor, os avisos só funcionam com o app aberto (ou instalado e ativo). Fechado por completo, o aparelho não consegue avisar."),
+    "Para os ajustes de segurança, veja a lixeira.");
 
   add("Dados e segurança", "salvar", "tick", "Salvar seus dados", "O sistema salva sozinho a cada alteração. Entender onde ajuda a escolher o nível de segurança.",
     grid(["1. Neste navegador", "Sempre ativo. Se você limpar os dados do navegador, perde. Por isso existem as camadas abaixo."], ["2. Arquivo de dados", "No Chrome ou Edge do computador, conecte um arquivo .json em <b>Configurações → Dados</b>. Cada alteração é gravada nele (Ctrl+S grava na hora). Em uma pasta do OneDrive ou Google Drive, ele sincroniza entre computadores."],
@@ -2577,6 +2656,7 @@ function renderDrawer() {
     <div class="field" data-bf="check"><span class="lbl">Checklist ${t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : ""}</span>
       <div class="chk-list">${t.check.map(c => ckRow(t, c)).join("")}</div>
       <input class="inp" id="d_newck" placeholder="+ Adicionar item e pressionar Enter" data-in="ckNew">${tplRow(t)}</div>
+    ${depBlock(t)}
     ${state.fields.map(f => `<div class="field"><label for="cf_${f.id}">${esc(f.name)}</label><input class="inp" id="cf_${f.id}" type="${f.type}" data-in="tCustom" data-v="${f.id}" value="${esc(t.custom[f.id] ?? "")}"></div>`).join("")}
     ${repBlock2(t)}
     ${filesBlock(t)}
@@ -2622,7 +2702,7 @@ function fuzzy(q, s) { if (!q) return 1; const i = s.indexOf(q); if (i === 0) re
 function palItems(q) {
   const k = norm(q.replace(/^#/, "")), out = [];
   if (/^[\d\s+\-*/().,%^]+$/.test(q) && /[+\-*/^%]/.test(q.replace(/^\s*-/, "")) && /\d/.test(q)) { try { const v = Function('"use strict";return (' + q.replace(/,/g, ".").replace(/\^/g, "**").replace(/(\d+(?:\.\d+)?)%/g, "($1/100)") + ')')(); if (typeof v === "number" && isFinite(v)) out.push({ sec: "Calculadora", calc: String(+v.toFixed(10)).replace(".", ",") }); } catch (e) {} }
-  const ts = state.tasks.map(t => { const tg = t.tags.map(tag).filter(Boolean).map(g => g.name).join(" "); const s = Math.max(norm(t.ticket) === k && k ? 200 : 0, fuzzy(k, norm(t.ticket)) * 1.2, fuzzy(k, norm(t.title)), fuzzy(k, norm(tg)) * .7, k.length > 2 && norm(t.desc + " " + plain(t.notes) + " " + t.extra.map(x => x.k + " " + x.v).join(" ")).includes(k) ? 20 : 0, k.length > 1 && norm(Object.values(t.info || {}).map(x => typeof x === "string" && x.includes("<") ? plain(x) : x).join(" ") + " " + (t.diary || []).map(e => (e.theme || "") + " " + plain(e.html)).join(" ")).includes(k) ? 60 : 0); return { t, s: s - (t.archived ? 5 : 0) }; }).filter(x => x.s > 0).sort((a, b) => b.s - a.s || score(b.t) - score(a.t)).slice(0, k ? 8 : 5);
+  const ts = state.tasks.map(t => { const tg = t.tags.map(tag).filter(Boolean).map(g => g.name).join(" "); const s = Math.max(norm(t.ticket) === k && k ? 200 : 0, fuzzy(k, norm(t.ticket)) * 1.2, fuzzy(k, norm(t.title)), fuzzy(k, norm(tg)) * .7, k.length > 2 && norm(t.desc + " " + plain(t.notes) + " " + t.extra.map(x => x.k + " " + x.v).join(" ")).includes(k) ? 20 : 0, k.length > 1 && norm(Object.values(t.info || {}).map(x => typeof x === "string" && x.includes("<") ? plain(x) : x).join(" ") + " " + (t.diary || []).map(e => (e.theme || "") + " " + plain(e.html)).join(" ")).includes(k) ? 60 : 0, k.length > 1 && norm(t.check.map(c => c.t).join(" ") + " " + (t.files || []).map(f => f.name).join(" ") + " " + kids(t).map(x => x.title).join(" ")).includes(k) ? 30 : 0); return { t, s: s - (t.archived ? 5 : 0) }; }).filter(x => x.s > 0).sort((a, b) => b.s - a.s || score(b.t) - score(a.t)).slice(0, k ? 8 : 5);
   ts.forEach(({ t }) => out.push({ sec: "Tarefas", t }));
   COMMANDS().map(c => ({ c, s: fuzzy(k, norm(c.n)) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, k ? 6 : 20).forEach(({ c }) => out.push({ sec: "Ações", c }));
   if (k) out.push({ sec: "Criar", c: { n: `Criar tarefa “${q}”`, run: () => { const p = parseQuick(q); if (p.title) { const t = addTask(null, p); render(); openTask(t.id); } } } });
@@ -2895,6 +2975,8 @@ function openSettings() {
   <section id="sec-safe"><h3>🛟 Segurança dos dados</h3><div id="safe-box"></div></section>
   <section id="sec-lock"><h3>🔒 Bloqueio do app</h3>${lkSection()}</section>
   <section><h3>Avisos de prazo</h3>
+    <div class="set-row"><span class="lbl" style="width:140px">Resumo do dia ao abrir</span><button class="btn ${s.daily !== false ? "on" : ""}" data-act="dailyToggle">${s.daily !== false ? "Ligado" : "Desligado"}</button><span class="meta">Uma vez por dia, mostra quantas tarefas vencem hoje e quantas estão atrasadas.</span></div>
+    <div class="set-row"><span class="lbl" style="width:140px">Horário de silêncio</span><button class="btn ${s.quiet.on ? "on" : ""}" data-act="quietToggle">${s.quiet.on ? "Ligado" : "Desligado"}</button><input class="inp" style="flex:none;width:110px" type="time" value="${s.quiet.s}" data-in="quietS" aria-label="Início do silêncio"><span>até</span><input class="inp" style="flex:none;width:110px" type="time" value="${s.quiet.e}" data-in="quietE" aria-label="Fim do silêncio"></div>
     <div class="set-row"><label for="s_hours">Avisar quando faltar até</label><input class="inp" style="flex:none;width:80px" id="s_hours" type="number" min="1" max="168" value="${s.notifyHours}" data-in="setHours"><span>horas</span></div>
     <div class="set-row">${"Notification" in window ? `<button class="btn" data-act="askNotif">Ativar avisos do navegador</button><span class="meta">Estado: ${({ granted: "ativados", denied: "bloqueados pelo navegador", default: "desativados" })[Notification.permission]}</span>` : `<span class="meta">Este navegador não oferece avisos do sistema. As pendências aparecem no sino.</span>`}</div></section>
   <section><h3>Sons dos alertas</h3>
@@ -2923,7 +3005,7 @@ function openHelp() {
 }
 function openBell() {
   ui.overlay = "bell"; const p = pending();
-  $("#layer").innerHTML = `<div class="scrim" style="background:none" data-act="close"></div><div class="pop" role="dialog" aria-label="Pendências"><h3>Pendências</h3>${p.map(({ t, di }) => `<button class="note p${t.priority}" data-act="open" data-id="${t.id}"><b>${esc(t.title)}</b><small><span class="due ${di.cls}">${di.label}</span> · ${PRI[t.priority]} · ${state.boards.length > 1 ? esc(bname(t)) + " · " : ""}${esc(col(t.col).name)}${t.ticket ? " · #" + esc(t.ticket) : ""}</small></button>`).join("") || `<div class="empty">Nenhum prazo vencido ou próximo.</div>`}</div>`;
+  $("#layer").innerHTML = `<div class="scrim" style="background:none" data-act="close"></div><div class="pop" role="dialog" aria-label="Pendências"><h3>Pendências</h3>${p.map(({ t, di }) => `<div class="note-wrap"><button class="note p${t.priority}" data-act="open" data-id="${t.id}"><b>${esc(t.title)}</b><small><span class="due ${di.cls}">${di.label}</span> · ${PRI[t.priority]} · ${state.boards.length > 1 ? esc(bname(t)) + " · " : ""}${esc(col(t.col).name)}${t.ticket ? " · #" + esc(t.ticket) : ""}</small></button><div class="snz"><span class="meta">💤 Soneca:</span><button class="chip" data-act="snooze" data-id="${t.id}" data-h="1">1 h</button><button class="chip" data-act="snooze" data-id="${t.id}" data-h="3">3 h</button><button class="chip" data-act="snooze" data-id="${t.id}" data-h="tm">Amanhã 8h</button></div></div>`).join("") || `<div class="empty">Nenhum prazo vencido ou próximo.</div>`}</div>`;
 }
 function toast(msg, action, fn) {
   const el = document.createElement("div"); el.className = "toast"; el.innerHTML = `<span>${esc(msg)}</span>`;
@@ -2931,6 +3013,7 @@ function toast(msg, action, fn) {
   $("#toasts").append(el); setTimeout(() => el.remove(), action ? 8000 : 4000);
 }
 function checkDue(first) {
+  if (inQuiet()) { if (!first) renderChrome(); return; }
   const fresh = pending().filter(p => !notified[p.t.id + ":" + p.st + ":" + p.t.due]);
   if (!fresh.length) { if (!first) renderChrome(); return; }
   fresh.forEach(p => { notified[p.t.id + ":" + p.st + ":" + p.t.due] = 1; });
@@ -3225,6 +3308,12 @@ const acts = {
   fSave: () => { const f = ui.f; if (!(f.pri.size || f.tags.size || f.due)) return; const nm = [...[...f.pri].sort().map(i => PRI[i]), ...[...f.tags].map(id => (tag(id) || {}).name).filter(Boolean), ({ over: "Atrasadas", today: "Hoje", week: "7 dias" })[f.due]].filter(Boolean).join(" + "); state.settings.savedF.push({ id: uid(), name: nm, pri: [...f.pri], tags: [...f.tags], due: f.due }); save(); render(); toast("Filtro salvo como “" + nm + "”. Renomeie em Configurações › Atendimento"); },
   fApply: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (!x) return; ui.f = { pri: new Set(x.pri), tags: new Set(x.tags.filter(id => tag(id))), due: x.due || "" }; render(); },
   fsDel: el => { snapshotUndo("Filtro apagado"); state.settings.savedF = state.settings.savedF.filter(x => x.id !== el.dataset.id); save(); openSettings(); render(); },
+  depDel: el => { const t = cur(); t.dep = (t.dep || []).filter(x => x !== el.dataset.id); save(); render(); renderDrawer(); },
+  snooze: el => { const t = task(el.dataset.id); if (!t) return; const h = el.dataset.h; if (h === "tm") { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0); t.snooze = +d; } else t.snooze = Date.now() + (+h) * 36e5; save(); openBell(); renderChrome(); toast("Aviso adiado"); },
+  dailyToggle: el => { state.settings.daily = state.settings.daily === false; save(); openSettings(); },
+  quietToggle: el => { state.settings.quiet.on = !state.settings.quiet.on; save(); openSettings(); },
+  repPdf: () => { saveFile("relatorio-" + dkey(Date.now()) + ".pdf", pdfDoc(reportItems())); },
+  repCsv: () => saveFile("relatorio-" + dkey(Date.now()) + ".csv", reportCsv()),
   stab: el => stabShow(el.dataset.v),
   iconSet: el => { state.settings.appIcon = el.dataset.id; save(); applyIcon(); const g = $("#ic-grid"); if (g) g.innerHTML = iconGrid(); haptic && haptic(); },
   slaToggle: el => { state.settings.sla.on = !state.settings.sla.on; save(); el.classList.toggle("on", state.settings.sla.on); el.textContent = state.settings.sla.on ? "Ligado" : "Desligado"; },
@@ -3352,6 +3441,10 @@ const chg = {
   dTheme: el => { const t = cur(), e = t.diary.find(x => x.id === el.dataset.e); if (e) { e.theme = el.value.trim() || "Geral"; save(); renderDrawer(); } },
   cxDate: el => { const t = task(ctxId); if (!t) return; const tm = t.due.slice(11); t.due = el.value ? el.value + (tm ? "T" + tm : "") : ""; save(); render(); closeCtx(); },
   tBlock: el => { const t = cur(), b = blockOf(t); b[el.dataset.k] = el.dataset.k === "m" ? +el.value : el.value; if (!b.d || !b.s) return; t.block = b; save(); render(); renderDrawer(); },
+  depAdd: el => { if (!el.value) return; const t = cur(); (t.dep = t.dep || []).push(el.value); save(); render(); renderDrawer(); },
+  subDone: el => { const k = task(el.dataset.id); if (!k) return; const dc = cols(boardOf(k)).find(c => c.done), fc = cols(boardOf(k)).find(c => !c.done); setCol(k, el.checked ? (dc || fc).id : fc.id); save(); render(); renderDrawer(); },
+  quietS: el => { state.settings.quiet.s = el.value || "22:00"; save(); },
+  quietE: el => { state.settings.quiet.e = el.value || "07:00"; save(); },
   repPick: async el => { const r = state.replies.find(x => x.id === el.value); el.value = ""; if (!r) return; const x = repFill(r.text, cur()); toast(await copyText(x) ? `“${r.name}” copiada. Cole no chamado` : "Não consegui copiar neste navegador"); },
   tplApply: el => { const tp = state.templates.find(x => x.id === el.value); el.value = ""; if (tp) applyTpl(cur(), tp); },
   tplTag: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.tag = el.value; save(); } },
@@ -3385,6 +3478,7 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") { if (!$("#lb").hidden) return acts.lbClose(); if (ctxId) return closeCtx(); if (ui.overlay) { closeLayer(); return; } if (typing) tg.blur(); return; }
   if (ui.overlay === "pal") { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const n = ui.pal.items.length; ui.pal.i = (ui.pal.i + (e.key === "ArrowDown" ? 1 : n - 1)) % Math.max(n, 1); renderPal(); } else if (e.key === "Enter") { e.preventDefault(); palRun(ui.pal.i); } return; }
   if (e.key === "Enter" && tg.dataset) {
+    if (tg.dataset.in === "subNew" && tg.value.trim()) { const p = cur(); addTask(p.col, { title: tg.value.trim(), parent: p.id, priority: p.priority, tags: p.tags.slice() }); save(); render(); renderDrawer(); const i = $("#d_newsub"); if (i) i.focus(); return; }
     if (tg.dataset.in === "ckNew" && tg.value.trim()) { cur().check.push({ id: uid(), t: tg.value.trim(), d: false }); save(); render(); renderDrawer(); $("#d_newck").focus(); return; }
     if (tg.dataset.in === "tNewTag" && tg.value.trim()) { const n = tg.value.trim(); let g = state.tags.find(x => norm(x.name) === norm(n)); if (!g) { g = { id: uid(), name: n, hue: HUES[state.tags.length % HUES.length] }; state.tags.push(g); } if (!cur().tags.includes(g.id)) cur().tags.push(g.id); save(); render(); renderDrawer(); $("#d_newtag").focus(); return; }
     if (tg.dataset.in === "tTitle") { e.preventDefault(); tg.blur(); return; }
