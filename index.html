@@ -628,8 +628,8 @@ main { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-origin: 0 5
   .search-btn { min-width: 0; padding-inline: 10px; } .search-btn span, .search-btn kbd { display: none; }
   .btn { min-height: 40px; } .btn.bell, #btn-set, .search-btn { min-width: 40px; justify-content: center; }
   /* abas viram barra de navegação no rodapé */
-  .tabs { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 90; display: grid; grid-template-columns: repeat(7, 1fr); padding: 4px; border-radius: 16px; background: color-mix(in oklab, var(--surface) 88%, transparent); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid var(--line); box-shadow: 0 10px 30px -8px rgb(var(--shadow) / .55); }
-  .tabs a { text-align: center; padding: 11px 2px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+  .tabs { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 90; display: grid; grid-template-columns: repeat(8, 1fr); padding: 4px; border-radius: 16px; background: color-mix(in oklab, var(--surface) 88%, transparent); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid var(--line); box-shadow: 0 10px 30px -8px rgb(var(--shadow) / .55); }
+  .tabs a { text-align: center; padding: 11px 1px; font-size: 11.5px; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; }
   main { padding-bottom: calc(84px + env(safe-area-inset-bottom)); scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
   #btn-new { position: fixed; right: 16px; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 91; height: 52px; min-width: 52px; border-radius: 26px; padding: 0 18px; box-shadow: 0 12px 28px -6px rgb(var(--shadow) / .65), 0 0 0 1px rgb(255 255 255 / .12) inset; }
   .board { padding: 4px 12px 20px; perspective: none; } .stage { transform: none !important; transition: none; gap: 10px; }
@@ -813,7 +813,7 @@ body[data-view="manual"] #strip { display: none; }
   .man-toc a.on { border-color: var(--accent); }
   .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
 }
-.tab-x { }
+.tab-x { } .tab-s, .tl-s { display: none; } @media (max-width: 760px) { .tl-l { display: none; } .tl-s { display: inline; } .tab-s { display: inline; } }
 /* ===== Notebook ===== */
 body[data-view="notas"] main { overflow: hidden; }
 body[data-view="notas"] #strip { display: none; }
@@ -915,8 +915,9 @@ body[data-view="notas"] #strip { display: none; }
   .nb.side-open .nb-side { transform: none; } .nb.side-open .nb-scrim { display: block; position: absolute; inset: 0; z-index: 29; background: rgb(0 0 0 / .35); }
   .nb[data-pane="list"] .nb-main { display: none; } .nb[data-pane="edit"] .nb-list { display: none; } .nb-back, .nb-sidebtn { display: inline-flex; }
   .nb-page { padding: 12px 14px 120px; } .nb-title { font-size: 24px; } .nb-ta, .nb-pv { font-size: 16px; } .nb-tb { top: 2px; flex-wrap: nowrap; overflow-x: auto; } .nb-cover { height: 80px; }
-  .nb-item { padding: 12px 10px; }
+  .nb-item { padding: 12px 10px; } .nb-side { padding-bottom: 96px; } .nb-items { padding-bottom: 90px; }
 }
+@media (max-width: 374px) { .tabs { padding: 3px; left: 6px; right: 6px; } .tabs a { font-size: 10px; letter-spacing: -.02em; } }
 @media (prefers-reduced-motion: reduce) { .nb *, .nb { animation: none !important; transition: none !important; } }
 
 .note-wrap { display: grid; gap: 2px; } .snz { display: flex; gap: 6px; align-items: center; padding: 0 10px 6px; flex-wrap: wrap; } .snz .chip { padding: 2px 8px; font-size: 12px; }
@@ -1748,6 +1749,7 @@ async function exportar() { await saveFile(`${SAVE_CFG.appId}-backup-${dkey(Date
 function importar(texto) {
   let d; try { const o = JSON.parse(texto); d = o && o.dados ? o.dados : o; } catch {}
   if (!valido(d)) return toast("Este arquivo não é um backup do Órbita Kanban. Escolha o .json baixado em Configurações");
+  if (!Array.isArray(d.notes)) { d.notes = state.notes; d.notebooks = state.notebooks; }   /* backup anterior ao Notebook: mantém suas notas */
   snapshotUndo("Backup restaurado"); state = normalize(d); overwriteNext = true; save(); closeLayer(); refresh();
 }
 function baixarAuto(nome, txt) { try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "application/json" })); a.download = nome; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); meta.dlRev = rev; saveMeta(); setSaveStatus(); } catch {} }
@@ -2017,7 +2019,7 @@ function renderChrome() {
     + `<button data-act="boardRename">${ic("note")}Renomear</button><button data-act="boardDup">${ic("copy")}Duplicar quadro</button><button data-act="boardArchive">${ic("check")}Arquivar tarefas concluídas</button>`
     + `<label class="bm-sel">Modelo padrão das novas tarefas<select class="inp" data-in="boardModelSel" id="bm_model">${state.models.map(m => `<option value="${m.id}" ${boardModelId() === m.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}</select></label>`
     + (state.boards.length > 1 ? `<hr><button class="danger" data-act="boardDel">${ic("trash")}${ui.armed === "board" ? "Clique de novo para apagar" : "Apagar este quadro"}</button>` : ""); }
-  $("#tabs").innerHTML = VIEWS.map(([k, n]) => `<a href="#${k}" class="${ui.view === k ? "on" : ""}">${k === "manual" ? `Manual<span class="tab-x"> do Usuário</span>` : k === "foco" ? `Foco<span class="tab-x"> do dia</span>` : n}</a>`).join("");
+  $("#tabs").innerHTML = VIEWS.map(([k, n]) => `<a href="#${k}" class="${ui.view === k ? "on" : ""}">${k === "manual" ? `Manual<span class="tab-x"> do Usuário</span>` : k === "foco" ? `Foco<span class="tab-x"> do dia</span>` : k === "relatorios" ? `Relat<span class="tab-x">órios</span><span class="tab-s">.</span>` : k === "notas" ? `<span class="tl-l">Notebook</span><span class="tl-s">Notas</span>` : n}</a>`).join("");
   $("#btn-search").innerHTML = `${ic("search")}<span>Buscar ou executar…</span><kbd>Ctrl K</kbd>`;
   $("#btn-new").innerHTML = `${ic("plus")}Nova tarefa`;
   const n = pending().length;
@@ -3121,7 +3123,7 @@ function nbImportText(name, txt) {
 
 /* ---------- mapa de notas (grafo) ---------- */
 function nbGraphHtml() {
-  return `<div class="nb-bar"><b>🕸️ Mapa de notas</b><span class="spacer"></span><span class="meta nb-gleg">${state.notebooks.map(b => `<span><i style="--ch:${b.hue}"></i>${esc(b.name)}</span>`).join("")}</span><button class="btn sm" data-act="nbGraph">Fechar</button></div><div class="nb-gwrap"><svg id="nb-g" role="img" aria-label="Mapa das ligações entre as notas"></svg><div class="nb-gtip" id="nb-gtip" hidden></div><p class="meta nb-ghint" id="nb-ghint"></p></div>`;
+  return `<div class="nb-bar"><b>🕸️ Mapa de notas</b><span class="spacer"></span><span class="meta nb-gleg">${state.notebooks.map(b => `<span><i style="--ch:${b.hue}"></i>${esc(b.name)}</span>`).join("")}</span><button class="btn sm" data-act="nbGraph">Fechar</button></div><div class="nb-gwrap"><svg id="nb-g" role="group" aria-label="Mapa das ligações entre as notas"></svg><div class="nb-gtip" id="nb-gtip" hidden></div><p class="meta nb-ghint" id="nb-ghint"></p></div>`;
 }
 function nbGraphStart() {
   const svg = $("#nb-g"); if (!svg) return; const W = svg.clientWidth || 800, H = svg.clientHeight || 500; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
@@ -3754,7 +3756,7 @@ const acts = {
   nbTag: el => { NB.tag = NB.tag === el.dataset.v ? "" : el.dataset.v; NB.graph = false; NB.pane = "list"; NB.side = false; if (ui.view !== "notas") location.hash = "notas"; else render(); },
   nbFav: () => { const n = nbGet(NB.sel); if (n) { n.fav = !n.fav; save(); render(); } },
   nbPin: () => { const n = nbGet(NB.sel); if (n) { n.pin = !n.pin; save(); render(); } },
-  nbFocus: () => { NB.focus = !NB.focus; const e = $(".nb"); if (e) e.classList.toggle("focus", NB.focus); if (NB.focus) toast("Modo escrita. Esc ou ⛶ para sair"); },
+  nbFocus: () => { NB.focus = !NB.focus; const e = $(".nb"); if (e) e.classList.toggle("focus", NB.focus); },
   nbMode: el => { NB.mode = el.dataset.v; const ed = $(".nb-ed"); if (ed) ed.dataset.mode = NB.mode; $$(".nb-seg button").forEach(b => b.classList.toggle("on", b.dataset.v === NB.mode)); nbPaint(true); },
   nbFmt: el => nbFmt(el.dataset.v),
   nbPick: el => nbPick(+el.dataset.i),
@@ -3794,7 +3796,7 @@ const acts = {
   trDel: el => { const e = (state.trash || []).find(x => x.id === el.dataset.id); if (!e) return; tomb(e.id); state.trash = state.trash.filter(x => x.id !== e.id); save(); gcAnexos(); safeBox(); },
   trEmpty: el => { if (ui.armed !== "trE") { ui.armed = "trE"; el.textContent = "Clique de novo: apagar de vez"; return; } ui.armed = null; tomb(...state.trash.map(e => e.id)); state.trash = []; save(); gcAnexos(); safeBox(); toast("Lixeira esvaziada"); },
   bakNow: async () => { await bakSnap(true); safeBox(); toast("Backup feito"); },
-  bakRestore: async el => { const b = await kvGet(el.dataset.k); if (!b) return; if (ui.armed !== "bak" + el.dataset.k) { ui.armed = "bak" + el.dataset.k; el.textContent = "Clique de novo para restaurar"; return; } ui.armed = null; await bakSnap(true); const d = normalize(JSON.parse(b.json)); snapshotUndo("Backup de " + fdt(b.ts) + " restaurado"); state = d; overwriteNext = true; save(); closeLayer(); refresh(); },
+  bakRestore: async el => { const b = await kvGet(el.dataset.k); if (!b) return; if (ui.armed !== "bak" + el.dataset.k) { ui.armed = "bak" + el.dataset.k; el.textContent = "Clique de novo para restaurar"; return; } ui.armed = null; await bakSnap(true); const raw = JSON.parse(b.json); if (!Array.isArray(raw.notes)) { raw.notes = state.notes; raw.notebooks = state.notebooks; } const d = normalize(raw); snapshotUndo("Backup de " + fdt(b.ts) + " restaurado"); state = d; overwriteNext = true; save(); closeLayer(); refresh(); },
   palRun: el => palRun(+el.dataset.v),
   lock: () => { if (!lkOn()) { toast("Defina uma senha ou padrão para poder bloquear o app"); openSettings(); setTimeout(() => { const e = $("#sec-lock"); if (e) e.scrollIntoView({ block: "start" }); }, 60); return; } lkLock(true); },
   lkSetup: el => lkFlow(el.dataset.v),
