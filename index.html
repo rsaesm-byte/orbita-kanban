@@ -813,7 +813,14 @@ body[data-view="manual"] #strip { display: none; }
   .man-toc a.on { border-color: var(--accent); }
   .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
 }
-.tab-x { } .tab-s, .tl-s { display: none; } @media (max-width: 760px) { .tl-l { display: none; } .tl-s { display: inline; } .tab-s { display: inline; } }
+.tab-x { }
+.upd-bar { position: fixed; z-index: 3100; left: 50%; top: calc(10px + env(safe-area-inset-top)); transform: translateX(-50%); width: min(560px, calc(100% - 20px)); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 16px; color: #fff; background: linear-gradient(135deg, #5b45d6, #0e8f8a); box-shadow: 0 16px 40px -10px rgb(0 0 0 / .55), 0 0 0 1px rgb(255 255 255 / .18) inset; animation: ubIn .45s cubic-bezier(.2, .9, .3, 1.2); }
+.upd-bar .ub-ic { font-size: 22px; animation: ubBob 1.6s ease-in-out infinite; } .upd-bar .ub-t { flex: 1; min-width: 160px; display: grid; } .upd-bar small { opacity: .88; font-size: 12px; }
+html:root .upd-bar .btn.main { background: #fff !important; color: #17304a !important; border-color: #fff !important; font-weight: 700; } html:root .upd-bar .btn.ghost { background: rgb(255 255 255 / .16) !important; color: #fff !important; border-color: rgb(255 255 255 / .4) !important; }
+@media (max-width: 720px), (pointer: coarse) and (max-width: 1000px) { body:has(#upd-bar) .toasts { top: calc(168px + env(safe-area-inset-top)) !important; } }
+@keyframes ubIn { from { opacity: 0; transform: translate(-50%, -24px) scale(.96); } } @keyframes ubBob { 50% { transform: translateY(-4px); } }
+#btn-upd.has-upd { box-shadow: 0 0 0 3px rgb(124 92 255 / .45), 0 0 18px 2px rgb(25 200 190 / .6); animation: ubPulse 1.6s ease-in-out infinite; } @keyframes ubPulse { 50% { box-shadow: 0 0 0 7px rgb(124 92 255 / .12), 0 0 26px 4px rgb(25 200 190 / .8); } }
+@media (prefers-reduced-motion: reduce) { .upd-bar, .upd-bar .ub-ic, #btn-upd.has-upd { animation: none; } } .tab-s, .tl-s { display: none; } @media (max-width: 760px) { .tl-l { display: none; } .tl-s { display: inline; } .tab-s { display: inline; } }
 /* ===== Notebook ===== */
 body[data-view="notas"] main { overflow: hidden; }
 body[data-view="notas"] #strip { display: none; }
@@ -1498,6 +1505,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
+const APP_BUILD = "20261115.1320";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2628,6 +2636,7 @@ const MANUAL = () => {
 
   add("Ajustes", "app", "plus", "Instalar como aplicativo", "O Órbita Kanban pode virar um app, com ícone próprio, janela sem barra do navegador e uso sem internet.",
     step(`No computador (Chrome ou Edge), abra <b>Configurações → Aplicativo</b> e clique em <b>Instalar app</b>, ou use o ícone de instalar na barra de endereços.`, `No celular (Android), abra o menu do navegador e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.`, `Para pegar a versão mais nova do sistema, use <b>Atualizar app</b> nas mesmas configurações.`)
+    + tip("O app confere sozinho se há versão nova (ao abrir, a cada 5 minutos e quando você volta para ele). Quando houver, aparece um aviso no topo: toque em <b>Atualizar agora</b>. Em <b>Depois</b> o aviso some por 4 horas, e o botão de atualizar fica piscando.")
     + warn("Se o app não mostrar uma novidade, toque em <b>Atualizar app</b>. Ele busca a versão nova do GitHub e recarrega, sem apagar seus dados."),
     "Se algo não saiu como esperado, olhe as respostas rápidas.");
 
@@ -3741,6 +3750,8 @@ const acts = {
   fSave: () => { const f = ui.f; if (!(f.pri.size || f.tags.size || f.due)) return; const nm = [...[...f.pri].sort().map(i => PRI[i]), ...[...f.tags].map(id => (tag(id) || {}).name).filter(Boolean), ({ over: "Atrasadas", today: "Hoje", week: "7 dias" })[f.due]].filter(Boolean).join(" + "); state.settings.savedF.push({ id: uid(), name: nm, pri: [...f.pri], tags: [...f.tags], due: f.due }); save(); render(); toast("Filtro salvo como “" + nm + "”. Renomeie em Configurações › Atendimento"); },
   fApply: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (!x) return; ui.f = { pri: new Set(x.pri), tags: new Set(x.tags.filter(id => tag(id))), due: x.due || "" }; render(); },
   fsDel: el => { snapshotUndo("Filtro apagado"); state.settings.savedF = state.settings.savedF.filter(x => x.id !== el.dataset.id); save(); openSettings(); render(); },
+  updNow: () => { updHide(); acts.appUpdate($("#btn-upd")); },
+  updLater: () => { try { localStorage.setItem("orbita_upd_snooze", JSON.stringify({ v: UPD.v, until: Date.now() + 4 * 36e5 })); } catch {} const e = $("#upd-bar"); if (e) e.remove(); toast("Aviso adiado por 4 horas. O botão de atualizar continua piscando no topo."); },
   nbNew: el => { NB.tpl = false; nbNew(el.dataset.v); },
   nbTplToggle: () => { NB.tpl = !NB.tpl; nbSideRefresh(); },
   nbDaily: el => nbDaily(el.dataset.v),
@@ -4127,6 +4138,28 @@ addEventListener("appinstalled", () => { installEv = null; toast("App instalado"
   addEventListener("touchend", end); addEventListener("touchcancel", end);
 })();
 if ("serviceWorker" in navigator && /^https?:/.test(location.protocol) && !EMBED) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+/* ===== aviso de versão nova ===== */
+const UPD = { last: 0, v: "" };
+async function updCheck(force) {
+  if (EMBED || APP_BUILD === "dev" || !/^https?:/.test(location.protocol) || navigator.onLine === false) return;
+  if (!force && Date.now() - UPD.last < 45000) return; UPD.last = Date.now();
+  try {
+    const r = await fetch("versao.json?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) return; const j = await r.json();
+    if (!j || !j.versao || j.versao === APP_BUILD) return updHide();
+    let sn = null; try { sn = JSON.parse(localStorage.getItem("orbita_upd_snooze")); } catch {}
+    if (!force && sn && sn.v === j.versao && sn.until > Date.now()) return;
+    updShow(j.versao);
+  } catch {}
+}
+function updShow(v) {
+  UPD.v = v; const b = $("#btn-upd"); if (b) b.classList.add("has-upd"); if ($("#upd-bar")) return;
+  const el = document.createElement("div"); el.id = "upd-bar"; el.className = "upd-bar"; el.setAttribute("role", "alert");
+  el.innerHTML = `<span class="ub-ic" aria-hidden="true">⬆</span><div class="ub-t"><b>Nova versão disponível</b><small>Atualize para receber as melhorias. Seus dados não são apagados.</small></div><button class="btn main" data-act="updNow">Atualizar agora</button><button class="btn ghost" data-act="updLater">Depois</button>`;
+  document.body.append(el); haptic(10);
+  try { if (document.hidden && "Notification" in window && Notification.permission === "granted" && localStorage.getItem("orbita_upd_notified") !== v) { localStorage.setItem("orbita_upd_notified", v); new Notification("Órbita Kanban", { body: "Nova versão disponível. Abra o app para atualizar." }); } } catch {}
+}
+function updHide() { const e = $("#upd-bar"); if (e) e.remove(); const b = $("#btn-upd"); if (b) b.classList.remove("has-upd"); }
+if (!EMBED) { addEventListener("load", () => setTimeout(() => updCheck(true), 3500)); setInterval(() => updCheck(), 5 * 60 * 1000); document.addEventListener("visibilitychange", () => { if (!document.hidden) updCheck(); }); addEventListener("online", () => updCheck(true)); }
 
 /* colunas: barra de navegação e coluna ativa (celular) */
 function colnav() {
