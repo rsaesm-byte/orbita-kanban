@@ -2276,7 +2276,7 @@ const MANUAL = () => {
 
   add("Dados e segurança", "salvar", "tick", "Salvar seus dados", "O sistema salva sozinho a cada alteração. Entender onde ajuda a escolher o nível de segurança.",
     grid(["1. Neste navegador", "Sempre ativo. Se você limpar os dados do navegador, perde. Por isso existem as camadas abaixo."], ["2. Arquivo de dados", "No Chrome ou Edge do computador, conecte um arquivo .json em <b>Configurações → Dados</b>. Cada alteração é gravada nele (Ctrl+S grava na hora). Em uma pasta do OneDrive ou Google Drive, ele sincroniza entre computadores."],
-      ["3. GitHub (nuvem)", "Veja o próximo capítulo: seus dados num Gist privado, acessível de qualquer máquina."], ["Backups", "<b>Baixar backup (JSON)</b> a qualquer momento e <b>Restaurar backup</b> para voltar no tempo. Sem arquivo conectado, o computador baixa cópias automáticas a cada 10 minutos com alterações."])
+      ["3. GitHub (nuvem)", "Veja o próximo capítulo: seus dados num Gist privado, acessível de qualquer máquina."], ["Backups", "<b>Baixar backup (JSON)</b> a qualquer momento e <b>Restaurar backup</b> para voltar no tempo. Sem arquivo conectado, o computador baixa cópias automáticas a cada 10 minutos com alterações. Além disso, o app guarda 10 versões no navegador e uma lixeira de 30 dias (capítulo Lixeira e backups)."])
     + warn("Se o indicador do topo disser <i>Salvo só no navegador. Reconecte o arquivo</i>, clique em Reconectar. O navegador pede permissão de novo a cada sessão.")
     + tip("O indicador do topo (abaixo do nome do quadro) mostra o estado: <i>Salvo no navegador às 19:31</i>, <i>Sincronizado com o GitHub</i>, etc."),
     "Para usar em mais de um computador, sincronize com o GitHub.");
@@ -2331,6 +2331,21 @@ const MANUAL = () => {
     + tip("Com o <b>modo calmo</b> ligado, ou se o aparelho pedir menos movimento, as animações de TV e cadeado são puladas, mas o bloqueio funciona igual.")
     + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
     "Atalhos e gestos para ir mais rápido.");
+  add("Dados e segurança", "lixeira", "trash", "Lixeira e backups automáticos", "Apagou sem querer? Quase nada se perde: o app guarda o que você apaga e faz cópias sozinho.",
+    step(`Apague uma tarefa (ou um quadro inteiro) normalmente. Ela vai para a <b>lixeira</b> e fica lá por <b>30 dias</b>.`, `Abra <b>Configurações → 🛟 Segurança dos dados</b>. Em <b>Lixeira</b>, toque em <b>Restaurar</b> para a tarefa voltar para a coluna de onde saiu (ou para a primeira, se a coluna não existir mais).`, `Use o botão da lixeira ao lado para apagar de vez, ou <b>Esvaziar lixeira</b> (pede um segundo clique).`)
+    + grid(["Backups automáticos", "O app guarda as <b>últimas 10 versões</b> neste aparelho: uma poucos segundos depois de abrir e depois no máximo uma por hora, se algo mudou."], ["Restaurar um backup", "Toque em <b>Restaurar</b> e confirme no segundo clique. O estado atual é guardado antes, e dá para <b>Desfazer</b> pelo aviso que aparece."], ["Estado da sincronização", "No topo da seção: <i>Sincronizado</i>, <i>Alterações pendentes</i> ou <i>Sem sincronizar</i>. Se dois aparelhos mudarem juntos, o app combina os dois lados sozinho."], ["Anexos", "Os arquivos anexados a tarefas na lixeira são mantidos até o fim dos 30 dias."])
+    + warn("Os backups ficam só no navegador deste aparelho. Se você limpar os dados do site, eles vão junto. Mantenha também o arquivo de dados ou o GitHub.")
+    + tip("Restaurar um backup antigo com o GitHub ligado pode trazer de volta tarefas novas de outro aparelho, porque os dois lados são combinados.")
+    + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
+    "Para atender chamados mais rápido, veja Atendimento.");
+
+  add("O dia a dia", "atendimento", "bell", "Atendimento: respostas prontas, SLA e importação", "Ferramentas para a rotina de chamados. Tudo se configura em <b>Configurações → 🎧 Atendimento</b>.",
+    grid(["Respostas prontas", "Na gaveta da tarefa, o campo <b>Respostas prontas</b> copia o texto já preenchido com o usuário, o nº do chamado e a máquina, mais a sua assinatura. É só colar no chamado."], ["Variáveis", "Nos textos use {nome} {chamado} {maquina} {patrimonio} {titulo} {assinatura}. O nome vem do campo Usuário da tarefa."], ["SLA por prioridade", "Ligue o <b>Prazo automático</b> e defina as horas de cada prioridade. Tarefas novas sem prazo ganham um prazo com hora. Quando faltam menos de 24h, o cartão mostra a contagem (<i>faltam 3h59</i>)."], ["Importar chamados", "Cole uma lista (<i>CH-48300 Trocar toner</i>) ou linhas de uma planilha com cabeçalho (Chamado, Título, Prioridade, Prazo, Usuário). Elas entram na 1ª coluna do quadro."])
+    + step(`Abra <b>Configurações → Atendimento</b> e edite a assinatura e as respostas, ou crie novas com <b>Nova resposta</b>.`, `Em qualquer tarefa, escolha a resposta no campo <b>Respostas prontas</b>: o texto é copiado na hora.`, `Para criar tarefas já com checklist, aperte ${k("Ctrl")} + ${k("K")} e escolha <b>Nova tarefa do modelo</b>.`)
+    + tip("O aviso antes de vencer continua em <b>Avisos de prazo</b>: ele avisa quando faltar o número de horas que você definir.")
+    + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
+    "Atalhos e gestos para ir mais rápido.");
+
   add("Ajuda", "atalhos", "search", "Atalhos e gestos", "Para quem gosta de ser rápido.",
     `<table class="man-table"><tr><th>Atalho</th><th>O que faz</th></tr>
     <tr><td>${k("Ctrl")} ${k("K")} ou ${k("/")}</td><td>Buscar tarefas e executar comandos</td></tr><tr><td>${k("N")}</td><td>Nova tarefa</td></tr>
