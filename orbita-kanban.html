@@ -813,6 +813,9 @@ body[data-view="manual"] #strip { display: none; }
   .man-sec { scroll-margin-top: 110px; padding: 18px 16px; border-radius: 16px; } .man-hero { padding: 22px 18px; } .man-ico { display: none; } .man-anat { grid-template-columns: 1fr; } .man-gl { grid-template-columns: 1fr; gap: 2px; }
 }
 .tab-x { }
+.set-tabs { display: flex; gap: 6px; overflow-x: auto; position: sticky; top: -14px; z-index: 5; margin: -14px -16px 0; padding: 10px 16px 8px; background: var(--surface, var(--bg)); border-bottom: 1px solid var(--line); scrollbar-width: none; } .set-tabs::-webkit-scrollbar { display: none; }
+.set-tabs button { flex: none; border: 1px solid var(--line); background: var(--bg2, transparent); color: var(--ink2); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; } .set-tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.m-body > section[hidden] { display: none; }
 .ls-bio { margin-top: 4px; } .ls-bio svg { margin-right: 6px; }
 #ptr { position: fixed; left: 50%; top: 0; z-index: 9000; width: 40px; height: 40px; margin-left: -20px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: 0 4px 16px rgb(0 0 0 / .3); border: 1px solid var(--line); pointer-events: none; opacity: 0; transform: translateY(-50px); font-size: 20px; line-height: 1; }
 #ptr.on { opacity: 1; } #ptr.rdy { background: var(--accent); color: #fff; } #ptr.spin i { display: block; animation: ptrSpin .8s linear infinite; } #ptr i { display: block; font-style: normal; transition: transform .15s; } @keyframes ptrSpin { to { transform: rotate(360deg); } }
@@ -2448,6 +2451,11 @@ const MANUAL = () => {
     + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
     "Mais um cuidado: sua segurança e seus dados.");
 
+  add("Ajustes", "abas", "gear", "Configurações em abas", "As configurações ficam separadas em 5 abas para você achar tudo mais rápido.",
+    grid(["🎨 Aparência", "Ícone do app, temas, cores, densidade e animações."], ["🎧 Trabalho", "Atendimento (respostas prontas, SLA, filtros salvos), modelos de checklist, tags e campos personalizados."], ["🔒 Segurança", "Lixeira, backups, estado da sincronização e bloqueio do app com senha, padrão e biometria."], ["🔔 Avisos", "Avisos de prazo, sons dos alertas e conta de calendário."], ["☁ App e dados", "Atualizar o app, layout da tela, sincronização com o GitHub e arquivo de dados."])
+    + tip("O app lembra a última aba aberta. Os comandos do Ctrl K (ex.: <i>ícone</i>, <i>tema</i>) já abrem na aba certa."),
+    "Veja também como puxar a tela para atualizar.");
+
   add("Ajustes", "puxar", "bell", "Puxar para atualizar (celular)", "Para pegar a versão mais nova do app sem sair dele.",
     step(`No celular, com a tela no topo, <b>deslize o dedo para baixo</b> em uma área vazia (a barra do topo ou a faixa de filtros funcionam bem).`, `Quando o círculo ficar colorido, <b>solte</b>. O app limpa o cache antigo e recarrega já na versão nova.`)
     + tip("Seus dados não são apagados: só o cache do aplicativo é renovado. Antes de recarregar, o app salva tudo.")
@@ -2836,6 +2844,16 @@ async function safeBox() {
   ${bl.length ? bl.map(b => `<div class="set-row"><span style="flex:1;min-width:0">${fdt(b.ts)}<br><span class="meta">${b.tasks} tarefa(s)${b.trash ? " · " + b.trash + " na lixeira" : ""}</span></span><button class="btn sm" data-act="bakRestore" data-k="${b.key}">Restaurar</button></div>`).join("") : `<p class="meta" style="margin:0">O primeiro backup é feito poucos segundos depois de abrir o app.</p>`}
   <div class="set-row"><button class="btn sm" data-act="bakNow">Fazer backup agora</button></div>`;
 }
+const STABS = [["Aparência", "🎨", /Ícone|Temas|Aparência/], ["Trabalho", "🎧", /Atendimento|Modelos de checklist|Tags|Campos/], ["Segurança", "🔒", /Segurança|Bloqueio/], ["Avisos", "🔔", /Avisos|Sons|Calendário/], ["App e dados", "☁", /./]];
+ui.stab = ui.stab || "Aparência";
+function stabShow(name) { ui.stab = name; $$(".modal .m-body > section[data-stab]").forEach(e => { e.hidden = e.dataset.stab !== name; }); $$(".set-tabs button").forEach(b => { const on = b.dataset.v === name; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); }); const b = $(".modal .m-body"); if (b) b.scrollTop = 0; }
+function settingsTabs() {
+  const body = $(".modal .m-body"); if (!body) return; const secs = [...body.children].filter(e => e.tagName === "SECTION"); if (!secs.length) return;
+  secs.forEach(sec => { const h = (($("h3", sec) || {}).textContent) || ""; sec.dataset.stab = (STABS.find(m => m[2].test(h)) || STABS[4])[0]; });
+  body.insertAdjacentHTML("afterbegin", `<div class="set-tabs" role="tablist" aria-label="Seções das configurações">${STABS.map(([n, i]) => `<button role="tab" data-act="stab" data-v="${n}" aria-selected="false">${i} ${n}</button>`).join("")}</div>`);
+  stabShow(STABS.some(t => t[0] === ui.stab) ? ui.stab : "Aparência");
+}
+{ const _sv = Element.prototype.scrollIntoView; Element.prototype.scrollIntoView = function (o) { const p = this.closest && this.closest("[data-stab]"); if (p && p.hidden) stabShow(p.dataset.stab); return _sv.call(this, o); }; }
 function openSettings() {
   Object.keys(SKIN_DEF).forEach(skinFont);
   ui.overlay = "set"; ui.drawer = null; const s = state.settings, seg = (key, opts) => `<div class="seg">${opts.map(([v, l]) => `<button class="${String(s[key]) === String(v) ? "on" : ""}" data-act="setOpt" data-k="${key}" data-v="${v}">${l}</button>`).join("")}</div>`;
@@ -2881,7 +2899,7 @@ function openSettings() {
   <section><h3>Dados</h3><p class="meta" style="margin:0 0 6px">${esc(saveInfo()[1])}. ${FS_OK ? "Com um arquivo de dados conectado, cada alteração é gravada nele sozinha (Ctrl+S grava na hora)." : EMBED ? "Aberto pelo Claude, os dados ficam na sua conta. Para gravar em um arquivo .json no computador, abra o arquivo .html no Chrome ou Edge." : "Este navegador não grava direto em arquivo. Use Chrome ou Edge, ou baixe backups."}</p>${FS_OK ? `<div class="set-row">${handle ? `<button class="btn main" data-act="fileSave">Salvar agora</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : pendingHandle ? `<button class="btn main" data-act="fileReconnect">Reconectar arquivo</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : `<button class="btn main" data-act="fileCreate">Criar arquivo de dados</button><button class="btn" data-act="fileOpen">Abrir arquivo existente</button>`}</div>` : ""}<div class="set-row"><button class="btn" data-act="exportJson">Baixar backup (JSON)</button><button class="btn" data-act="importJson">Restaurar backup</button><button class="btn" data-act="csv">Baixar CSV</button></div>
     <div class="set-row">${hasDemo ? `<button class="btn" data-act="clearDemo">Remover tarefas de exemplo</button>` : ""}<button class="btn" data-act="unarchive">Desarquivar tudo (${state.tasks.filter(t => t.archived).length})</button><button class="btn danger" data-act="reset">${ui.armed === "reset" ? "Clique de novo para apagar tudo" : "Apagar tudo e recomeçar"}</button></div></section>
   </div></div>`;
-  safeBox();
+  settingsTabs(); safeBox();
 }
 function openHelp() {
   ui.overlay = "help"; const row = (k, d) => `<div class="set-row"><span style="width:150px">${k.split(" ").map(x => `<kbd>${x}</kbd>`).join(" ")}</span><span>${d}</span></div>`;
@@ -3194,6 +3212,7 @@ const acts = {
   fSave: () => { const f = ui.f; if (!(f.pri.size || f.tags.size || f.due)) return; const nm = [...[...f.pri].sort().map(i => PRI[i]), ...[...f.tags].map(id => (tag(id) || {}).name).filter(Boolean), ({ over: "Atrasadas", today: "Hoje", week: "7 dias" })[f.due]].filter(Boolean).join(" + "); state.settings.savedF.push({ id: uid(), name: nm, pri: [...f.pri], tags: [...f.tags], due: f.due }); save(); render(); toast("Filtro salvo como “" + nm + "”. Renomeie em Configurações › Atendimento"); },
   fApply: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (!x) return; ui.f = { pri: new Set(x.pri), tags: new Set(x.tags.filter(id => tag(id))), due: x.due || "" }; render(); },
   fsDel: el => { snapshotUndo("Filtro apagado"); state.settings.savedF = state.settings.savedF.filter(x => x.id !== el.dataset.id); save(); openSettings(); render(); },
+  stab: el => stabShow(el.dataset.v),
   iconSet: el => { state.settings.appIcon = el.dataset.id; save(); applyIcon(); const g = $("#ic-grid"); if (g) g.innerHTML = iconGrid(); haptic && haptic(); },
   slaToggle: el => { state.settings.sla.on = !state.settings.sla.on; save(); el.classList.toggle("on", state.settings.sla.on); el.textContent = state.settings.sla.on ? "Ligado" : "Desligado"; },
   rpAdd: () => { const r = { id: uid(), name: "Nova resposta", text: "Olá, {nome}!\n\n\n\n{assinatura}" }; state.replies.push(r); save(); openSettings(); setTimeout(() => { const e = $("#rp_" + r.id); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); e.select(); } }, 60); },
