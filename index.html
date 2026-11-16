@@ -1568,7 +1568,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1559";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.1606";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2675,7 +2675,7 @@ const MANUAL = () => {
     step(`Abra a aba <b>Notebook</b>. À esquerda ficam os <b>cadernos</b> (Diário, Trabalho, Pessoal, Faculdade; crie os seus com <b>Novo caderno</b> e use o ✎ para trocar nome, ícone e cor).`, `Toque em <b>Nova nota</b> (a seta ▾ ao lado abre <b>modelos</b>: reunião, aula, passo a passo de TI, projeto…). Digite o título e escreva. Tudo é salvo sozinho.`, `Para o <b>diário</b>, toque em <b>Diário de hoje</b> ou em qualquer dia do <b>calendário</b>: a nota do dia é criada (ou aberta) já com um roteiro.`)
     + grid(["Digite / para blocos", "Em qualquer linha, escreva <b>/</b> e escolha: títulos, listas, checklist, tabela, código, destaque, data, tarefa…"], ["Digite [[ para ligar notas", "<code>[[Nome da nota]]</code> cria um link, como no Obsidian. Em <b>Mencionada em</b> (rodapé da nota) você vê quem aponta para ela. Se mudar o título, os links nas outras notas são atualizados."], ["Ligue tarefas", "Use <code>[[#</code> e escolha um cartão do quadro. O botão <b>▢→</b> transforma a linha atual em tarefa nova e deixa o link."], ["Escrever, Dividir, Ler", "<b>Ler</b> mostra a nota formatada e deixa marcar os checklists com um toque. <b>Dividir</b> (computador) mostra texto e resultado lado a lado."], ["Mapa de notas", "Veja suas notas como um grafo: pontos são notas, linhas são links. Arraste, passe o mouse para destacar, clique para abrir."], ["Organize", "★ favorita, 📌 fixar no topo, ícone e capa (clique no emoji ao lado do título), #tags no texto e busca. Apagadas ficam 30 dias na <b>Lixeira</b>."])
     + tip(`<b>Seções (como num fichário):</b> dentro de um caderno, as abas coloridas no topo da lista são as <b>seções</b>. Toque em <b>＋ Seção</b> para criar; a seção ativa mostra <b>✎ Editar seção</b> (nome, cor, ◀ ▶ para reordenar, Excluir). A nota nova entra na seção aberta, e na própria nota você troca de seção ou de caderno. Excluir uma seção não apaga as notas: elas ficam em <b>Sem seção</b>.`)
-    + tip(`<b>Botão direito nas notas:</b> clique com o botão direito (ou segure o dedo no celular) numa nota para abrir o menu: favoritar, fixar, recortar, copiar, duplicar, <b>colar</b>, mover para outro caderno ou seção, exportar e excluir. Botão direito numa aba de seção permite criar/colar nota ali, renomear, reordenar e excluir. <b>Arrastar e soltar:</b> arraste uma nota da lista para uma aba de seção ou para um caderno na lateral (durante o arraste as seções de todos os cadernos aparecem); solte em <b>Favoritas</b> ou <b>Lixeira</b> para favoritar ou apagar. Segure <b>Ctrl</b> ao soltar para copiar em vez de mover.`)
+    + tip(`<b>Botão direito nas notas:</b> clique com o botão direito (ou segure o dedo no celular) numa nota para abrir o menu: favoritar, fixar, recortar, copiar, duplicar, <b>colar</b>, mover para outro caderno ou seção, exportar e excluir. Botão direito num <b>caderno</b> na lateral permite adicionar divisória (ou criar as sugeridas), criar/colar nota, renomear e excluir o caderno. Botão direito numa aba de seção permite criar/colar nota ali, renomear, reordenar e excluir. <b>Arrastar e soltar:</b> arraste uma nota da lista para uma aba de seção ou para um caderno na lateral (durante o arraste as seções de todos os cadernos aparecem); solte em <b>Favoritas</b> ou <b>Lixeira</b> para favoritar ou apagar. Segure <b>Ctrl</b> ao soltar para copiar em vez de mover.`)
     + tip(`<b>Imagens:</b> copie uma imagem ou tire um print e use Ctrl+V no texto da nota (ou arraste o arquivo para lá). Ela aparece em <b>Dividir</b> ou <b>Ler</b>; clique nela para ampliar. As imagens ficam guardadas neste navegador, não vão no .json nem para outro aparelho. Ctrl+B negrito, Ctrl+I itálico, Ctrl+K liga a uma nota, Tab recua item de lista, Enter continua a lista. O botão ⛶ abre o <b>modo escrita</b> (Esc sai). Exporte uma nota ou tudo em <b>.md</b> (compatível com Obsidian) e importe arquivos .md/.txt.`)
     + warn("As notas ficam salvas com o resto dos dados (navegador, arquivo e GitHub). Elas não têm senha própria: use o bloqueio do app para proteger.")
     + `<p class="man-try-row">${go("Abrir o Notebook", "view:notas")}</p>`,
@@ -3123,7 +3123,7 @@ function nbSecBar() {
   const b = nbBook(NB.nb); if (!b) return ""; const ss = nbSecs(b.id), live = nbLive().filter(n => n.nb === b.id), loose = live.filter(n => !n.sec).length;
   const tab = (id, label, n, ch) => `<button type="button" class="nb-tab${NB.sec === id ? " on" : ""}" style="--ch:${ch}" data-act="nbSec" data-id="${id}" role="tab" aria-selected="${NB.sec === id}"><span data-secl="${id}">${esc(label)}</span><small>${n}</small></button>`;
   const ed = ss.find(x => x.id === NB.editSec);
-  const SUG = { nb_diario: ["Trabalho", "Pessoal", "Ideias"], nb_trabalho: ["Reuniões", "Projetos", "Chamados"], nb_pessoal: ["Casa", "Finanças", "Saúde", "Viagens"], nb_faculdade: ["Matérias", "Provas", "Trabalhos"] }[b.id] || ["Geral", "Ideias"];
+  const SUG = nbSug(b.id);
   const hint = !ss.length ? `<div class="nb-sechint"><b>🗂️ Divisórias do caderno ${esc(b.name)}</b><span>Este caderno ainda não tem divisórias (como as abas de um fichário). Crie as suas:</span><div class="chips">${SUG.map(x => `<button type="button" class="chip" data-act="nbSecQuick" data-v="${esc(x)}">＋ ${esc(x)}</button>`).join("")}<button type="button" class="chip on" data-act="nbSecQuick" data-v="${SUG.map(esc).join("|")}">Criar todas</button><button type="button" class="chip" data-act="nbSecAdd">＋ Outra…</button></div></div>` : "";
   const act = ss.find(x => x.id === NB.sec), tc = act ? act.hue : NB.sec === "none" ? 0 : b.hue;
   return `<div class="nb-tabs" style="--tc:${tc}" role="tablist" aria-label="Seções de ${esc(b.name)}">${tab("", "Todas", live.length, b.hue)}${ss.map(x => tab(x.id, x.name, live.filter(n => n.sec === x.id).length, x.hue)).join("")}${ss.length && loose ? tab("none", "Sem seção", loose, 0) : ""}<button type="button" class="nb-tab add" data-act="nbSecAdd" title="Nova seção" aria-label="Nova seção">＋ Seção</button></div>
@@ -3262,6 +3262,7 @@ function nbPick(i) {
 
 /* ---------- ações de dados ---------- */
 /* ---------- menu de botão direito, copiar/colar e arrastar notas ---------- */
+const nbSug = id => ({ nb_diario: ["Trabalho", "Pessoal", "Ideias"], nb_trabalho: ["Reuniões", "Projetos", "Chamados"], nb_pessoal: ["Casa", "Finanças", "Saúde", "Viagens"], nb_faculdade: ["Matérias", "Provas", "Trabalhos"] }[id]) || ["Geral", "Ideias"];
 function nbCtxClose() { const m = $("#nbctx"); if (m) m.hidden = true; }
 function nbClipSet(n, cut) { NB.clip = { id: n.id, cut: !!cut }; try { navigator.clipboard.writeText(nbMdFile(n)).catch(() => {}); } catch {} toast(cut ? "Nota recortada. Use Colar na seção de destino" : "Nota copiada. Use Colar na seção de destino"); }
 function nbWhere(nbId, secId) { const b = nbBook(nbId), x = secId && state.nsec.find(y => y.id === secId); return (b ? b.name : "") + (x ? " › " + x.name : ""); }
@@ -3309,6 +3310,15 @@ function nbCtxSec(id, x, y) {
   const b = (k, i, l, v, w, cls) => `<button type="button" role="menuitem"${cls ? ` class="${cls}"` : ""} data-act="nbC" data-k="${k}"${v !== undefined ? ` data-v="${v}"` : ""}${w !== undefined ? ` data-w="${w}"` : ""}><span class="nbc-i">${i}</span>${l}</button>`;
   nbCtxOpen(`<div class="ctx-t" style="--pc:oklch(.6 .14 ${s.hue})">${esc(s.name)}</div>` + b("new", "➕", "Nova nota aqui", s.nb, s.id) + b("paste", "📋", "Colar nota aqui", s.nb, s.id) + "<hr>" + b("secedit", "✎", "Renomear / cor", s.id) + b("secmv", "◀", "Mover para a esquerda", s.id, -1) + b("secmv", "▶", "Mover para a direita", s.id, 1) + b("secdel", "🗑", "Excluir seção", s.id, undefined, "danger"), x, y);
 }
+function nbCtxBook(id, x, y) {
+  const bk = nbBook(id); if (!bk) return; NB.ctx = { id: null, nb: id, sec: "" };
+  const b = (k, i, l, v, w, cls) => `<button type="button" role="menuitem"${cls ? ` class="${cls}"` : ""} data-act="nbC" data-k="${k}"${v !== undefined ? ` data-v="${v}"` : ""}${w !== undefined ? ` data-w="${w}"` : ""}><span class="nbc-i">${i}</span>${l}</button>`;
+  const falt = nbSug(id).filter(z => !nbSecs(id).some(y => y.name === z));
+  nbCtxOpen(`<div class="ctx-t" style="--pc:oklch(.6 .14 ${bk.hue})">${bk.icon} ${esc(bk.name)}</div>` + b("bopen", "📖", "Abrir caderno", id) + b("bsec", "🗂️", "Adicionar divisória (aba)", id)
+    + (falt.length ? b("bsug", "✨", "Criar divisórias sugeridas (" + falt.map(esc).join(", ") + ")", id) : "") + "<hr>"
+    + b("new", "➕", "Nova nota neste caderno", id, "") + b("paste", "📋", "Colar nota aqui", id, "") + "<hr>"
+    + b("bedit", "✎", "Renomear / ícone / cor", id) + b("bdel", "🗑", "Excluir caderno", id, undefined, "danger"), x, y);
+}
 function nbCtxList(x, y) { const tg = nbTarget(); NB.ctx = { id: null, nb: tg.nb, sec: tg.sec }; const w = esc(nbWhere(tg.nb, tg.sec));
   nbCtxOpen(`<div class="ctx-t" style="--pc:var(--accent)">${w}</div><button type="button" role="menuitem" data-act="nbC" data-k="new" data-v="${tg.nb}" data-w="${tg.sec}"><span class="nbc-i">➕</span>Nova nota aqui</button><button type="button" role="menuitem" data-act="nbC" data-k="paste" data-v="${tg.nb}" data-w="${tg.sec}"><span class="nbc-i">📋</span>Colar aqui</button>`, x, y);
 }
@@ -3332,6 +3342,8 @@ function nbDropTarget(el) {
   document.addEventListener("contextmenu", e => {
     if (ui.view !== "notas" || e.target.closest("input,textarea,#nb-ta")) return;
     const it = e.target.closest(".nb-item"), tb = e.target.closest(".nb-tab[data-act='nbSec']"), sr = e.target.closest(".nb-row.sub[data-act='nbSec']"), ls = e.target.closest("#nb-items, .nb-lh");
+    const bk = e.target.closest(".nb-brow, .nb-row[data-act='nbBook']"), bkId = bk && (bk.dataset.id || (bk.querySelector("[data-act='nbBook']") || {}).dataset && bk.querySelector("[data-act='nbBook']").dataset.id);
+    if (bk && bkId && nbBook(bkId)) { e.preventDefault(); nbCtxBook(bkId, e.clientX, e.clientY); return; }
     if (it) { e.preventDefault(); nbCtxNote(it.dataset.id, e.clientX, e.clientY); }
     else if ((tb || sr) && (tb || sr).dataset.id && (tb || sr).dataset.id !== "none") { e.preventDefault(); nbCtxSec((tb || sr).dataset.id, e.clientX, e.clientY); }
     else if (ls && NB.nb !== "trash") { e.preventDefault(); nbCtxList(e.clientX, e.clientY); }
@@ -4056,6 +4068,11 @@ const acts = {
     if (k === "del" && n) return nbTrashNote(n);
     if (k === "rest" && n) { n.trashed = null; save(); render(); return toast("Nota restaurada"); }
     if (k === "kill" && n) { snapshotUndo("Nota apagada de vez"); tomb(n.id); state.notes = state.notes.filter(x => x !== n); if (NB.sel === n.id) NB.sel = null; save(); return render(); }
+    if (k === "bopen") return acts.nbBook({ dataset: { id: v } });
+    if (k === "bsec") { acts.nbBook({ dataset: { id: v } }); return acts.nbSecAdd(); }
+    if (k === "bsug") { acts.nbBook({ dataset: { id: v } }); return acts.nbSecQuick({ dataset: { v: nbSug(v).filter(x => !nbSecs(v).some(y => y.name === x)).join("|") } }); }
+    if (k === "bedit") { NB.editBook = v; NB.side = true; return render(); }
+    if (k === "bdel") return acts.nbBookDel({ dataset: { id: v } });
     if (k === "secedit") { NB.sec = v; NB.editSec = v; NB.pane = "list"; NB.sel = null; return render(); }
     if (k === "secmv") return acts.nbSecMove({ dataset: { id: v, d: w } });
     if (k === "secdel") return acts.nbSecDel({ dataset: { id: v } });
