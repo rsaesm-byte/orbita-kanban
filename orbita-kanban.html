@@ -926,6 +926,7 @@ body[data-view="notas"] #strip { display: none; }
 .nbctx > button, .nbc-mv button { text-align: left; background: none; border: 0; border-radius: 6px; padding: 6px 8px; display: flex; gap: 8px; align-items: center; width: 100%; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
 .nbctx > button:hover, .nbc-mv button:hover { background: var(--surface2); } .nbctx button.danger { color: var(--danger, #d64545); } .nbc-i { width: 18px; text-align: center; flex: none; }
 .nbc-mv { display: grid; gap: 1px; max-height: 190px; overflow-y: auto; } .nbc-mv button.on { background: var(--accent-soft); font-weight: 600; } .nbc-mv button.sub { padding-left: 34px; font-size: 12.5px; border-left: 3px solid oklch(.62 .14 var(--ch, 190)); margin-left: 8px; width: calc(100% - 8px); border-radius: 0 6px 6px 0; }
+.nb-sechint { margin: 8px 10px 0; padding: 10px; border: 1px dashed var(--line); border-radius: 10px; display: grid; gap: 6px; font-size: 12.5px; color: var(--ink2); } .nb-sechint b { color: var(--ink); } .nb-sechint .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .nb-secact { padding: 4px 10px 0; } .nb-secedit { margin: 6px 10px 0; }
 .nb-row.sub { padding-left: 30px; font-size: 13px; }
 .nb-img { max-width: 100%; border-radius: 10px; } .nb-img.nb-loc { cursor: zoom-in; display: block; margin: 8px 0; box-shadow: 0 1px 4px rgb(var(--shadow) / .2); } .nb-img.miss { cursor: default; padding: 14px; border: 1px dashed var(--line); color: var(--ink3); font-size: 12px; }
@@ -1567,7 +1568,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1554";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.1559";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -3108,7 +3109,7 @@ function nbSide() {
     <button class="nb-row${on("fav")}" data-act="nbBook" data-id="fav"><span>⭐</span>Favoritas<small>${live.filter(n => n.fav).length}</small></button>
     <div class="nb-lbl">Cadernos</div>
     ${state.notebooks.map(b => `<div class="nb-brow"><button class="nb-row${on(b.id)}" style="--ch:${b.hue}" data-act="nbBook" data-id="${b.id}"><span>${b.icon}</span>${esc(b.name)}<small>${cnt(b.id)}</small></button><button class="nb-bed" data-act="nbBookEdit" data-id="${b.id}" aria-label="Editar caderno ${esc(b.name)}">✎</button></div>
-      ${nbSecs(b.id).map(x => `<button class="nb-row sub${NB.sec === x.id ? " on" : ""}${NB.nb === b.id ? "" : " off"}" style="--ch:${x.hue}" data-act="nbSec" data-id="${x.id}"><span>▸</span><span data-secl="${x.id}">${esc(x.name)}</span><small>${live.filter(n => n.sec === x.id).length}</small></button>`).join("")}
+      ${nbSecs(b.id).map(x => `<button class="nb-row sub${NB.sec === x.id ? " on" : ""}${NB.nb === b.id ? "" : " off"}" style="--ch:${x.hue}" data-act="nbSec" data-id="${x.id}"><span>▸</span><span data-secl="${x.id}">${esc(x.name)}</span><small>${live.filter(n => n.sec === x.id).length}</small></button>`).join("")}${NB.nb === b.id ? `<button class="nb-row sub add" data-act="nbSecAdd"><span>＋</span>Nova divisória</button>` : ""}
       ${NB.editBook === b.id ? `<div class="nb-bedit"><input class="inp" value="${esc(b.name)}" data-in="nbBookName" data-id="${b.id}" aria-label="Nome do caderno"><div class="nb-emo-g">${NB_EMO.slice(0, 14).map(e => `<button type="button" data-act="nbBookIcon" data-id="${b.id}" data-v="${e}">${e}</button>`).join("")}</div><div class="nb-hues">${NB_COV.map(h => `<button type="button" style="--ch:${h}" class="${h === b.hue ? "on" : ""}" data-act="nbBookHue" data-id="${b.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><button class="btn sm ghost" data-act="nbBookDel" data-id="${b.id}">Excluir caderno</button></div>` : ""}`).join("")}
     <button class="nb-row add" data-act="nbBookAdd"><span>＋</span>Novo caderno</button>
     <button class="nb-row${on("trash")}" data-act="nbBook" data-id="trash"><span>🗑️</span>Lixeira<small>${trash}</small></button>
@@ -3122,8 +3123,11 @@ function nbSecBar() {
   const b = nbBook(NB.nb); if (!b) return ""; const ss = nbSecs(b.id), live = nbLive().filter(n => n.nb === b.id), loose = live.filter(n => !n.sec).length;
   const tab = (id, label, n, ch) => `<button type="button" class="nb-tab${NB.sec === id ? " on" : ""}" style="--ch:${ch}" data-act="nbSec" data-id="${id}" role="tab" aria-selected="${NB.sec === id}"><span data-secl="${id}">${esc(label)}</span><small>${n}</small></button>`;
   const ed = ss.find(x => x.id === NB.editSec);
+  const SUG = { nb_diario: ["Trabalho", "Pessoal", "Ideias"], nb_trabalho: ["Reuniões", "Projetos", "Chamados"], nb_pessoal: ["Casa", "Finanças", "Saúde", "Viagens"], nb_faculdade: ["Matérias", "Provas", "Trabalhos"] }[b.id] || ["Geral", "Ideias"];
+  const hint = !ss.length ? `<div class="nb-sechint"><b>🗂️ Divisórias do caderno ${esc(b.name)}</b><span>Este caderno ainda não tem divisórias (como as abas de um fichário). Crie as suas:</span><div class="chips">${SUG.map(x => `<button type="button" class="chip" data-act="nbSecQuick" data-v="${esc(x)}">＋ ${esc(x)}</button>`).join("")}<button type="button" class="chip on" data-act="nbSecQuick" data-v="${SUG.map(esc).join("|")}">Criar todas</button><button type="button" class="chip" data-act="nbSecAdd">＋ Outra…</button></div></div>` : "";
   const act = ss.find(x => x.id === NB.sec), tc = act ? act.hue : NB.sec === "none" ? 0 : b.hue;
   return `<div class="nb-tabs" style="--tc:${tc}" role="tablist" aria-label="Seções de ${esc(b.name)}">${tab("", "Todas", live.length, b.hue)}${ss.map(x => tab(x.id, x.name, live.filter(n => n.sec === x.id).length, x.hue)).join("")}${ss.length && loose ? tab("none", "Sem seção", loose, 0) : ""}<button type="button" class="nb-tab add" data-act="nbSecAdd" title="Nova seção" aria-label="Nova seção">＋ Seção</button></div>
+  ${hint}
   ${NB.sec && NB.sec !== "none" && ss.some(x => x.id === NB.sec) && !ed ? `<div class="nb-secact"><button type="button" class="btn sm ghost" data-act="nbSecEdit" data-id="${NB.sec}">✎ Editar seção</button></div>` : ""}
   ${ed ? `<div class="nb-bedit nb-secedit"><input class="inp" id="nbsec_${ed.id}" value="${esc(ed.name)}" data-in="nbSecName" data-id="${ed.id}" aria-label="Nome da seção"><div class="nb-hues">${NB_COV.map(h => `<button type="button" style="--ch:${h}" class="${h === ed.hue ? "on" : ""}" data-act="nbSecHue" data-id="${ed.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><div class="set-row" style="flex-wrap:wrap"><button class="btn sm" data-act="nbSecMove" data-id="${ed.id}" data-d="-1" aria-label="Mover para a esquerda">◀</button><button class="btn sm" data-act="nbSecMove" data-id="${ed.id}" data-d="1" aria-label="Mover para a direita">▶</button><button class="btn sm main" data-act="nbSecEdit" data-id="${ed.id}">Pronto</button><button class="btn sm ghost" data-act="nbSecDel" data-id="${ed.id}">Excluir seção</button></div></div>` : ""}`;
 }
@@ -4057,6 +4061,7 @@ const acts = {
     if (k === "secdel") return acts.nbSecDel({ dataset: { id: v } });
   },
   nbSec: el => { NB.sec = el.dataset.id; NB.editSec = null; NB.pane = "list"; NB.sel = null; render(); },
+  nbSecQuick: el => { const b = nbBook(NB.nb); if (!b) return; const names = (el.dataset.v || "").split("|").filter(Boolean); if (!names.length) return; snapshotUndo(names.length > 1 ? "Divisórias criadas em " + b.name : "Divisória “" + names[0] + "” criada"); let first = null; names.forEach(nm => { const x = { id: "ns_" + uid(), nb: b.id, name: nm, hue: NB_COV[(nbSecs(b.id).length + 1) % NB_COV.length] }; state.nsec.push(x); first = first || x; }); NB.sec = first.id; save(); render(); },
   nbSecAdd: () => { const b = nbBook(NB.nb); if (!b) return; const x = { id: "ns_" + uid(), nb: b.id, name: "Nova seção", hue: NB_COV[(nbSecs(b.id).length + 1) % NB_COV.length] }; state.nsec.push(x); NB.sec = x.id; NB.editSec = x.id; save(); render(); setTimeout(() => { const i = $("#nbsec_" + x.id); if (i) { i.focus(); i.select(); } }, 40); },
   nbSecEdit: el => { NB.editSec = NB.editSec === el.dataset.id ? null : el.dataset.id; render(); if (NB.editSec) setTimeout(() => { const i = $("#nbsec_" + NB.editSec); if (i) i.focus(); }, 40); },
   nbSecHue: el => { const x = state.nsec.find(y => y.id === el.dataset.id); if (x) { x.hue = +el.dataset.v; save(); render(); } },
