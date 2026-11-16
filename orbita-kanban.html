@@ -907,7 +907,7 @@ body[data-view="notas"] #strip { display: none; }
 .nb-code { position: relative; margin: 8px 0; background: #0f1d20; color: #dff3ef; border-radius: 12px; padding: 12px 14px; overflow: auto; } .nb-code code { background: none; border: 0; color: inherit; padding: 0; white-space: pre; font-size: 13px; line-height: 1.6; display: block; }
 .nb-cp { position: absolute; right: 8px; top: 8px; border: 1px solid rgb(255 255 255 / .25); background: rgb(255 255 255 / .08); color: #fff; border-radius: 6px; font-size: 11px; padding: 2px 8px; opacity: 0; transition: opacity .15s; } .nb-code:hover .nb-cp { opacity: 1; } @media (pointer: coarse) { .nb-cp { opacity: .8; } }
 .nb-tw { overflow: auto; margin: 8px 0; } .nb-pv table { border-collapse: collapse; min-width: 50%; } .nb-pv th, .nb-pv td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; } .nb-pv th { background: var(--surface2); }
-.nb-pv hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; } .nb-pv mark { background: oklch(.92 .12 95); color: #3a2f00; border-radius: 3px; padding: 0 2px; } .nb-img { max-width: 100%; border-radius: 10px; }
+.nb-pv hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; } .nb-pv mark { background: oklch(.92 .12 95); color: #3a2f00; border-radius: 3px; padding: 0 2px; } .nb-img { max-width: 100%; border-radius: 10px; } .nb-img.nb-loc { cursor: zoom-in; display: block; margin: 8px 0; box-shadow: 0 1px 4px rgb(var(--shadow) / .2); } .nb-img.miss { cursor: default; padding: 14px; border: 1px dashed var(--line); color: var(--ink3); font-size: 12px; }
 .nb-wl { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); } .nb-wl:hover { background: var(--accent-soft); } .nb-wl.miss { border-bottom-style: dashed; opacity: .75; }
 .nb-tg { color: var(--accent); text-decoration: none; background: var(--accent-soft); border-radius: 99px; padding: 0 8px; font-size: .9em; }
 .nb-tk { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--line); background: var(--surface2); border-radius: 8px; padding: 0 8px; font-size: .92em; color: var(--ink); margin: 1px 0; max-width: 100%; text-align: left; } .nb-tk:hover { border-color: var(--accent); } .nb-tk.dn { text-decoration: line-through; opacity: .65; } .nb-tk.miss { opacity: .6; border-style: dashed; }
@@ -1531,7 +1531,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1255";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.1531";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2637,7 +2637,7 @@ const MANUAL = () => {
   add("Visões", "notebook", "book", "Notebook (notas e diário)", "Um caderno completo dentro do app: diário, anotações de trabalho, faculdade e ideias, ligados às suas tarefas.",
     step(`Abra a aba <b>Notebook</b>. À esquerda ficam os <b>cadernos</b> (Diário, Trabalho, Pessoal, Faculdade; crie os seus com <b>Novo caderno</b> e use o ✎ para trocar nome, ícone e cor).`, `Toque em <b>Nova nota</b> (a seta ▾ ao lado abre <b>modelos</b>: reunião, aula, passo a passo de TI, projeto…). Digite o título e escreva. Tudo é salvo sozinho.`, `Para o <b>diário</b>, toque em <b>Diário de hoje</b> ou em qualquer dia do <b>calendário</b>: a nota do dia é criada (ou aberta) já com um roteiro.`)
     + grid(["Digite / para blocos", "Em qualquer linha, escreva <b>/</b> e escolha: títulos, listas, checklist, tabela, código, destaque, data, tarefa…"], ["Digite [[ para ligar notas", "<code>[[Nome da nota]]</code> cria um link, como no Obsidian. Em <b>Mencionada em</b> (rodapé da nota) você vê quem aponta para ela. Se mudar o título, os links nas outras notas são atualizados."], ["Ligue tarefas", "Use <code>[[#</code> e escolha um cartão do quadro. O botão <b>▢→</b> transforma a linha atual em tarefa nova e deixa o link."], ["Escrever, Dividir, Ler", "<b>Ler</b> mostra a nota formatada e deixa marcar os checklists com um toque. <b>Dividir</b> (computador) mostra texto e resultado lado a lado."], ["Mapa de notas", "Veja suas notas como um grafo: pontos são notas, linhas são links. Arraste, passe o mouse para destacar, clique para abrir."], ["Organize", "★ favorita, 📌 fixar no topo, ícone e capa (clique no emoji ao lado do título), #tags no texto e busca. Apagadas ficam 30 dias na <b>Lixeira</b>."])
-    + tip(`Ctrl+B negrito, Ctrl+I itálico, Ctrl+K liga a uma nota, Tab recua item de lista, Enter continua a lista. O botão ⛶ abre o <b>modo escrita</b> (Esc sai). Exporte uma nota ou tudo em <b>.md</b> (compatível com Obsidian) e importe arquivos .md/.txt.`)
+    + tip(`<b>Imagens:</b> copie uma imagem ou tire um print e use Ctrl+V no texto da nota (ou arraste o arquivo para lá). Ela aparece em <b>Dividir</b> ou <b>Ler</b>; clique nela para ampliar. As imagens ficam guardadas neste navegador, não vão no .json nem para outro aparelho. Ctrl+B negrito, Ctrl+I itálico, Ctrl+K liga a uma nota, Tab recua item de lista, Enter continua a lista. O botão ⛶ abre o <b>modo escrita</b> (Esc sai). Exporte uma nota ou tudo em <b>.md</b> (compatível com Obsidian) e importe arquivos .md/.txt.`)
     + warn("As notas ficam salvas com o resto dos dados (navegador, arquivo e GitHub). Elas não têm senha própria: use o bloqueio do app para proteger.")
     + `<p class="man-try-row">${go("Abrir o Notebook", "view:notas")}</p>`,
     "Veja também subtarefas e dependências.");
@@ -2969,11 +2969,30 @@ function nbInline(raw) {
   h = h.replace(/`([^`\n]+)`/g, (_, c) => "\u0001" + (codes.push(c) - 1) + "\u0002");
   h = h.replace(/\[\[#([^\]\n|]+?)(?:\|([^\]\n]+?))?\]\]/g, (_, a, b) => { const t = nbTaskFind(unesc(a)); return t ? `<button type="button" class="nb-tk${isDone(t) ? " dn" : ""}" data-act="open" data-id="${t.id}">${isDone(t) ? "✓" : "▢"} ${b || (t.ticket ? "#" + esc(t.ticket) + " " : "") + esc(t.title)}</button>` : `<span class="nb-tk miss" title="Tarefa não encontrada">${b || a}</span>`; });
   h = h.replace(/\[\[([^\]\n]+?)\]\]/g, (_, a) => { const p = a.split("|"), nm = p[0].trim(), n = nbResolve(unesc(nm)); return n ? `<a href="#notas" class="nb-wl" data-act="nbGo" data-id="${n.id}">${p[1] || nm}</a>` : `<a href="#notas" class="nb-wl miss" data-act="nbMake" data-v="${nm}" title="Nota ainda não existe: clique para criar">${p[1] || nm}</a>`; });
+  h = h.replace(/!\[([^\]\n]*)\]\(nbimg:([\w-]+)\)/g, '<img class="nb-img nb-loc" data-nbimg="$2" data-act="nbImgOpen" alt="$1" loading="lazy">');
   h = h.replace(/!\[([^\]\n]*)\]\((https?:\/\/[^)\s]+)\)/g, '<img class="nb-img" loading="lazy" alt="$1" src="$2">');
   h = h.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   h = h.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<i>$2</i>").replace(/(^|[\s(])_([^_\n]+)_(?=[\s).,!?:;]|$)/g, "$1<i>$2</i>").replace(/~~([^~\n]+)~~/g, "<s>$1</s>").replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
   h = h.replace(/(^|[\s(>])#([\p{L}][\p{L}\p{N}_-]*)/gu, '$1<a href="#notas" class="nb-tg" data-act="nbTag" data-v="$2">#$2</a>');
   return h.replace(/\u0001(\d+)\u0002/g, (_, i) => "<code>" + codes[+i] + "</code>");
+}
+/* imagens coladas (Ctrl+V / arrastar) ficam guardadas no navegador; a nota guarda só a referência ![imagem](nbimg:ID) */
+const nbImgUrls = new Map();
+async function nbImgURL(id) { if (nbImgUrls.has(id)) return nbImgUrls.get(id); let b = null; try { b = await kvGet("nbimg_" + id); } catch {} if (!b) return null; const u = URL.createObjectURL(b); nbImgUrls.set(id, u); return u; }
+function nbImgFill(root) { if (!root) return; $$("img[data-nbimg]", root).forEach(img => nbImgURL(img.dataset.nbimg).then(u => { if (u) img.src = u; else { img.removeAttribute("data-act"); img.classList.add("miss"); img.alt = "Imagem guardada em outro aparelho (não está aqui)"; } })); }
+async function nbImgShrink(f) {
+  if (!/^image\/(png|jpe?g|webp|bmp)$/.test(f.type) || f.size < 350 * 1024) return f;
+  try { const bm = await createImageBitmap(f), sc = Math.min(1, 1800 / Math.max(bm.width, bm.height)), c = document.createElement("canvas"); c.width = Math.round(bm.width * sc); c.height = Math.round(bm.height * sc);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(bm, 0, 0, c.width, c.height);
+    const b = await new Promise(r => c.toBlob(r, "image/jpeg", .86)); return b && b.size < f.size ? b : f; } catch { return f; }
+}
+async function nbPasteImgs(ta, files) {
+  const n = nbGet(NB.sel); if (!n || n.trashed) return; const refs = [];
+  for (const f of files) { if (f.size > 25 * 1048576) { toast("Imagem maior que 25 MB não foi colada"); continue; } const b = await nbImgShrink(f), id = uid();
+    try { await kvSet("nbimg_" + id, b); } catch { toast("Não foi possível guardar a imagem neste navegador"); continue; } refs.push(`![imagem](nbimg:${id})`); }
+  if (!refs.length) return; nbBlock(ta, refs.join("\n") + "\n"); nbPaint(true);
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch {}
+  if (NB.mode === "edit") toast(`${refs.length > 1 ? "Imagens coladas" : "Imagem colada"}. Em “Escrever” aparece só o código`, "Ver", () => acts.nbMode({ dataset: { v: "read" } })); else toast(refs.length > 1 ? "Imagens coladas" : "Imagem colada");
 }
 const nbSep = s => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(s || "") && String(s).includes("-");
 function nbMd(src) {
@@ -3106,14 +3125,16 @@ function nbBind() {
   const n = nbGet(NB.sel), ta = $("#nb-ta"); if (!n || !ta) return; nbPaint(true);
   ta.addEventListener("input", nbOnInput); ta.addEventListener("keydown", nbKey);
   ta.addEventListener("click", () => nbMenuClose()); ta.addEventListener("blur", () => setTimeout(nbMenuClose, 150));
-  ta.addEventListener("paste", e => { const t = (e.clipboardData || {}).getData ? e.clipboardData.getData("text") : ""; if (/^https?:\/\/\S+$/.test(t) && ta.selectionStart !== ta.selectionEnd && !ta.readOnly) { e.preventDefault(); nbIns(ta, `[${ta.value.slice(ta.selectionStart, ta.selectionEnd)}](${t})`); } });
+  ta.addEventListener("paste", e => { const im = [...((e.clipboardData || {}).files || [])].filter(f => /^image\//.test(f.type)); if (im.length && !ta.readOnly) { e.preventDefault(); e.stopPropagation(); nbPasteImgs(ta, im); return; } const t = (e.clipboardData || {}).getData ? e.clipboardData.getData("text") : ""; if (/^https?:\/\/\S+$/.test(t) && ta.selectionStart !== ta.selectionEnd && !ta.readOnly) { e.preventDefault(); nbIns(ta, `[${ta.value.slice(ta.selectionStart, ta.selectionEnd)}](${t})`); } });
+  ta.addEventListener("dragover", e => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files") && !ta.readOnly) e.preventDefault(); });
+  ta.addEventListener("drop", e => { const im = e.dataTransfer ? [...e.dataTransfer.files].filter(f => /^image\//.test(f.type)) : []; if (im.length && !ta.readOnly) { e.preventDefault(); e.stopPropagation(); nbPasteImgs(ta, im); } });
   if (NB.fresh && !n.trashed) { NB.fresh = false; if (!n.title) { const t = $("#nb-title"); if (t) t.focus(); } else { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
 }
 function nbFit() { const ta = $("#nb-ta"); if (ta) { ta.style.height = "auto"; ta.style.height = Math.max(ta.scrollHeight + 4, 220) + "px"; } }
 function nbStats(n) { const w = nbWords(n.body), tk = (n.body.match(/^\s*[-*+]\s+\[[ xX]\]/gm) || []).length, dn = (n.body.match(/^\s*[-*+]\s+\[[xX]\]/gm) || []).length, el = $("#nb-stats"); if (el) el.textContent = `${w} palavra${w === 1 ? "" : "s"} · ${Math.max(1, Math.ceil(w / 200))} min de leitura${tk ? ` · ☑ ${dn}/${tk}` : ""}`; }
 function nbPaint(full) {
   const n = nbGet(NB.sel); if (!n) return; const pv = $("#nb-pv"); if (pv && NB.mode !== "edit") pv.innerHTML = nbMd(n.body);
-  nbStats(n); nbFit(); const f = $("#nb-foot"); if (f) f.innerHTML = nbFoot(n); if (!full) { const l = $("#nb-items"); if (l) l.innerHTML = nbItems(); }
+  nbImgFill(pv); nbStats(n); nbFit(); const f = $("#nb-foot"); if (f) f.innerHTML = nbFoot(n); if (!full) { const l = $("#nb-items"); if (l) l.innerHTML = nbItems(); }
 }
 const nbSoon = (() => { let t; return () => { clearTimeout(t); t = setTimeout(() => { nbPaint(); save(); }, 220); }; })();
 function nbOnInput() { const n = nbGet(NB.sel), ta = $("#nb-ta"); if (!n || !ta || n.trashed) return; n.body = ta.value; n.updated = Date.now(); nbFit(); nbMenuCheck(ta); nbSoon(); }
@@ -3694,7 +3715,7 @@ $("#att-in").addEventListener("change", e => { const fs = [...e.target.files]; e
 document.addEventListener("dragover", e => { if (!ui.drawer || !e.dataTransfer || ![...e.dataTransfer.types].includes("Files")) return; e.preventDefault(); const d = $(".drawer"); if (d) d.classList.add("dropping"); });
 document.addEventListener("dragleave", e => { if (!e.relatedTarget) { const d = $(".drawer"); if (d) d.classList.remove("dropping"); } });
 document.addEventListener("drop", e => { const d = $(".drawer"); if (d) d.classList.remove("dropping"); if (!ui.drawer || !e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); addFiles(cur(), [...e.dataTransfer.files]); });
-async function gcAnexos() { try { const used = new Set(state.tasks.concat((state.trash || []).map(e => e.task)).flatMap(t => (t.files || []).map(f => "att_" + f.id))); (await kvKeys()).filter(k => String(k).startsWith("att_") && !used.has(k)).forEach(k => kvSet(k, undefined)); } catch {} }
+async function gcAnexos() { try { const used = new Set(state.tasks.concat((state.trash || []).map(e => e.task)).flatMap(t => (t.files || []).map(f => "att_" + f.id))); (await kvKeys()).filter(k => String(k).startsWith("att_") && !used.has(k)).forEach(k => kvSet(k, undefined)); const nbUsed = new Set(); (state.notes || []).forEach(n => String(n.body || "").replace(/nbimg:([\w-]+)/g, (_, i) => nbUsed.add("nbimg_" + i))); (await kvKeys()).filter(k => String(k).startsWith("nbimg_") && !nbUsed.has(k)).forEach(k => kvSet(k, undefined)); } catch {} }
 
 /* ---------- exportar a tarefa como nota Markdown (frontmatter, callouts e wikilinks do Obsidian) ---------- */
 function htmlToMd(html) {
@@ -3804,6 +3825,7 @@ const acts = {
   tplAdd: () => { const tp = { id: uid(), name: "Novo tipo de tarefa", items: [] }; state.templates.push(tp); save(); openSettings(); const i = $("#tp_" + tp.id); if (i) { i.focus(); i.select(); } },
   tplDel: el => { snapshotUndo("Modelo apagado"); tomb(el.dataset.id); state.templates = state.templates.filter(x => x.id !== el.dataset.id); save(); openSettings(); },
   attPick: () => $("#att-in").click(),
+  nbImgOpen: el => { if (!el.src) return; const lb = $("#lb"); $("img", lb).src = el.src; lb.hidden = false; },
   attOpen: async el => { const t = cur(), f = t && t.files.find(x => x.id === el.dataset.v); if (!f) return; const u = await attURL(f.id); if (!u) return toast("Este anexo não está guardado neste navegador"); if (isImg(f)) { const lb = $("#lb"); $("img", lb).src = u; lb.hidden = false; } else if (EMBED) acts.attSave(el); else { const a = document.createElement("a"); a.href = u; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); } },
   attSave: async el => { const t = cur(), f = t && t.files.find(x => x.id === el.dataset.v); if (!f) return; let b = null; try { b = await kvGet("att_" + f.id); } catch {} if (!b) return toast("Este anexo não está guardado neste navegador"); saveFile(f.name, b); },
   attDel: el => { const t = cur(); snapshotUndo("Anexo removido"); t.files = t.files.filter(x => x.id !== el.dataset.v); save(); render(); renderDrawer(); },
