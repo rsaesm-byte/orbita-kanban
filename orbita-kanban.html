@@ -408,6 +408,11 @@ details.data table { margin-top: 6px; }
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100%); background: var(--surface); border-left: 1px solid var(--line); z-index: 110; display: flex; flex-direction: column; box-shadow: -24px 0 40px -20px rgb(var(--shadow) / .5); transform-origin: 100% 50%; }
 @keyframes slide { from { transform: translateX(40px); opacity: 0; } }
 .d-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); border-top: 4px solid var(--pc); }
+.d-tabs { position: sticky; top: -14px; z-index: 6; display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: 10px; box-shadow: 0 6px 10px -8px rgb(var(--shadow) / .4); }
+.d-tabs button { flex: 1 1 0; min-width: 0; border: 0; background: transparent; color: var(--ink2); font: inherit; font-weight: 600; font-size: 13px; padding: 8px 4px; border-radius: 8px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.d-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(var(--shadow) / .18); }
+.d-tabs button i { font-style: normal; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 99px; background: var(--bg); color: var(--ink2); }
+.dtab { display: grid; gap: 14px; align-content: start; } .dtab[hidden] { display: none; }
 .d-body { padding: 14px 16px 24px; overflow-y: auto; display: grid; gap: 14px; align-content: start; }
 .field { display: grid; gap: 4px; min-width: 0; }
 .field > label, .lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink3); }
@@ -1507,7 +1512,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.0608";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.0800";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2500,7 +2505,7 @@ const MANUAL = () => {
     + trick("Botão direito no cartão abre um menu rápido: prioridade, prazo, mover de coluna, tags, cronômetro, duplicar, arquivar e apagar."),
     "Para editar de verdade, abra a gaveta da tarefa.");
 
-  add("O dia a dia", "gaveta", "clip", "A gaveta da tarefa", "Clique em qualquer cartão e abre um painel com tudo sobre a tarefa. Tudo salva sozinho enquanto você digita.",
+  add("O dia a dia", "gaveta", "clip", "A gaveta da tarefa", "Clique em qualquer cartão e abre um painel com tudo sobre a tarefa, dividido em 5 abas: <b>Geral</b> (tipo, chamado, prioridade, prazo, tags, descrição), <b>Checklist</b> (passos, subtarefas e respostas prontas), <b>Notas</b> (observações e diário), <b>Dados</b> (modelo e campos do cartão, anexos e informações adicionais) e <b>Tempo</b> (cronômetro e calendário). A aba escolhida fica lembrada. Tudo salva sozinho enquanto você digita.",
     grid(["Tarefa", "Título, número do chamado e descrição."], ["Prioridade e prazo", "Quatro níveis de prioridade; prazo com data e hora opcional."],
       ["Tags", "Etiquetas coloridas para agrupar (Rede, Hardware, Faculdade…). Crie novas na hora."], ["Checklist", "Passos da tarefa, com progresso automático no cartão."],
       ["Modelo e campos", "Campos extras de acordo com o modelo do cartão. Veja o capítulo Modelos."], ["Observações e diário", "Texto formatado (negrito, listas, cores) e o diário por tema e dia."],
@@ -2761,6 +2766,7 @@ function bfRestore(t) {
   return `<div class="field bf-restore"><span class="lbl">Campos ocultos no modelo “${esc(m.name)}”</span><div class="tags">${hide.map(k => `<button class="tag on" data-act="bfShow" data-v="${k}" style="--h:190">+ ${(BF.find(x => x[0] === k) || [, k])[1]}</button>`).join("")}</div></div>`;
 }
 const repBlock2 = t => `<div class="field" data-bf="replies"><span class="lbl">Respostas prontas</span><div class="set-row"><select class="inp" id="d_reply" data-in="repPick" aria-label="Escolher resposta pronta"><option value="">Escolher uma resposta para copiar…</option>${state.replies.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></div><span class="meta">Preenche nome, chamado e máquina desta tarefa e copia com a sua assinatura.</span></div>`;
+ui.dtab = ui.dtab || "geral";
 function renderDrawer() {
   const t = task(ui.drawer); if (!t) return closeLayer();
   const run = state.timer && state.timer.id === t.id, [dd, dt] = [t.due.slice(0, 10), t.due.slice(11)], bk = blockOf(t);
@@ -2769,10 +2775,11 @@ function renderDrawer() {
   <div class="d-head p${t.priority}"><span class="lbl">Tarefa</span><span class="spacer"></span><button class="btn sm" data-act="mdExport" data-id="${t.id}" title="Baixar a tarefa como nota Markdown para o Obsidian">${ic("note")}Exportar .md</button><button class="btn sm" data-act="dup" data-id="${t.id}">${ic("copy")}Duplicar</button><button class="btn sm danger" data-act="del" data-id="${t.id}">${ic("trash")}Apagar</button><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div>
   <div class="d-body">
     <textarea class="inp title-inp" id="d_title" rows="2" data-in="tTitle" aria-label="Título">${esc(t.title)}</textarea>
+    <div class="d-tabs" role="tablist" aria-label="Seções da tarefa">${[["geral", "Geral", ""], ["check", "Checklist", t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : ""], ["notas", "Notas", ""], ["dados", "Dados", (t.files.length + t.extra.length) || ""], ["tempo", "Tempo", t.block ? "●" : ""]].map(([k, n, b]) => `<button type="button" role="tab" id="dt_${k}" class="${ui.dtab === k ? "on" : ""}" aria-selected="${ui.dtab === k}" data-act="dTab" data-v="${k}">${n}${b ? `<i>${b}</i>` : ""}</button>`).join("")}</div>
+    <div class="dtab" data-tab="geral" ${ui.dtab === "geral" ? "" : "hidden"}>
     <div class="field tipo-f"><label for="d_tipo">Tipo de tarefa</label><select class="inp" id="d_tipo" data-in="tplApply" aria-label="Tipo de tarefa (carrega o checklist)"><option value="">Escolha: Formatação, Descarte…</option>${state.templates.slice().sort((a, b) => a.name.localeCompare(b.name)).map(tp => `<option value="${tp.id}" ${t.tplId === tp.id ? "selected" : ""}>${esc(tp.name.replace(/^Exemplo:\s*/i, ""))} (${tp.items.length})</option>`).join("")}<option value="__new">＋ Inserir novo tipo…</option><option value="__edit">✎ Editar, renomear ou apagar tipos…</option></select><div class="set-row" style="margin-top:6px">${(() => { const tp = state.templates.find(x => x.id === t.tplId), r = tp && state.replies.find(x => x.id === tp.reply); return r ? `<button class="btn sm" data-act="tipoMsg" data-id="${t.id}" title="Copia a mensagem já preenchida">Copiar mensagem de finalização: ${esc(r.name)}</button>` : ""; })()}</div></div>
     <div class="row"><div class="field" data-bf="ticket"><label for="d_ticket">Nº do chamado</label><input class="inp mono" id="d_ticket" data-in="tTicket" value="${esc(t.ticket)}" placeholder="CH-00000"></div>
       <div class="field" data-bf="col"><label for="d_col">Coluna</label><select class="inp" id="d_col" data-in="tCol">${cols(boardOf(t)).map(c => `<option value="${c.id}" ${c.id === t.col ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div></div>
-    ${modelBlock(t)}
     ${state.boards.length > 1 ? `<div class="field" data-bf="board"><label for="d_board">Quadro</label><select class="inp" id="d_board" data-in="tBoard">${state.boards.map(b => `<option value="${b.id}" ${b.id === boardOf(t) ? "selected" : ""}>${esc(b.name)}</option>`).join("")}</select></div>` : ""}
     <div class="field" data-bf="pri"><span class="lbl">Prioridade</span><div class="pri-seg">${PRI.map((p, i) => `<button class="p${i} ${t.priority === i ? "on" : ""}" data-act="tPri" data-v="${i}">${p}</button>`).join("")}</div></div>
     <div class="row"><div class="field" data-bf="due"><label for="d_due">Prazo</label><input class="inp" type="date" id="d_due" data-in="tDue" value="${dd}"></div>
@@ -2780,29 +2787,39 @@ function renderDrawer() {
     ${repBlock(t)}
     <div class="field" data-bf="tags"><span class="lbl">Tags</span><div class="tags">${state.tags.map(g => `<button class="tag ${t.tags.includes(g.id) ? "on" : ""}" style="--h:${g.hue}" data-act="tTag" data-v="${g.id}">${esc(g.name)}</button>`).join("")}<input class="inp" id="d_newtag" style="width:130px;padding:2px 8px" placeholder="+ nova tag" data-in="tNewTag"></div></div>
     <div class="field" data-bf="desc"><label for="d_desc">Descrição</label><textarea class="inp" id="d_desc" data-in="tDesc" placeholder="Contexto, passos, observações…">${esc(t.desc)}</textarea></div>
-    <div class="field" data-bf="notes"><span class="lbl">Observações e diário</span>
-      ${rtBar()}
-      <div class="rt" id="d_notes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Observações" data-in="tNotes" data-ph="Anote o andamento, o que foi tentado, com quem falou… Use Agora para carimbar data e hora.">${cleanHTML(t.notes)}</div></div>
+    </div>
+    <div class="dtab" data-tab="check" ${ui.dtab === "check" ? "" : "hidden"}>
     <div class="field" data-bf="check"><span class="lbl">Checklist ${t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : ""}</span>
       <div class="chk-list">${t.check.map(c => ckRow(t, c)).join("")}</div>
       <input class="inp" id="d_newck" placeholder="+ Adicionar item e pressionar Enter" data-in="ckNew">${tplRow(t)}</div>
     ${depBlock(t)}
-    ${state.fields.map(f => `<div class="field"><label for="cf_${f.id}">${esc(f.name)}</label><input class="inp" id="cf_${f.id}" type="${f.type}" data-in="tCustom" data-v="${f.id}" value="${esc(t.custom[f.id] ?? "")}"></div>`).join("")}
     ${repBlock2(t)}
+    </div>
+    <div class="dtab" data-tab="notas" ${ui.dtab === "notas" ? "" : "hidden"}>
+    <div class="field" data-bf="notes"><span class="lbl">Observações e diário</span>
+      ${rtBar()}
+      <div class="rt" id="d_notes" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Observações" data-in="tNotes" data-ph="Anote o andamento, o que foi tentado, com quem falou… Use Agora para carimbar data e hora.">${cleanHTML(t.notes)}</div></div>
+    ${diaryBlock(t)}
+    </div>
+    <div class="dtab" data-tab="dados" ${ui.dtab === "dados" ? "" : "hidden"}>
+    ${modelBlock(t)}
+    ${state.fields.map(f => `<div class="field"><label for="cf_${f.id}">${esc(f.name)}</label><input class="inp" id="cf_${f.id}" type="${f.type}" data-in="tCustom" data-v="${f.id}" value="${esc(t.custom[f.id] ?? "")}"></div>`).join("")}
     ${filesBlock(t)}
     <div class="field" data-bf="extra">${foldHead("extra", "Informações adicionais", t.extra.length)}<div class="fold-body" ${FOLD.extra ? "hidden" : ""}>
       ${t.extra.map(x => `<div class="xrow"><input class="inp" id="xk_${x.id}" data-in="xKey" data-x="${x.id}" placeholder="Nome do campo" value="${esc(x.k)}" title="${esc(x.k)}" aria-label="Nome do campo"><input class="inp" id="xv_${x.id}" data-in="xVal" data-x="${x.id}" placeholder="Informação" value="${esc(x.v)}" aria-label="Informação"><button class="icon-btn" data-act="xDel" data-v="${x.id}" aria-label="Apagar campo">${ic("x")}</button></div>`).join("")}
       <div><button class="btn sm" data-act="xAdd">${ic("plus")}Adicionar campo</button></div></div></div>
+    </div>
+    <div class="dtab" data-tab="tempo" ${ui.dtab === "tempo" ? "" : "hidden"}>
     <div class="field" data-bf="time"><span class="lbl">Tempo</span><div class="timer"><b data-timer="${t.id}" data-clock="1">${fmtClock(spent(t))}</b><button class="btn" data-act="timer" data-id="${t.id}">${ic(run ? "pause" : "play")}${run ? "Pausar" : "Iniciar"}</button>${t.timeMs && !run ? `<button class="btn ghost sm" data-act="timeReset">Zerar</button>` : ""}</div></div>
     <div class="field" data-bf="block"><span class="lbl">Bloco de tempo no calendário${t.block ? " · reservado" : ""}</span>
       <div class="row3"><input class="inp" type="date" id="d_bd" data-in="tBlock" data-k="d" value="${bk.d}" aria-label="Dia do bloco"><input class="inp" type="time" id="d_bs" data-in="tBlock" data-k="s" value="${bk.s}" aria-label="Início"><select class="inp" id="d_bm" data-in="tBlock" data-k="m" aria-label="Duração">${[15, 30, 45, 60, 90, 120, 180, 240].map(m => `<option value="${m}" ${bk.m === m ? "selected" : ""}>${m < 60 ? m + " min" : (m / 60 + " h").replace(".", ",")}</option>`).join("")}</select></div>
       <div class="set-row"><a class="btn main" id="d_outlook" target="_blank" rel="noopener" href="${esc(outlookUrl(t))}">${ic("cal")}Abrir no Outlook</a>${EMBED ? "" : `<button class="btn" data-act="ics">Baixar .ics</button>`}${t.block ? `<button class="btn ghost sm" data-act="blockClear">Remover bloco</button>` : ""}</div></div>
-    ${diaryBlock(t)}
+    </div>
     ${bfRestore(t)}
     <div class="meta">Criada em ${fmtDT(t.createdAt)}${t.doneAt ? " · Concluída em " + fmtDT(t.doneAt) : ""}</div>
   </div></aside>`;
   if (st) { const nb = $("#layer .d-body"); if (nb) nb.scrollTop = st; }
-  if (keep) { const el = document.getElementById(keep); if (el) el.focus(); }
+  if (keep) { const el = document.getElementById(keep); if (el) { const pn = el.closest(".dtab"); if (pn && pn.hidden) acts.dTab({ dataset: { v: pn.dataset.tab } }); el.focus(); } }
   applyBF(t); fillThumbs(); $$(".lbl-inp").forEach(fitName); [80, 350, 700].forEach(ms => setTimeout(() => $$(".lbl-inp").forEach(fitName), ms));
 }
 
@@ -3685,6 +3702,7 @@ const acts = {
   soundTest: el => playSound(el.dataset.v, true),
   ics: () => { const t = cur(); if (!t.block) { t.block = blockOf(t); save(); render(); renderDrawer(); } saveFile("tarefa-" + (t.ticket || t.id) + ".ics", icsText(t)); },
   blockClear: () => { delete cur().block; save(); render(); renderDrawer(); },
+  dTab: el => { ui.dtab = el.dataset.v; $$(".d-tabs button").forEach(b => { const on = b.dataset.v === ui.dtab; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); }); $$(".dtab").forEach(x => { x.hidden = x.dataset.tab !== ui.dtab; }); const b = $(".d-body"); if (b) b.scrollTop = 0; },
   rt: el => { const ed = (el.closest(".info-row, .dentry, .field") || document).querySelector(".rt") || $("#d_notes"); if (!ed) return; ed.focus(); try { document.execCommand("styleWithCSS", false, /Color$/.test(el.dataset.v)); el.dataset.v === "stamp" ? document.execCommand("insertHTML", false, "<b>" + fmtDT(Date.now()) + "</b>&nbsp;") : document.execCommand(el.dataset.v, false, el.dataset.c || null); } catch {} const h = ins[ed.dataset.in]; if (h) h(ed); },
   xAdd: () => { const x = { id: uid(), k: "", v: "" }; cur().extra.push(x); save(); renderDrawer(); const i = $("#xk_" + x.id); if (i) i.focus(); },
   xDel: el => { const t = cur(); t.extra = t.extra.filter(x => x.id !== el.dataset.v); save(); render(); renderDrawer(); },
@@ -3716,7 +3734,7 @@ const acts = {
   attDel: el => { const t = cur(); snapshotUndo("Anexo removido"); t.files = t.files.filter(x => x.id !== el.dataset.v); save(); render(); renderDrawer(); },
   lbClose: () => { $("#lb").hidden = true; },
   cxOpen: () => openTask(ctxId),
-  cxBlock: () => { openTask(ctxId); setTimeout(() => { const b = $("#d_outlook"); if (b) b.scrollIntoView({ block: "center" }); }, 80); },
+  cxBlock: () => { ui.dtab = "tempo"; openTask(ctxId); setTimeout(() => { const b = $("#d_outlook"); if (b) b.scrollIntoView({ block: "center" }); }, 80); },
   cxPri: el => { task(ctxId).priority = +el.dataset.v; save(); render(); },
   cxDue: el => { const t = task(ctxId), tm = t.due.slice(11); t.due = el.dataset.v === "x" ? "" : dkey(Date.now() + (+el.dataset.v) * DAY) + (tm ? "T" + tm : ""); save(); render(); },
   cxCol: el => { const t = task(ctxId), id = ctxId, was = isDone(t); if (t.col === el.dataset.v) return; moveTask(id, el.dataset.v); render(); fxLand(id, !was && isDone(t)); },
