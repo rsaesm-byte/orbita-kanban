@@ -907,7 +907,16 @@ body[data-view="notas"] #strip { display: none; }
 .nb-code { position: relative; margin: 8px 0; background: #0f1d20; color: #dff3ef; border-radius: 12px; padding: 12px 14px; overflow: auto; } .nb-code code { background: none; border: 0; color: inherit; padding: 0; white-space: pre; font-size: 13px; line-height: 1.6; display: block; }
 .nb-cp { position: absolute; right: 8px; top: 8px; border: 1px solid rgb(255 255 255 / .25); background: rgb(255 255 255 / .08); color: #fff; border-radius: 6px; font-size: 11px; padding: 2px 8px; opacity: 0; transition: opacity .15s; } .nb-code:hover .nb-cp { opacity: 1; } @media (pointer: coarse) { .nb-cp { opacity: .8; } }
 .nb-tw { overflow: auto; margin: 8px 0; } .nb-pv table { border-collapse: collapse; min-width: 50%; } .nb-pv th, .nb-pv td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; } .nb-pv th { background: var(--surface2); }
-.nb-pv hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; } .nb-pv mark { background: oklch(.92 .12 95); color: #3a2f00; border-radius: 3px; padding: 0 2px; } .nb-img { max-width: 100%; border-radius: 10px; } .nb-img.nb-loc { cursor: zoom-in; display: block; margin: 8px 0; box-shadow: 0 1px 4px rgb(var(--shadow) / .2); } .nb-img.miss { cursor: default; padding: 14px; border: 1px dashed var(--line); color: var(--ink3); font-size: 12px; }
+.nb-pv hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; } .nb-pv mark { background: oklch(.92 .12 95); color: #3a2f00; border-radius: 3px; padding: 0 2px; } .nb-tabs { display: flex; gap: 3px; overflow-x: auto; padding: 6px 10px 0; scrollbar-width: thin; border-bottom: 1px solid var(--line); }
+.nb-tab { flex: none; display: inline-flex; align-items: center; gap: 5px; font: inherit; font-size: 12.5px; font-weight: 700; color: oklch(.25 .05 var(--ch, 190)); background: oklch(.82 .10 var(--ch, 190)); border: 0; border-radius: 9px 9px 0 0; padding: 6px 12px 5px; cursor: pointer; white-space: nowrap; margin-top: 4px; transition: filter .12s; }
+.nb-tab:hover { filter: brightness(.96) saturate(1.1); }
+.nb-tab small { font-size: 10px; opacity: .8; font-weight: 600; } .nb-tab.on { background: oklch(.58 .15 var(--ch, 190)); color: #fff; margin-top: 0; padding-top: 10px; box-shadow: 0 -1px 4px rgba(0,0,0,.18); position: relative; }
+.nb-tab.add { background: transparent; border: 1px dashed var(--line); border-bottom: 0; color: var(--ink3); font-weight: 600; }
+.nb-tabs { border-bottom: 3px solid oklch(.58 .15 var(--tc, 190)); }
+.nb-row.sub::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: oklch(.62 .14 var(--ch, 190)); flex: none; } .nb-row.sub > span:first-child { display: none; }
+.nb-secact { padding: 4px 10px 0; } .nb-secedit { margin: 6px 10px 0; }
+.nb-row.sub { padding-left: 30px; font-size: 13px; }
+.nb-img { max-width: 100%; border-radius: 10px; } .nb-img.nb-loc { cursor: zoom-in; display: block; margin: 8px 0; box-shadow: 0 1px 4px rgb(var(--shadow) / .2); } .nb-img.miss { cursor: default; padding: 14px; border: 1px dashed var(--line); color: var(--ink3); font-size: 12px; }
 .nb-wl { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in oklab, var(--accent) 40%, transparent); } .nb-wl:hover { background: var(--accent-soft); } .nb-wl.miss { border-bottom-style: dashed; opacity: .75; }
 .nb-tg { color: var(--accent); text-decoration: none; background: var(--accent-soft); border-radius: 99px; padding: 0 8px; font-size: .9em; }
 .nb-tk { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--line); background: var(--surface2); border-radius: 8px; padding: 0 8px; font-size: .92em; color: var(--ink); margin: 1px 0; max-width: 100%; text-align: left; } .nb-tk:hover { border-color: var(--accent); } .nb-tk.dn { text-decoration: line-through; opacity: .65; } .nb-tk.miss { opacity: .6; border-style: dashed; }
@@ -1508,7 +1517,7 @@ function normalize(s) {
   const d = defaultState();
   if (!s || !Array.isArray(s.columns) || !Array.isArray(s.tasks)) return d;
   if (!Array.isArray(s.boards) || !s.boards.length) s.boards = [{ id: "b_main", name: (s.board && s.board.name) || "Meu quadro" }];
-  if (!Array.isArray(s.replies)) s.replies = DEF_REPLIES(); if (!Array.isArray(s.notebooks) || !s.notebooks.length) s.notebooks = nbDefs(); s.notebooks = s.notebooks.filter(b => b && b.id).map(b => Object.assign({ name: "Caderno", icon: "📓", hue: 190 }, b)); s.notes = (Array.isArray(s.notes) ? s.notes : []).filter(n => n && n.id).map(n => Object.assign({ title: "", body: "", nb: "nb_pessoal", tags: [], icon: "", cover: null, fav: false, pin: false, created: Date.now(), updated: Date.now() }, n)); s.deleted = s.deleted || {}; s.trash = Array.isArray(s.trash) ? s.trash.filter(e => e && e.id && e.task) : []; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
+  if (!Array.isArray(s.replies)) s.replies = DEF_REPLIES(); if (!Array.isArray(s.notebooks) || !s.notebooks.length) s.notebooks = nbDefs(); s.notebooks = s.notebooks.filter(b => b && b.id).map(b => Object.assign({ name: "Caderno", icon: "📓", hue: 190 }, b)); s.notes = (Array.isArray(s.notes) ? s.notes : []).filter(n => n && n.id).map(n => Object.assign({ title: "", body: "", nb: "nb_pessoal", tags: [], icon: "", cover: null, fav: false, pin: false, created: Date.now(), updated: Date.now() }, n)); s.nsec = (Array.isArray(s.nsec) ? s.nsec : []).filter(x => x && x.id && s.notebooks.some(b => b.id === x.nb)).map(x => Object.assign({ name: "Seção", hue: 190 }, x)); s.notes.forEach(n => { if (n.sec && !s.nsec.some(x => x.id === n.sec && x.nb === n.nb)) n.sec = ""; }); s.deleted = s.deleted || {}; s.trash = Array.isArray(s.trash) ? s.trash.filter(e => e && e.id && e.task) : []; s.templates = s.templates || []; s.tags = s.tags || []; s.fields = s.fields || [];
   if (!Array.isArray(s.infoFields)) { const ord = (Array.isArray(s.infoOrder) ? s.infoOrder : []).filter(k => INFO.some(i => i[0] === k)); INFO.forEach(([k]) => { if (!ord.includes(k)) ord.push(k); }); s.infoFields = ord.map(k => ({ id: k, name: INFO.find(i => i[0] === k)[1] })); }
   delete s.infoOrder; s.infoFields = s.infoFields.filter(f => f && f.id).map(f => ({ id: String(f.id), name: String(f.name || "Campo") }));
   if (!Array.isArray(s.models) || !s.models.length) s.models = defaultModels(s.infoFields);
@@ -1531,10 +1540,10 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1531";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.1534";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
-  listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
+  listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
   AUTO_DOWNLOAD_SEM_API: !EMBED && !matchMedia("(pointer: coarse)").matches };
 const FS_OK = !EMBED && !!(window.showSaveFilePicker && window.showOpenFilePicker);
 let rev = 0, revAoAbrir = 0, localSalvoEm = "", lastBrowserSave = null;
@@ -1805,7 +1814,7 @@ async function exportar() { await saveFile(`${SAVE_CFG.appId}-backup-${dkey(Date
 function importar(texto) {
   let d; try { const o = JSON.parse(texto); d = o && o.dados ? o.dados : o; } catch {}
   if (!valido(d)) return toast("Este arquivo não é um backup do Órbita Kanban. Escolha o .json baixado em Configurações");
-  if (!Array.isArray(d.notes)) { d.notes = state.notes; d.notebooks = state.notebooks; }   /* backup anterior ao Notebook: mantém suas notas */
+  if (!Array.isArray(d.notes)) { d.notes = state.notes; d.notebooks = state.notebooks; } if (!Array.isArray(d.nsec)) d.nsec = state.nsec;   /* backup anterior ao Notebook: mantém suas notas */
   snapshotUndo("Backup restaurado"); state = normalize(d); overwriteNext = true; save(); closeLayer(); refresh();
 }
 function baixarAuto(nome, txt) { try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "application/json" })); a.download = nome; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); meta.dlRev = rev; saveMeta(); setSaveStatus(); } catch {} }
@@ -2637,6 +2646,7 @@ const MANUAL = () => {
   add("Visões", "notebook", "book", "Notebook (notas e diário)", "Um caderno completo dentro do app: diário, anotações de trabalho, faculdade e ideias, ligados às suas tarefas.",
     step(`Abra a aba <b>Notebook</b>. À esquerda ficam os <b>cadernos</b> (Diário, Trabalho, Pessoal, Faculdade; crie os seus com <b>Novo caderno</b> e use o ✎ para trocar nome, ícone e cor).`, `Toque em <b>Nova nota</b> (a seta ▾ ao lado abre <b>modelos</b>: reunião, aula, passo a passo de TI, projeto…). Digite o título e escreva. Tudo é salvo sozinho.`, `Para o <b>diário</b>, toque em <b>Diário de hoje</b> ou em qualquer dia do <b>calendário</b>: a nota do dia é criada (ou aberta) já com um roteiro.`)
     + grid(["Digite / para blocos", "Em qualquer linha, escreva <b>/</b> e escolha: títulos, listas, checklist, tabela, código, destaque, data, tarefa…"], ["Digite [[ para ligar notas", "<code>[[Nome da nota]]</code> cria um link, como no Obsidian. Em <b>Mencionada em</b> (rodapé da nota) você vê quem aponta para ela. Se mudar o título, os links nas outras notas são atualizados."], ["Ligue tarefas", "Use <code>[[#</code> e escolha um cartão do quadro. O botão <b>▢→</b> transforma a linha atual em tarefa nova e deixa o link."], ["Escrever, Dividir, Ler", "<b>Ler</b> mostra a nota formatada e deixa marcar os checklists com um toque. <b>Dividir</b> (computador) mostra texto e resultado lado a lado."], ["Mapa de notas", "Veja suas notas como um grafo: pontos são notas, linhas são links. Arraste, passe o mouse para destacar, clique para abrir."], ["Organize", "★ favorita, 📌 fixar no topo, ícone e capa (clique no emoji ao lado do título), #tags no texto e busca. Apagadas ficam 30 dias na <b>Lixeira</b>."])
+    + tip(`<b>Seções (como num fichário):</b> dentro de um caderno, as abas coloridas no topo da lista são as <b>seções</b>. Toque em <b>＋ Seção</b> para criar; a seção ativa mostra <b>✎ Editar seção</b> (nome, cor, ◀ ▶ para reordenar, Excluir). A nota nova entra na seção aberta, e na própria nota você troca de seção ou de caderno. Excluir uma seção não apaga as notas: elas ficam em <b>Sem seção</b>.`)
     + tip(`<b>Imagens:</b> copie uma imagem ou tire um print e use Ctrl+V no texto da nota (ou arraste o arquivo para lá). Ela aparece em <b>Dividir</b> ou <b>Ler</b>; clique nela para ampliar. As imagens ficam guardadas neste navegador, não vão no .json nem para outro aparelho. Ctrl+B negrito, Ctrl+I itálico, Ctrl+K liga a uma nota, Tab recua item de lista, Enter continua a lista. O botão ⛶ abre o <b>modo escrita</b> (Esc sai). Exporte uma nota ou tudo em <b>.md</b> (compatível com Obsidian) e importe arquivos .md/.txt.`)
     + warn("As notas ficam salvas com o resto dos dados (navegador, arquivo e GitHub). Elas não têm senha própria: use o bloqueio do app para proteger.")
     + `<p class="man-try-row">${go("Abrir o Notebook", "view:notas")}</p>`,
@@ -2942,7 +2952,8 @@ const NB_CMDS = [
   { f: "date", n: "Data de hoje", k: "data hoje", i: "📅" }, { f: "time", n: "Hora agora", k: "hora", i: "🕒" }, { f: "wiki", n: "Ligar a outra nota", k: "link ligar nota wiki", i: "🔗" },
   { f: "task", n: "Criar tarefa desta linha", k: "tarefa cartao criar", i: "▢" }, { f: "live", n: "Tarefas de hoje (ao vivo)", k: "tarefas hoje ao vivo", i: "⚡" }
 ];
-const NB = { sel: null, nb: "all", q: "", mode: null, pane: "list", graph: false, focus: false, cal: null, tpl: false, emo: false, menu: null, side: false, editBook: null, tag: "", codes: [] };
+const NB = { sel: null, nb: "all", q: "", mode: null, pane: "list", graph: false, focus: false, cal: null, tpl: false, emo: false, menu: null, side: false, editBook: null, sec: "", editSec: null, tag: "", codes: [] };
+const nbSecs = id => state.nsec.filter(x => x.nb === id), nbSecOf = n => n && n.sec ? state.nsec.find(x => x.id === n.sec) : null;
 const nbLive = () => state.notes.filter(n => !n.trashed);
 const nbBook = id => state.notebooks.find(b => b.id === id);
 const nbGet = id => state.notes.find(n => n.id === id);
@@ -3039,7 +3050,7 @@ function nbMd(src) {
 /* ---------- listas e telas ---------- */
 function nbList() {
   const q = norm(NB.q.trim()); let a = NB.nb === "trash" ? state.notes.filter(n => n.trashed) : nbLive();
-  if (NB.nb === "fav") a = a.filter(n => n.fav); else if (NB.nb !== "all" && NB.nb !== "trash") a = a.filter(n => n.nb === NB.nb);
+  if (NB.nb === "fav") a = a.filter(n => n.fav); else if (NB.nb !== "all" && NB.nb !== "trash") { a = a.filter(n => n.nb === NB.nb); if (NB.sec === "none") a = a.filter(n => !n.sec); else if (NB.sec) a = a.filter(n => n.sec === NB.sec); }
   if (NB.tag) a = a.filter(n => nbTagsOf(n).includes(NB.tag));
   if (q) a = a.filter(n => norm(n.title + " " + n.body + " " + nbTagsOf(n).join(" ")).includes(q));
   return a.sort((x, y) => (+!!y.pin - +!!x.pin) || (y.updated - x.updated));
@@ -3047,7 +3058,7 @@ function nbList() {
 function nbItems() {
   const a = nbList();
   return a.map(n => { const b = nbBook(n.nb), tg = nbTagsOf(n).slice(0, 2), tk = (n.body.match(/^\s*[-*+]\s+\[[ xX]\]/gm) || []).length, dn = (n.body.match(/^\s*[-*+]\s+\[[xX]\]/gm) || []).length;
-    return `<button type="button" class="nb-item${n.id === NB.sel ? " on" : ""}" data-act="nbSel" data-id="${n.id}" style="--ch:${b ? b.hue : 190}"><span class="nb-ico">${n.icon || (b ? b.icon : "📝")}</span><span class="nb-it"><b>${n.pin ? "📌 " : ""}${esc(nbTitle(n))}${n.fav ? ' <span class="nb-star">★</span>' : ""}</b><small>${esc(nbSnip(n))}</small><span class="nb-im"><span>${nbWhen(n.updated)}</span>${b ? `<span class="nb-bk">${esc(b.name)}</span>` : ""}${tk ? `<span>☑ ${dn}/${tk}</span>` : ""}${tg.map(t => `<span class="nb-tg2">#${esc(t)}</span>`).join("")}</span></span></button>`; }).join("") || `<div class="nb-none">${NB.q || NB.tag ? "Nenhuma nota encontrada." : NB.nb === "trash" ? "Lixeira vazia." : "Nenhuma nota aqui ainda."}${NB.nb !== "trash" ? `<br><button class="btn sm" data-act="nbNew">${ic("plus")}Criar nota</button>` : ""}</div>`;
+    return `<button type="button" class="nb-item${n.id === NB.sel ? " on" : ""}" data-act="nbSel" data-id="${n.id}" style="--ch:${b ? b.hue : 190}"><span class="nb-ico">${n.icon || (b ? b.icon : "📝")}</span><span class="nb-it"><b>${n.pin ? "📌 " : ""}${esc(nbTitle(n))}${n.fav ? ' <span class="nb-star">★</span>' : ""}</b><small>${esc(nbSnip(n))}</small><span class="nb-im"><span>${nbWhen(n.updated)}</span>${b ? `<span class="nb-bk">${esc(b.name)}${nbSecOf(n) ? " › " + esc(nbSecOf(n).name) : ""}</span>` : ""}${tk ? `<span>☑ ${dn}/${tk}</span>` : ""}${tg.map(t => `<span class="nb-tg2">#${esc(t)}</span>`).join("")}</span></span></button>`; }).join("") || `<div class="nb-none">${NB.q || NB.tag ? "Nenhuma nota encontrada." : NB.nb === "trash" ? "Lixeira vazia." : "Nenhuma nota aqui ainda."}${NB.nb !== "trash" ? `<br><button class="btn sm" data-act="nbNew">${ic("plus")}Criar nota</button>` : ""}</div>`;
 }
 function nbCal() {
   const base = new Date(NB.cal || Date.now()); base.setDate(1); const y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), days = new Date(y, mo + 1, 0).getDate(), has = {}, dn = {}, tk = dkey(Date.now());
@@ -3069,6 +3080,7 @@ function nbSide() {
     <button class="nb-row${on("fav")}" data-act="nbBook" data-id="fav"><span>⭐</span>Favoritas<small>${live.filter(n => n.fav).length}</small></button>
     <div class="nb-lbl">Cadernos</div>
     ${state.notebooks.map(b => `<div class="nb-brow"><button class="nb-row${on(b.id)}" style="--ch:${b.hue}" data-act="nbBook" data-id="${b.id}"><span>${b.icon}</span>${esc(b.name)}<small>${cnt(b.id)}</small></button><button class="nb-bed" data-act="nbBookEdit" data-id="${b.id}" aria-label="Editar caderno ${esc(b.name)}">✎</button></div>
+      ${NB.nb === b.id ? nbSecs(b.id).map(x => `<button class="nb-row sub${NB.sec === x.id ? " on" : ""}" style="--ch:${x.hue}" data-act="nbSec" data-id="${x.id}"><span>▸</span><span data-secl="${x.id}">${esc(x.name)}</span><small>${live.filter(n => n.sec === x.id).length}</small></button>`).join("") : ""}
       ${NB.editBook === b.id ? `<div class="nb-bedit"><input class="inp" value="${esc(b.name)}" data-in="nbBookName" data-id="${b.id}" aria-label="Nome do caderno"><div class="nb-emo-g">${NB_EMO.slice(0, 14).map(e => `<button type="button" data-act="nbBookIcon" data-id="${b.id}" data-v="${e}">${e}</button>`).join("")}</div><div class="nb-hues">${NB_COV.map(h => `<button type="button" style="--ch:${h}" class="${h === b.hue ? "on" : ""}" data-act="nbBookHue" data-id="${b.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><button class="btn sm ghost" data-act="nbBookDel" data-id="${b.id}">Excluir caderno</button></div>` : ""}`).join("")}
     <button class="nb-row add" data-act="nbBookAdd"><span>＋</span>Novo caderno</button>
     <button class="nb-row${on("trash")}" data-act="nbBook" data-id="trash"><span>🗑️</span>Lixeira<small>${trash}</small></button>
@@ -3077,9 +3089,20 @@ function nbSide() {
   <div class="nb-lbl">Calendário</div><div class="nb-cal">${nbCal()}</div>
   <div class="nb-tools"><button class="${NB.graph ? "on" : ""}" data-act="nbGraph">🕸️ Mapa de notas</button><button data-act="nbImport">⬆ Importar .md / .txt</button><button data-act="nbExportAll">⬇ Exportar tudo (.md)</button></div>`;
 }
+/* seções: as "abas" de cada caderno, como no OneNote (Caderno › Seção › Nota) */
+function nbSecBar() {
+  const b = nbBook(NB.nb); if (!b) return ""; const ss = nbSecs(b.id), live = nbLive().filter(n => n.nb === b.id), loose = live.filter(n => !n.sec).length;
+  const tab = (id, label, n, ch) => `<button type="button" class="nb-tab${NB.sec === id ? " on" : ""}" style="--ch:${ch}" data-act="nbSec" data-id="${id}" role="tab" aria-selected="${NB.sec === id}"><span data-secl="${id}">${esc(label)}</span><small>${n}</small></button>`;
+  const ed = ss.find(x => x.id === NB.editSec);
+  const act = ss.find(x => x.id === NB.sec), tc = act ? act.hue : NB.sec === "none" ? 0 : b.hue;
+  return `<div class="nb-tabs" style="--tc:${tc}" role="tablist" aria-label="Seções de ${esc(b.name)}">${tab("", "Todas", live.length, b.hue)}${ss.map(x => tab(x.id, x.name, live.filter(n => n.sec === x.id).length, x.hue)).join("")}${ss.length && loose ? tab("none", "Sem seção", loose, 0) : ""}<button type="button" class="nb-tab add" data-act="nbSecAdd" title="Nova seção" aria-label="Nova seção">＋ Seção</button></div>
+  ${NB.sec && NB.sec !== "none" && ss.some(x => x.id === NB.sec) && !ed ? `<div class="nb-secact"><button type="button" class="btn sm ghost" data-act="nbSecEdit" data-id="${NB.sec}">✎ Editar seção</button></div>` : ""}
+  ${ed ? `<div class="nb-bedit nb-secedit"><input class="inp" id="nbsec_${ed.id}" value="${esc(ed.name)}" data-in="nbSecName" data-id="${ed.id}" aria-label="Nome da seção"><div class="nb-hues">${NB_COV.map(h => `<button type="button" style="--ch:${h}" class="${h === ed.hue ? "on" : ""}" data-act="nbSecHue" data-id="${ed.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><div class="set-row" style="flex-wrap:wrap"><button class="btn sm" data-act="nbSecMove" data-id="${ed.id}" data-d="-1" aria-label="Mover para a esquerda">◀</button><button class="btn sm" data-act="nbSecMove" data-id="${ed.id}" data-d="1" aria-label="Mover para a direita">▶</button><button class="btn sm main" data-act="nbSecEdit" data-id="${ed.id}">Pronto</button><button class="btn sm ghost" data-act="nbSecDel" data-id="${ed.id}">Excluir seção</button></div></div>` : ""}`;
+}
 function nbListHtml() {
   const title = NB.nb === "all" ? "Todas as notas" : NB.nb === "fav" ? "Favoritas" : NB.nb === "trash" ? "Lixeira" : (nbBook(NB.nb) || {}).name || "Notas";
   return `<div class="nb-lh"><button class="btn sm nb-sidebtn" data-act="nbSide" aria-label="Cadernos e filtros">☰</button><h2>${esc(title)}</h2>${NB.nb === "trash" ? `<button class="btn sm" data-act="nbEmpty">Esvaziar</button>` : `<button class="btn sm" data-act="nbNew" aria-label="Nova nota">${ic("plus")}</button>`}</div>
+  ${nbSecBar()}
   <div class="nb-sr"><span>${ic("search")}</span><input class="inp" id="nb-q" type="search" placeholder="Buscar nas notas…" value="${esc(NB.q)}" data-in="nbQ" aria-label="Buscar nas notas">${NB.tag ? `<button class="chip on" data-act="nbTag" data-v="${esc(NB.tag)}">#${esc(NB.tag)} ✕</button>` : ""}</div>
   <div class="nb-items" id="nb-items">${nbItems()}</div>`;
 }
@@ -3106,7 +3129,7 @@ function nbEditor() {
     ${ro ? `<div class="nb-trashbar">🗑 Esta nota está na lixeira (apagada sozinha após 30 dias). <button class="btn sm" data-act="nbRestore">Restaurar</button></div>` : ""}
     <div class="nb-head"><button class="nb-icon" data-act="nbEmo" aria-label="Escolher ícone da nota">${n.icon || (b ? b.icon : "📝")}</button><input class="nb-title" id="nb-title" value="${esc(n.title)}" placeholder="Sem título" data-in="nbTitle" data-id="${n.id}" data-old="${esc(n.title)}" aria-label="Título da nota" ${ro ? "readonly" : ""}></div>
     ${NB.emo ? `<div class="nb-emo-g big">${NB_EMO.map(e => `<button type="button" data-act="nbIcon" data-v="${e}">${e}</button>`).join("")}<button type="button" class="btn sm" data-act="nbIcon" data-v="">Padrão</button></div>` : ""}
-    <div class="nb-meta"><select class="inp" data-in="nbMove" aria-label="Caderno da nota" ${ro ? "disabled" : ""}>${state.notebooks.map(x => `<option value="${x.id}" ${x.id === n.nb ? "selected" : ""}>${x.icon} ${esc(x.name)}</option>`).join("")}</select><span>Criada ${new Date(n.created).toLocaleDateString("pt-BR")}</span><span id="nb-stats"></span></div>
+    <div class="nb-meta"><select class="inp" data-in="nbMove" aria-label="Caderno da nota" ${ro ? "disabled" : ""}>${state.notebooks.map(x => `<option value="${x.id}" ${x.id === n.nb ? "selected" : ""}>${x.icon} ${esc(x.name)}</option>`).join("")}</select>${nbSecs(n.nb).length ? `<select class="inp" data-in="nbMoveSec" aria-label="Seção da nota" ${ro ? "disabled" : ""}><option value="">Sem seção</option>${nbSecs(n.nb).map(x => `<option value="${x.id}" ${x.id === n.sec ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select>` : ""}<span>Criada ${new Date(n.created).toLocaleDateString("pt-BR")}</span><span id="nb-stats"></span></div>
     ${ro ? "" : `<div class="nb-tb" role="toolbar" aria-label="Formatação">${[["h1", "H1", "Título 1"], ["h2", "H2", "Título 2"], ["b", "<b>B</b>", "Negrito (Ctrl+B)"], ["i", "<i>I</i>", "Itálico (Ctrl+I)"], ["s", "<s>S</s>", "Riscado"], ["hl", "▐", "Destacar"], ["ul", "•", "Lista"], ["ol", "1.", "Lista numerada"], ["todo", "☑", "Checklist"], ["quote", "❝", "Citação"], ["code", "&lt;/&gt;", "Código"], ["callout", "💡", "Destaque"], ["table", "▦", "Tabela"], ["link", "[[ ]]", "Ligar a uma nota (Ctrl+K)"], ["task", "▢→", "Transformar a linha em tarefa do quadro"]].map(([k, l, t]) => `<button type="button" data-act="nbFmt" data-v="${k}" title="${t}" aria-label="${t}">${l}</button>`).join("")}</div>`}
     <div class="nb-split"><div class="nb-edwrap"><textarea id="nb-ta" class="nb-ta" spellcheck="true" placeholder="Comece a escrever…  Digite / para blocos e [[ para ligar notas" aria-label="Texto da nota" ${ro ? "readonly" : ""}>${esc(n.body)}</textarea><div id="nb-menu" class="nb-menu" role="listbox" hidden></div></div><article id="nb-pv" class="nb-pv" aria-label="Pré-visualização"></article></div>
     <div class="nb-foot" id="nb-foot"></div></div></div></div>`;
@@ -3207,7 +3230,7 @@ function nbPick(i) {
 
 /* ---------- ações de dados ---------- */
 function nbNew(k, props) {
-  const t = NB_TPL.find(x => x.k === k) || NB_TPL[0], now = Date.now(), nbId = props && props.nb || t.nb || (state.notebooks.some(b => b.id === NB.nb) ? NB.nb : "nb_pessoal"), n = Object.assign({ id: "nt_" + uid(), title: nbFill(t.title || ""), body: nbFill(t.body), nb: nbBook(nbId) ? nbId : state.notebooks[0].id, tags: [], icon: "", cover: null, fav: false, pin: false, created: now, updated: now }, props || {});
+  const t = NB_TPL.find(x => x.k === k) || NB_TPL[0], now = Date.now(), nbId = props && props.nb || t.nb || (state.notebooks.some(b => b.id === NB.nb) ? NB.nb : "nb_pessoal"), n = Object.assign({ id: "nt_" + uid(), title: nbFill(t.title || ""), body: nbFill(t.body), nb: nbBook(nbId) ? nbId : state.notebooks[0].id, sec: (nbId === NB.nb && NB.sec && NB.sec !== "none" && nbSecs(nbId).some(x => x.id === NB.sec)) ? NB.sec : "", tags: [], icon: "", cover: null, fav: false, pin: false, created: now, updated: now }, props || {});
   state.notes.unshift(n); save(); nbShow(n.id, true); return n;
 }
 function nbShow(id, fresh) { const n = nbGet(id); if (!n) return; NB.sel = id; NB.graph = false; NB.pane = "edit"; NB.side = false; NB.tpl = false; NB.emo = false; NB.fresh = !!fresh; if (n.trashed) NB.nb = "trash"; else if (NB.nb !== "all" && NB.nb !== "fav" && NB.nb !== n.nb) NB.nb = "all"; NB.q = ""; NB.tag = ""; if (ui.view !== "notas") location.hash = "notas"; else render(); }
@@ -3216,7 +3239,7 @@ function nbDaily(key) {
   if (!n) { n = nbNew("diario", { title: nbDateLong(key), date: key, nb: nbBook("nb_diario") ? "nb_diario" : state.notebooks[0].id, icon: "📔", cover: null }); return; }
   nbShow(n.id);
 }
-function nbMdFile(n) { const b = nbBook(n.nb); return `---\ntitle: ${nbTitle(n)}\ncaderno: ${b ? b.name : ""}\ntags: [${nbTagsOf(n).join(", ")}]\ncriada: ${new Date(n.created).toISOString()}\natualizada: ${new Date(n.updated).toISOString()}\n---\n\n${n.body}\n`; }
+function nbMdFile(n) { const b = nbBook(n.nb); return `---\ntitle: ${nbTitle(n)}\ncaderno: ${b ? b.name : ""}\n${nbSecOf(n) ? "secao: " + nbSecOf(n).name + "\n" : ""}tags: [${nbTagsOf(n).join(", ")}]\ncriada: ${new Date(n.created).toISOString()}\natualizada: ${new Date(n.updated).toISOString()}\n---\n\n${n.body}\n`; }
 function nbImportText(name, txt) {
   let body = String(txt).replace(/\r/g, ""), title = name.replace(/\.(md|markdown|txt)$/i, ""), tags = []; const fm = body.match(/^---\n([\s\S]*?)\n---\n?/);
   if (fm) { body = body.slice(fm[0].length).replace(/^\n+/, ""); const t = fm[1].match(/^title:\s*(.+)$/m), g = fm[1].match(/^tags:\s*\[?(.*?)\]?\s*$/m); if (t) title = t[1].trim(); if (g) tags = g[1].split(",").map(x => x.trim().replace(/^#/, "")).filter(Boolean); }
@@ -3905,10 +3928,16 @@ const acts = {
   nbNew: el => { NB.tpl = false; nbNew(el.dataset.v); },
   nbTplToggle: () => { NB.tpl = !NB.tpl; nbSideRefresh(); },
   nbDaily: el => nbDaily(el.dataset.v),
-  nbBook: el => { NB.nb = el.dataset.id; NB.graph = false; NB.tag = ""; NB.side = false; NB.pane = "list"; NB.sel = null; render(); },
+  nbSec: el => { NB.sec = el.dataset.id; NB.editSec = null; NB.pane = "list"; NB.sel = null; render(); },
+  nbSecAdd: () => { const b = nbBook(NB.nb); if (!b) return; const x = { id: "ns_" + uid(), nb: b.id, name: "Nova seção", hue: NB_COV[(nbSecs(b.id).length + 1) % NB_COV.length] }; state.nsec.push(x); NB.sec = x.id; NB.editSec = x.id; save(); render(); setTimeout(() => { const i = $("#nbsec_" + x.id); if (i) { i.focus(); i.select(); } }, 40); },
+  nbSecEdit: el => { NB.editSec = NB.editSec === el.dataset.id ? null : el.dataset.id; render(); if (NB.editSec) setTimeout(() => { const i = $("#nbsec_" + NB.editSec); if (i) i.focus(); }, 40); },
+  nbSecHue: el => { const x = state.nsec.find(y => y.id === el.dataset.id); if (x) { x.hue = +el.dataset.v; save(); render(); } },
+  nbSecMove: el => { const x = state.nsec.find(y => y.id === el.dataset.id); if (!x) return; const ids = nbSecs(x.nb), i = ids.indexOf(x), j = i + +el.dataset.d; if (j < 0 || j >= ids.length) return; const a = state.nsec.indexOf(ids[i]), b = state.nsec.indexOf(ids[j]); [state.nsec[a], state.nsec[b]] = [state.nsec[b], state.nsec[a]]; save(); render(); },
+  nbSecDel: el => { const x = state.nsec.find(y => y.id === el.dataset.id); if (!x) return; snapshotUndo("Seção “" + x.name + "” excluída. As notas continuam no caderno, sem seção"); state.notes.forEach(n => { if (n.sec === x.id) { n.sec = ""; n.updated = Date.now(); } }); state.nsec = state.nsec.filter(y => y !== x); tomb(x.id); NB.sec = ""; NB.editSec = null; save(); render(); },
+  nbBook: el => { NB.sec = ""; NB.editSec = null; NB.nb = el.dataset.id; NB.graph = false; NB.tag = ""; NB.side = false; NB.pane = "list"; NB.sel = null; render(); },
   nbBookEdit: el => { NB.editBook = NB.editBook === el.dataset.id ? null : el.dataset.id; nbSideRefresh(); },
   nbBookAdd: () => { const b = { id: "nb_" + uid(), name: "Novo caderno", icon: NB_EMO[(state.notebooks.length * 3) % NB_EMO.length], hue: NB_COV[state.notebooks.length % NB_COV.length] }; state.notebooks.push(b); NB.editBook = b.id; save(); nbSideRefresh(); setTimeout(() => { const i = $(".nb-bedit input"); if (i) { i.focus(); i.select(); } }, 30); },
-  nbBookDel: el => { const b = nbBook(el.dataset.id); if (!b) return; if (state.notebooks.length < 2) return toast("Mantenha pelo menos um caderno"); const to = state.notebooks.find(x => x.id !== b.id); snapshotUndo("Caderno “" + b.name + "” excluído. As notas foram para “" + to.name + "”"); state.notes.forEach(n => { if (n.nb === b.id) { n.nb = to.id; n.updated = Date.now(); } }); state.notebooks = state.notebooks.filter(x => x !== b); tomb(b.id); NB.editBook = null; if (NB.nb === b.id) NB.nb = "all"; save(); render(); },
+  nbBookDel: el => { const b = nbBook(el.dataset.id); if (!b) return; if (state.notebooks.length < 2) return toast("Mantenha pelo menos um caderno"); const to = state.notebooks.find(x => x.id !== b.id); snapshotUndo("Caderno “" + b.name + "” excluído. As notas foram para “" + to.name + "”"); state.notes.forEach(n => { if (n.nb === b.id) { n.nb = to.id; n.sec = ""; n.updated = Date.now(); } }); state.notebooks = state.notebooks.filter(x => x !== b); tomb(b.id); state.nsec.filter(x => x.nb === b.id).forEach(x => tomb(x.id)); state.nsec = state.nsec.filter(x => x.nb !== b.id); NB.editBook = null; if (NB.nb === b.id) NB.nb = "all"; save(); render(); },
   nbBookIcon: el => { const b = nbBook(el.dataset.id); if (b) { b.icon = el.dataset.v; save(); render(); } },
   nbBookHue: el => { const b = nbBook(el.dataset.id); if (b) { b.hue = +el.dataset.v; save(); render(); } },
   nbSel: el => { NB.sel = el.dataset.id; NB.pane = "edit"; NB.emo = false; render(); },
@@ -4045,6 +4074,7 @@ const ins = {
   infoName: el => { el.value = el.value.replace(/\n/g, " "); fitName(el); el.title = (el.value || "Campo") + " (toque para renomear)"; const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (f) { f.name = el.value.trim() || "Campo"; save(); } },
   nbQ: el => { NB.q = el.value; const l = $("#nb-items"); if (l) l.innerHTML = nbItems(); },
   nbTitle: el => { const n = nbGet(el.dataset.id); if (!n) return; n.title = el.value; n.updated = Date.now(); nbSoon(); },
+  nbSecName: el => { const x = state.nsec.find(y => y.id === el.dataset.id); if (!x) return; x.name = el.value.trim() || "Seção"; save(); $$(`[data-secl="${x.id}"]`).forEach(e => e.textContent = x.name); },
   nbBookName: el => { const b = nbBook(el.dataset.id); if (b) { b.name = el.value.trim() || "Caderno"; save(); } },
   mName: el => { const m = modelOf(cur()); m.name = el.value.trim() || "Modelo"; save(); const o = $("#d_model option:checked"); if (o) o.textContent = m.name; },
   tRich: el => { const t = cur(); if (!t) return; t.info = t.info || {}; const h = cleanHTML(el.innerHTML); t.info[el.dataset.v] = plain(h) ? h : ""; save(); },
@@ -4097,7 +4127,8 @@ const chg = {
   cxDate: el => { const t = task(ctxId); if (!t) return; const tm = t.due.slice(11); t.due = el.value ? el.value + (tm ? "T" + tm : "") : ""; save(); render(); closeCtx(); },
   tBlock: el => { const t = cur(), b = blockOf(t); b[el.dataset.k] = el.dataset.k === "m" ? +el.value : el.value; if (!b.d || !b.s) return; t.block = b; save(); render(); renderDrawer(); },
   nbTitle: el => { const n = nbGet(el.dataset.id), old = (el.dataset.old || "").trim(), nw = el.value.trim(); if (!n || old === nw) return; let c = 0; if (old && nw) { const re = new RegExp("\\[\\[" + nbReEsc(old) + "(\\||\\]\\])", "gi"); state.notes.forEach(m => { if (m !== n && re.test(m.body)) { m.body = m.body.replace(re, (_, e) => "[[" + nw + e); m.updated = Date.now(); c++; } }); } el.dataset.old = el.value; save(); nbPaint(); if (c) toast("Links atualizados em " + c + " nota(s)"); },
-  nbMove: el => { const n = nbGet(NB.sel); if (n) { n.nb = el.value; n.updated = Date.now(); save(); nbPaint(); nbSideRefresh(); } },
+  nbMove: el => { const n = nbGet(NB.sel); if (n) { n.nb = el.value; n.sec = ""; n.updated = Date.now(); save(); render(); } },
+  nbMoveSec: el => { const n = nbGet(NB.sel); if (n) { n.sec = el.value; n.updated = Date.now(); save(); render(); } },
   nbCk: el => { const n = nbGet(NB.sel); if (!n) return; const L = n.body.split("\n"), i = +el.dataset.ln; if (L[i] === undefined) return; L[i] = el.checked ? L[i].replace(/\[ \]/, "[x]") : L[i].replace(/\[[xX]\]/, "[ ]"); n.body = L.join("\n"); n.updated = Date.now(); const ta = $("#nb-ta"); if (ta) ta.value = n.body; nbSoon(); haptic(6); },
   depAdd: el => { if (!el.value) return; const t = cur(); (t.dep = t.dep || []).push(el.value); save(); render(); renderDrawer(); },
   subDone: el => { const k = task(el.dataset.id); if (!k) return; const dc = cols(boardOf(k)).find(c => c.done), fc = cols(boardOf(k)).find(c => !c.done); setCol(k, el.checked ? (dc || fc).id : fc.id); save(); render(); renderDrawer(); },
