@@ -1515,7 +1515,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.0830";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.0836";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2529,7 +2529,7 @@ const MANUAL = () => {
   add("O dia a dia", "modelos", "pin", "Modelos de cartão e campos", "Um modelo define quais campos aparecem na gaveta. Chamado de TI precisa de máquina e patrimônio; matéria da faculdade precisa de professor e nota. Cada um tem seu modelo.",
     grid(["Trabalho JBS", "Máquina antiga e nova, patrimônio, Service Tag, pacote Office, licença 365, usuário, senha de rede, e-mail, ramal e celular."],
       ["Faculdade", "Curso/matéria, datas, aula atual e próxima, professor, notas das atividades e da prova, observações e dificuldade em estrelas. Tem <b>diário de anotações</b>."])
-    + step(`Abra uma tarefa e, no topo dos dados, escolha o <b>Modelo</b>.`, `Preencha os campos. Eles salvam sozinhos.`, `Use o botão <b>⚙ Modelo</b> para renomear o modelo, ligar o diário, definir como padrão do quadro, criar um modelo em branco, duplicar ou apagar.`)
+    + step(`Abra uma tarefa e, no topo dos dados, escolha o <b>Modelo</b>.`, `Preencha os campos. Eles salvam sozinhos.`, `Se você criar um campo novo em <b>Informações adicionais</b> que não existe no modelo, ao fechar a tarefa o app pergunta se quer <b>Adicionar ao modelo</b> (o campo e o valor passam para o modelo) ou deixar <b>Só nesta tarefa</b>. Use o botão <b>⚙ Modelo</b> para renomear o modelo, ligar o diário, definir como padrão do quadro, criar um modelo em branco, duplicar ou apagar.`)
     + `<h4 class="man-h4">Mexendo nos campos</h4>` + grid(["Renomear", "Clique no nome do campo e digite."], ["Reordenar", "Arraste pela alça <b>⋮⋮</b> para cima ou para baixo."], ["Apagar", "Botão ×. Há Desfazer."],
       ["Criar", "<b>+ Novo campo</b>, escolhendo o tipo: texto, número, data, estrelas, lista, telefone, e-mail, link, sim/não ou texto formatado."], ["Alfinete 📌", "Marca o campo para aparecer no cartão do quadro (ex.: data da prova, ramal)."], ["Vale para todos", "Mudou um campo? Muda em todos os cartões que usam aquele modelo."])
     + tip("O modelo padrão do quadro vale para as <b>novas</b> tarefas. Por isso o quadro da faculdade pode nascer já no modelo Faculdade: abra o menu do quadro e escolha em <b>Modelo padrão</b>.")
@@ -2757,7 +2757,7 @@ function render() { renderChrome(); renderView(); }
 
 /* ---------- gaveta da tarefa ---------- */
 function openTask(id) { const t0 = task(id); if (t0 && boardOf(t0) !== board().id) { setBoard(boardOf(t0)); render(); } ui.drawer = id; ui.overlay = "drawer"; renderDrawer(); }
-function closeLayer() { const was = ui.overlay === "drawer" ? ui.drawer : null; ui.tplForm = false; ui.dtabEdit = false; ui.drawer = null; ui.overlay = null; ui.armed = null; $("#layer").innerHTML = ""; if (was) setTimeout(() => askTplSync(was), 220); }
+function closeLayer() { const was = ui.overlay === "drawer" ? ui.drawer : null; ui.tplForm = false; ui.dtabEdit = false; ui.drawer = null; ui.overlay = null; ui.armed = null; $("#layer").innerHTML = ""; if (was) setTimeout(() => { askTplSync(was); if (!ui.overlay) askXSync(was); }, 220); }
 /* ===== Campos padrão do cartão: ocultar/restaurar por modelo ===== */
 const BF = [["ticket", "Nº do chamado"], ["col", "Coluna"], ["board", "Quadro"], ["pri", "Prioridade"], ["due", "Prazo e hora"], ["rep", "Repetição"], ["tags", "Tags"], ["desc", "Descrição"], ["notes", "Observações"], ["check", "Checklist"], ["files", "Anexos"], ["extra", "Informações adicionais"], ["time", "Tempo"], ["block", "Bloco no calendário"]];
 function applyBF(t) {
@@ -3584,6 +3584,20 @@ function askTplSync(id) {
     <ul class="tpl-diff">${li(d.add, "plus")}${li(d.rem, "minus")}</ul>
     <div class="set-row" style="margin-top:12px;flex-wrap:wrap"><button class="btn main" data-act="tplSyncOver" data-id="${t.id}">Sobrescrever modelo</button><button class="btn" data-act="tplSyncNew" data-id="${t.id}">Salvar como novo</button><button class="btn ghost" data-act="close">Agora não</button></div></div></div>`;
 }
+/* campo novo em "Informações adicionais" que não existe no modelo do cartão: oferece incluir no modelo */
+function xDiff(t) {
+  const m = modelOf(t), have = new Set(m.fields.map(f => norm(f.name.trim()))), asked = new Set(t.xAsk || []);
+  const seen = new Set(), list = t.extra.filter(x => { const k = norm((x.k || "").trim()); if (!k || have.has(k) || asked.has(k) || seen.has(k)) return false; seen.add(k); return true; });
+  return list.length ? { m, list } : null;
+}
+function askXSync(id) {
+  const t = task(id); if (!t || ui.overlay) return; const d = xDiff(t); if (!d) return;
+  ui.overlay = "xsync";
+  $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal enter" role="dialog" aria-label="Atualizar modelo"><div class="d-head" style="border-top:0"><h2>Atualizar o modelo?</h2></div><div class="m-body">
+    <p style="margin:0 0 8px">Você adicionou ${d.list.length > 1 ? "campos" : "um campo"} em <b>${esc(t.title)}</b> que não ${d.list.length > 1 ? "existem" : "existe"} no modelo <b>“${esc(d.m.name)}”</b>. Quer incluir no modelo para as próximas tarefas?</p>
+    <ul class="tpl-diff">${d.list.slice(0, 8).map(x => `<li class="plus">+ ${esc(x.k)}${x.v ? ` <span class="meta">(${esc(String(x.v).slice(0, 40))})</span>` : ""}</li>`).join("")}</ul>
+    <div class="set-row" style="margin-top:12px;flex-wrap:wrap"><button class="btn main" data-act="xSyncYes" data-id="${t.id}">Adicionar ao modelo</button><button class="btn" data-act="xSyncNo" data-id="${t.id}">Só nesta tarefa</button></div></div></div>`;
+}
 function tplSyncBanner(t) {
   const d = tplDiff(t); if (!d) return "";
   return `<div class="tpl-sync"><span>Checklist diferente do modelo <b>“${esc(d.tp.name)}”</b>${d.add.length ? ` · <i class="plus">+${d.add.length}</i>` : ""}${d.rem.length ? ` · <i class="minus">−${d.rem.length}</i>` : ""}</span><button class="btn sm main" data-act="tplSyncOver" data-id="${t.id}">Sobrescrever modelo</button><button class="btn sm" data-act="tplSyncNew" data-id="${t.id}">Salvar como novo</button></div>`;
@@ -3724,6 +3738,8 @@ const acts = {
   dtabReset: () => { delete state.settings.dtabs; save(); renderDrawer(); },
   dTab: el => { ui.dtab = el.dataset.v; $$(".d-tabs button").forEach(b => { const on = b.dataset.v === ui.dtab; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); }); $$(".dtab").forEach(x => { x.hidden = x.dataset.tab !== ui.dtab; }); const b = $(".d-body"); if (b) b.scrollTop = 0; },
   rt: el => { const ed = (el.closest(".info-row, .dentry, .field") || document).querySelector(".rt") || $("#d_notes"); if (!ed) return; ed.focus(); try { document.execCommand("styleWithCSS", false, /Color$/.test(el.dataset.v)); el.dataset.v === "stamp" ? document.execCommand("insertHTML", false, "<b>" + fmtDT(Date.now()) + "</b>&nbsp;") : document.execCommand(el.dataset.v, false, el.dataset.c || null); } catch {} const h = ins[ed.dataset.in]; if (h) h(ed); },
+  xSyncYes: el => { const t = task(el.dataset.id), d = t && xDiff(t); if (!d) return closeLayer(); d.list.forEach(x => { const f = { id: "i_" + uid(), name: x.k.trim(), type: "text", pin: false }; d.m.fields.push(f); if (x.v) t.info[f.id] = x.v; t.extra = t.extra.filter(y => y.id !== x.id); }); save(); closeLayer(); render(); toast(`Modelo “${d.m.name}” atualizado com ${d.list.length} campo${d.list.length > 1 ? "s" : ""}`); },
+  xSyncNo: el => { const t = task(el.dataset.id), d = t && xDiff(t); if (d) { t.xAsk = (t.xAsk || []).concat(d.list.map(x => norm(x.k.trim()))); save(); } closeLayer(); },
   xAdd: () => { const x = { id: uid(), k: "", v: "" }; cur().extra.push(x); save(); renderDrawer(); const i = $("#xk_" + x.id); if (i) i.focus(); },
   xDel: el => { const t = cur(); t.extra = t.extra.filter(x => x.id !== el.dataset.v); save(); render(); renderDrawer(); },
   mdExport: async el => { const t = task((el && el.dataset.id) || ctxId); if (!t) return; await saveFile(mdName(t) + ".md", taskMd(t)); if (t.files.length) toast(`A nota cita ${t.files.length} anexo${t.files.length > 1 ? "s" : ""}. Coloque-os no cofre para aparecerem`, "Baixar anexos", async () => { for (const f of t.files) { let b = null; try { b = await kvGet("att_" + f.id); } catch {} if (b) await saveFile(f.name, b); } }); },
