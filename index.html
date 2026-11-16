@@ -919,6 +919,13 @@ body[data-view="notas"] #strip { display: none; }
 .nb-tab.add { background: transparent; border: 1px dashed var(--line); border-bottom: 0; color: var(--ink3); font-weight: 600; }
 .nb-tabs { border-bottom: 3px solid oklch(.58 .15 var(--tc, 190)); }
 .nb-row.sub::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: oklch(.62 .14 var(--ch, 190)); flex: none; } .nb-row.sub > span:first-child { display: none; }
+.tagbtn b { background: var(--accent); color: var(--accent-ink); border-radius: 99px; padding: 0 6px; font-size: 11px; } .tagbtn { white-space: nowrap; } .tagbtn.on b { background: var(--bg); color: var(--ink); }
+.tagpop { position: fixed; z-index: 90; width: min(300px, 92vw); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 34px rgba(0,0,0,.28); padding: 8px; display: grid; gap: 6px; } .tagpop[hidden] { display: none; }
+.tagpop input { width: 100%; box-sizing: border-box; } .tp-list { max-height: min(46vh, 340px); overflow-y: auto; display: grid; gap: 1px; align-content: start; }
+.tp-row { display: flex; align-items: center; gap: 8px; text-align: left; background: none; border: 0; border-radius: 8px; padding: 7px 8px; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; } .tp-row:hover { background: var(--surface2); } .tp-row.on { background: var(--accent-soft); font-weight: 600; }
+.tp-row i { width: 10px; height: 10px; border-radius: 50%; flex: none; } .tp-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tp-ck { width: 18px; height: 18px; border: 1.5px solid var(--ink3); border-radius: 5px; display: grid; place-items: center; font-size: 12px; flex: none; color: var(--accent-ink); } .tp-row.on .tp-ck { background: var(--accent); border-color: var(--accent); }
+.tp-foot { display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--line); padding-top: 6px; } .tp-cnt { flex: 1; }
 .nb-item { cursor: grab; } .nb-item.dragging { opacity: .45; } .nb-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .nb-row.sub.off { display: none; } .nb-nav.dragging .nb-row.sub.off { display: flex; }
 .dropt { outline: 2px dashed var(--accent) !important; outline-offset: -2px; background: var(--accent-soft) !important; }
@@ -1568,7 +1575,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1627";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.1830";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2130,10 +2137,27 @@ function renderChrome() {
   if (nx) { const di = dueInfo(nx); h += `<button class="next p${nx.priority}" data-act="open" data-id="${nx.id}" title="Sugestão calculada por prioridade e prazo"><small>Próxima</small><b>${esc(nx.title)}</b>${nx.ticket ? `<span class="tk">#${esc(nx.ticket)}</span>` : ""}${di ? `<span class="due ${di.cls}">${di.label}</span>` : ""}</button>`; }
   h += `<div class="chips">` + PRI.map((p, i) => `<button class="chip p${i} ${f.pri.has(i) ? "on" : ""}" data-act="fPri" data-v="${i}"><i></i>${p}</button>`).join("") +
     [["over", "Atrasadas"], ["today", "Hoje"], ["week", "7 dias"]].map(([k, l]) => `<button class="chip ${f.due === k ? "on" : ""}" data-act="fDue" data-v="${k}">${l}</button>`).join("") +
-    tagsSorted().map(t => `<button class="tag ${f.tags.has(t.id) ? "on" : ""}" style="--h:${t.hue}" data-act="fTag" data-v="${t.id}">${esc(t.name)}</button>`).join("") +
+    `<button class="chip tagbtn ${f.tags.size ? "on" : ""}" data-act="tagPop" aria-haspopup="true" title="Escolher tags para filtrar">🏷 Tags${f.tags.size ? ` <b>${f.tags.size}</b>` : ""} ▾</button>` +
+    tagsSorted().filter(t => f.tags.has(t.id)).map(t => `<button class="tag on" style="--h:${t.hue}" data-act="fTag" data-v="${t.id}" title="Tirar este filtro">${esc(t.name)} ✕</button>`).join("") +
     state.settings.savedF.filter(x => !x.board || x.board === ui.board).map(x => { const on = !!any && x.due === f.due && x.pri.length === f.pri.size && x.pri.every(i => f.pri.has(i)) && x.tags.length === f.tags.size && x.tags.every(i => f.tags.has(i)); return `<button class="chip saved ${on ? "on" : ""}" data-act="fApply" data-id="${x.id}" title="Filtro salvo">★ ${esc(x.name)}</button>`; }).join("") + (any ? `<button class="chip" data-act="fSave" title="Guardar este filtro como atalho">★ Salvar filtro</button><button class="chip" data-act="fClear">Limpar filtros</button>` : "") + `</div><span class="spacer"></span><button class="btn sm" id="reconnectBtn" data-act="fileReconnect" hidden>Reconectar arquivo</button><span id="sync" class="sync"></span>`;
   $("#strip").innerHTML = h; setSaveStatus();
 }
+/* ---------- seletor de tags do filtro (lista com caixas de seleção) ---------- */
+function tagPopFill() {
+  const p = $("#tagpop"); if (!p || p.hidden) return; const q = norm(($("#tagpopq") || {}).value || ""), l = p.querySelector(".tp-list");
+  const all = tagsSorted(), list = all.filter(t => !q || norm(t.name).includes(q));
+  l.innerHTML = list.length ? list.map(t => `<button type="button" class="tp-row${ui.f.tags.has(t.id) ? " on" : ""}" role="menuitemcheckbox" aria-checked="${ui.f.tags.has(t.id)}" data-act="tagPopT" data-v="${t.id}"><span class="tp-ck">${ui.f.tags.has(t.id) ? "✓" : ""}</span><i style="background:oklch(.72 .13 ${t.hue})"></i><span class="tp-n">${esc(t.name)}</span></button>`).join("") : `<p class="meta" style="padding:8px">${all.length ? "Nenhuma tag com esse nome." : "Ainda não há tags."}</p>`;
+  p.querySelector(".tp-cnt").textContent = ui.f.tags.size ? ui.f.tags.size + " selecionada" + (ui.f.tags.size > 1 ? "s" : "") : "Nenhuma selecionada";
+}
+function tagPopClose() { const p = $("#tagpop"); if (p) p.hidden = true; const b = $("[data-act='tagPop']"); if (b) b.setAttribute("aria-expanded", "false"); }
+function tagPopOpen(btn) {
+  let p = $("#tagpop"); if (!p) { p = document.createElement("div"); p.id = "tagpop"; p.className = "tagpop"; p.innerHTML = `<input id="tagpopq" data-in="tagPopQ" type="search" placeholder="Buscar tag…" autocomplete="off"><div class="tp-list" role="menu"></div><div class="tp-foot"><span class="tp-cnt meta"></span><button type="button" class="btn sm ghost" data-act="tagPopClear">Limpar</button><button type="button" class="btn sm" data-act="tagPopClose">Pronto</button></div>`; document.body.appendChild(p); }
+  p.hidden = false; $("#tagpopq").value = ""; tagPopFill(); const r = btn.getBoundingClientRect(); p.style.left = "0px"; p.style.top = "0px";
+  p.style.left = Math.max(8, Math.min(r.left, innerWidth - p.offsetWidth - 8)) + "px"; p.style.top = Math.min(r.bottom + 6, Math.max(8, innerHeight - p.offsetHeight - 8)) + "px"; btn.setAttribute("aria-expanded", "true");
+  setTimeout(() => { if (matchMedia("(hover:hover)").matches) $("#tagpopq").focus(); }, 30);
+}
+document.addEventListener("click", e => { const p = $("#tagpop"); if (p && !p.hidden && !e.target.closest("#tagpop, [data-act='tagPop']")) tagPopClose(); }, true);
+document.addEventListener("keydown", e => { if (e.key === "Escape") tagPopClose(); });
 const INFO = [["maqAntiga", "Máquina antiga"], ["maqNova", "Máquina nova"], ["patrimonio", "Patrimônio"], ["serviceTag", "Service Tag"], ["office", "Pacote Office"], ["lic365", "Licença 365"], ["usuario", "Usuário"], ["rede", "Senha rede"], ["email", "E-mail"], ["ramal", "Ramal"], ["celular", "Celular"]];
 const FTYPES = [["text", "Texto"], ["number", "Número"], ["date", "Data"], ["stars", "Estrelas (1 a 5)"], ["select", "Lista de opções"], ["tel", "Telefone / ramal"], ["email", "E-mail"], ["url", "Link"], ["check", "Sim / Não"], ["rich", "Texto formatado"]];
 const typeFor = id => id === "email" ? "email" : (id === "ramal" || id === "celular") ? "tel" : "text";
@@ -2632,7 +2656,7 @@ const MANUAL = () => {
     "Com muitas tarefas, filtros e busca poupam tempo.");
 
   add("O dia a dia", "busca", "search", "Filtros, busca e comandos", "Achar rápido é metade da produtividade.",
-    grid(["Filtros da faixa", "Prioridade, tags e prazo (Atrasadas, Hoje, 7 dias). Combine quantos quiser. Para limpar, clique de novo ou use o comando <b>Limpar filtros</b>."], ["Filtros salvos", "Com algum filtro ligado, toque em <b>★ Salvar filtro</b>: ele vira um botão fixo na faixa (ex.: ★ Alta + Hoje). Renomeie ou apague em <b>Configurações</b>, na aba do quadro. Cada quadro tem os seus filtros."], ["Busca e comandos", `${k("Ctrl")} ${k("K")} (ou ${k("/")}) abre a busca. Digite parte do título, o número do chamado (#CH-48213), tag ou até texto de campos e do diário.`])
+    grid(["Filtros da faixa", "Prioridade, prazo (Atrasadas, Hoje, 7 dias) e <b>🏷 Tags</b>: toque no botão Tags para abrir a lista com caixas de seleção (tem busca) e marque quantas quiser; as marcadas aparecem ao lado e tocar nelas tira o filtro. Combine quantos quiser. Para limpar, clique de novo ou use o comando <b>Limpar filtros</b>."], ["Filtros salvos", "Com algum filtro ligado, toque em <b>★ Salvar filtro</b>: ele vira um botão fixo na faixa (ex.: ★ Alta + Hoje). Renomeie ou apague em <b>Configurações</b>, na aba do quadro. Cada quadro tem os seus filtros."], ["Busca e comandos", `${k("Ctrl")} ${k("K")} (ou ${k("/")}) abre a busca. Digite parte do título, o número do chamado (#CH-48213), tag ou até texto de campos e do diário.`])
     + step(`Aperte ${k("Ctrl")} ${k("K")}.`, `Digite o que procura. Use ↑ ↓ para escolher e Enter para abrir.`, `Para executar uma ação, digite o nome dela: <i>tema</i>, <i>novo quadro</i>, <i>backup</i>, <i>csv</i>, <i>configurações</i>…`)
     + trick("A busca também <b>cria</b> tarefas: escreva a frase com marcadores e escolha Criar tarefa.")
     + `<p class="man-try-row">${go("Abrir a busca agora", "palette")}</p>`,
@@ -4010,6 +4034,10 @@ const acts = {
   ckIcon: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; if (el.dataset.v === "") delete c.icon; else c.icon = el.dataset.v; save(); render(); renderDrawer(); },
   ckDel: el => { const t = cur(); t.check = t.check.filter(c => c.id !== el.dataset.v); save(); render(); renderDrawer(); },
   fPri: el => { const v = +el.dataset.v, s = ui.f.pri; s.has(v) ? s.delete(v) : s.add(v); render(); },
+  tagPop: el => { const p = $("#tagpop"); p && !p.hidden ? tagPopClose() : tagPopOpen(el); },
+  tagPopT: el => { const v = el.dataset.v, t = ui.f.tags; t.has(v) ? t.delete(v) : t.add(v); render(); tagPopFill(); },
+  tagPopClear: () => { ui.f.tags.clear(); render(); tagPopFill(); },
+  tagPopClose: () => tagPopClose(),
   fTag: el => { const v = el.dataset.v, s = ui.f.tags; s.has(v) ? s.delete(v) : s.add(v); render(); },
   fDue: el => { ui.f.due = ui.f.due === el.dataset.v ? "" : el.dataset.v; render(); },
   fClear: () => { ui.f = { pri: new Set(), tags: new Set(), due: "" }; render(); },
@@ -4222,6 +4250,7 @@ document.addEventListener("click", e => {
 });
 /* entradas */
 const ins = {
+  tagPopQ: () => tagPopFill(),
   manQ: el => { const q = norm(el.value.trim()), man = $(".man"); if (!man) return; let n = 0; $$(".man-sec", man).forEach(s => { const hit = !q || norm(s.textContent).includes(q); s.hidden = !hit; if (hit) { n++; s.classList.add("in"); } }); $$(".man-toc a[data-sec]", man).forEach(a => { const s = $("#m-" + a.dataset.sec, man); a.hidden = !!s && s.hidden; }); $(".man-empty", man).hidden = n > 0; $(".man-hero", man).hidden = !!q; },
   infoName: el => { el.value = el.value.replace(/\n/g, " "); fitName(el); el.title = (el.value || "Campo") + " (toque para renomear)"; const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (f) { f.name = el.value.trim() || "Campo"; save(); } },
   nbQ: el => { NB.q = el.value; const l = $("#nb-items"); if (l) l.innerHTML = nbItems(); },
