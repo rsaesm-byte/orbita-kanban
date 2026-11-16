@@ -919,6 +919,13 @@ body[data-view="notas"] #strip { display: none; }
 .nb-tab.add { background: transparent; border: 1px dashed var(--line); border-bottom: 0; color: var(--ink3); font-weight: 600; }
 .nb-tabs { border-bottom: 3px solid oklch(.58 .15 var(--tc, 190)); }
 .nb-row.sub::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: oklch(.62 .14 var(--ch, 190)); flex: none; } .nb-row.sub > span:first-child { display: none; }
+.nb-item { cursor: grab; } .nb-item.dragging { opacity: .45; } .nb-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.nb-row.sub.off { display: none; } .nb-nav.dragging .nb-row.sub.off { display: flex; }
+.dropt { outline: 2px dashed var(--accent) !important; outline-offset: -2px; background: var(--accent-soft) !important; }
+.nbctx { width: 250px; } .nbctx[hidden] { display: none; } .nbctx hr { border: 0; border-top: 1px solid var(--line); margin: 2px 0; width: 100%; }
+.nbctx > button, .nbc-mv button { text-align: left; background: none; border: 0; border-radius: 6px; padding: 6px 8px; display: flex; gap: 8px; align-items: center; width: 100%; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+.nbctx > button:hover, .nbc-mv button:hover { background: var(--surface2); } .nbctx button.danger { color: var(--danger, #d64545); } .nbc-i { width: 18px; text-align: center; flex: none; }
+.nbc-mv { display: grid; gap: 1px; max-height: 190px; overflow-y: auto; } .nbc-mv button.on { background: var(--accent-soft); font-weight: 600; } .nbc-mv button.sub { padding-left: 34px; font-size: 12.5px; border-left: 3px solid oklch(.62 .14 var(--ch, 190)); margin-left: 8px; width: calc(100% - 8px); border-radius: 0 6px 6px 0; }
 .nb-secact { padding: 4px 10px 0; } .nb-secedit { margin: 6px 10px 0; }
 .nb-row.sub { padding-left: 30px; font-size: 13px; }
 .nb-img { max-width: 100%; border-radius: 10px; } .nb-img.nb-loc { cursor: zoom-in; display: block; margin: 8px 0; box-shadow: 0 1px 4px rgb(var(--shadow) / .2); } .nb-img.miss { cursor: default; padding: 14px; border: 1px dashed var(--line); color: var(--ink3); font-size: 12px; }
@@ -1560,7 +1567,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1551";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.1554";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2667,6 +2674,7 @@ const MANUAL = () => {
     step(`Abra a aba <b>Notebook</b>. À esquerda ficam os <b>cadernos</b> (Diário, Trabalho, Pessoal, Faculdade; crie os seus com <b>Novo caderno</b> e use o ✎ para trocar nome, ícone e cor).`, `Toque em <b>Nova nota</b> (a seta ▾ ao lado abre <b>modelos</b>: reunião, aula, passo a passo de TI, projeto…). Digite o título e escreva. Tudo é salvo sozinho.`, `Para o <b>diário</b>, toque em <b>Diário de hoje</b> ou em qualquer dia do <b>calendário</b>: a nota do dia é criada (ou aberta) já com um roteiro.`)
     + grid(["Digite / para blocos", "Em qualquer linha, escreva <b>/</b> e escolha: títulos, listas, checklist, tabela, código, destaque, data, tarefa…"], ["Digite [[ para ligar notas", "<code>[[Nome da nota]]</code> cria um link, como no Obsidian. Em <b>Mencionada em</b> (rodapé da nota) você vê quem aponta para ela. Se mudar o título, os links nas outras notas são atualizados."], ["Ligue tarefas", "Use <code>[[#</code> e escolha um cartão do quadro. O botão <b>▢→</b> transforma a linha atual em tarefa nova e deixa o link."], ["Escrever, Dividir, Ler", "<b>Ler</b> mostra a nota formatada e deixa marcar os checklists com um toque. <b>Dividir</b> (computador) mostra texto e resultado lado a lado."], ["Mapa de notas", "Veja suas notas como um grafo: pontos são notas, linhas são links. Arraste, passe o mouse para destacar, clique para abrir."], ["Organize", "★ favorita, 📌 fixar no topo, ícone e capa (clique no emoji ao lado do título), #tags no texto e busca. Apagadas ficam 30 dias na <b>Lixeira</b>."])
     + tip(`<b>Seções (como num fichário):</b> dentro de um caderno, as abas coloridas no topo da lista são as <b>seções</b>. Toque em <b>＋ Seção</b> para criar; a seção ativa mostra <b>✎ Editar seção</b> (nome, cor, ◀ ▶ para reordenar, Excluir). A nota nova entra na seção aberta, e na própria nota você troca de seção ou de caderno. Excluir uma seção não apaga as notas: elas ficam em <b>Sem seção</b>.`)
+    + tip(`<b>Botão direito nas notas:</b> clique com o botão direito (ou segure o dedo no celular) numa nota para abrir o menu: favoritar, fixar, recortar, copiar, duplicar, <b>colar</b>, mover para outro caderno ou seção, exportar e excluir. Botão direito numa aba de seção permite criar/colar nota ali, renomear, reordenar e excluir. <b>Arrastar e soltar:</b> arraste uma nota da lista para uma aba de seção ou para um caderno na lateral (durante o arraste as seções de todos os cadernos aparecem); solte em <b>Favoritas</b> ou <b>Lixeira</b> para favoritar ou apagar. Segure <b>Ctrl</b> ao soltar para copiar em vez de mover.`)
     + tip(`<b>Imagens:</b> copie uma imagem ou tire um print e use Ctrl+V no texto da nota (ou arraste o arquivo para lá). Ela aparece em <b>Dividir</b> ou <b>Ler</b>; clique nela para ampliar. As imagens ficam guardadas neste navegador, não vão no .json nem para outro aparelho. Ctrl+B negrito, Ctrl+I itálico, Ctrl+K liga a uma nota, Tab recua item de lista, Enter continua a lista. O botão ⛶ abre o <b>modo escrita</b> (Esc sai). Exporte uma nota ou tudo em <b>.md</b> (compatível com Obsidian) e importe arquivos .md/.txt.`)
     + warn("As notas ficam salvas com o resto dos dados (navegador, arquivo e GitHub). Elas não têm senha própria: use o bloqueio do app para proteger.")
     + `<p class="man-try-row">${go("Abrir o Notebook", "view:notas")}</p>`,
@@ -3078,7 +3086,7 @@ function nbList() {
 function nbItems() {
   const a = nbList();
   return a.map(n => { const b = nbBook(n.nb), tg = nbTagsOf(n).slice(0, 2), tk = (n.body.match(/^\s*[-*+]\s+\[[ xX]\]/gm) || []).length, dn = (n.body.match(/^\s*[-*+]\s+\[[xX]\]/gm) || []).length;
-    return `<button type="button" class="nb-item${n.id === NB.sel ? " on" : ""}" data-act="nbSel" data-id="${n.id}" style="--ch:${b ? b.hue : 190}"><span class="nb-ico">${n.icon || (b ? b.icon : "📝")}</span><span class="nb-it"><b>${n.pin ? "📌 " : ""}${esc(nbTitle(n))}${n.fav ? ' <span class="nb-star">★</span>' : ""}</b><small>${esc(nbSnip(n))}</small><span class="nb-im"><span>${nbWhen(n.updated)}</span>${b ? `<span class="nb-bk">${esc(b.name)}${nbSecOf(n) ? " › " + esc(nbSecOf(n).name) : ""}</span>` : ""}${tk ? `<span>☑ ${dn}/${tk}</span>` : ""}${tg.map(t => `<span class="nb-tg2">#${esc(t)}</span>`).join("")}</span></span></button>`; }).join("") || `<div class="nb-none">${NB.q || NB.tag ? "Nenhuma nota encontrada." : NB.nb === "trash" ? "Lixeira vazia." : "Nenhuma nota aqui ainda."}${NB.nb !== "trash" ? `<br><button class="btn sm" data-act="nbNew">${ic("plus")}Criar nota</button>` : ""}</div>`;
+    return `<div role="button" tabindex="0" draggable="${n.trashed ? "false" : "true"}" class="nb-item${n.id === NB.sel ? " on" : ""}" data-act="nbSel" data-id="${n.id}" style="--ch:${b ? b.hue : 190}"><span class="nb-ico">${n.icon || (b ? b.icon : "📝")}</span><span class="nb-it"><b>${n.pin ? "📌 " : ""}${esc(nbTitle(n))}${n.fav ? ' <span class="nb-star">★</span>' : ""}</b><small>${esc(nbSnip(n))}</small><span class="nb-im"><span>${nbWhen(n.updated)}</span>${b ? `<span class="nb-bk">${esc(b.name)}${nbSecOf(n) ? " › " + esc(nbSecOf(n).name) : ""}</span>` : ""}${tk ? `<span>☑ ${dn}/${tk}</span>` : ""}${tg.map(t => `<span class="nb-tg2">#${esc(t)}</span>`).join("")}</span></span></div>`; }).join("") || `<div class="nb-none">${NB.q || NB.tag ? "Nenhuma nota encontrada." : NB.nb === "trash" ? "Lixeira vazia." : "Nenhuma nota aqui ainda."}${NB.nb !== "trash" ? `<br><button class="btn sm" data-act="nbNew">${ic("plus")}Criar nota</button>` : ""}</div>`;
 }
 function nbCal() {
   const base = new Date(NB.cal || Date.now()); base.setDate(1); const y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), days = new Date(y, mo + 1, 0).getDate(), has = {}, dn = {}, tk = dkey(Date.now());
@@ -3100,7 +3108,7 @@ function nbSide() {
     <button class="nb-row${on("fav")}" data-act="nbBook" data-id="fav"><span>⭐</span>Favoritas<small>${live.filter(n => n.fav).length}</small></button>
     <div class="nb-lbl">Cadernos</div>
     ${state.notebooks.map(b => `<div class="nb-brow"><button class="nb-row${on(b.id)}" style="--ch:${b.hue}" data-act="nbBook" data-id="${b.id}"><span>${b.icon}</span>${esc(b.name)}<small>${cnt(b.id)}</small></button><button class="nb-bed" data-act="nbBookEdit" data-id="${b.id}" aria-label="Editar caderno ${esc(b.name)}">✎</button></div>
-      ${NB.nb === b.id ? nbSecs(b.id).map(x => `<button class="nb-row sub${NB.sec === x.id ? " on" : ""}" style="--ch:${x.hue}" data-act="nbSec" data-id="${x.id}"><span>▸</span><span data-secl="${x.id}">${esc(x.name)}</span><small>${live.filter(n => n.sec === x.id).length}</small></button>`).join("") : ""}
+      ${nbSecs(b.id).map(x => `<button class="nb-row sub${NB.sec === x.id ? " on" : ""}${NB.nb === b.id ? "" : " off"}" style="--ch:${x.hue}" data-act="nbSec" data-id="${x.id}"><span>▸</span><span data-secl="${x.id}">${esc(x.name)}</span><small>${live.filter(n => n.sec === x.id).length}</small></button>`).join("")}
       ${NB.editBook === b.id ? `<div class="nb-bedit"><input class="inp" value="${esc(b.name)}" data-in="nbBookName" data-id="${b.id}" aria-label="Nome do caderno"><div class="nb-emo-g">${NB_EMO.slice(0, 14).map(e => `<button type="button" data-act="nbBookIcon" data-id="${b.id}" data-v="${e}">${e}</button>`).join("")}</div><div class="nb-hues">${NB_COV.map(h => `<button type="button" style="--ch:${h}" class="${h === b.hue ? "on" : ""}" data-act="nbBookHue" data-id="${b.id}" data-v="${h}" aria-label="Cor"></button>`).join("")}</div><button class="btn sm ghost" data-act="nbBookDel" data-id="${b.id}">Excluir caderno</button></div>` : ""}`).join("")}
     <button class="nb-row add" data-act="nbBookAdd"><span>＋</span>Novo caderno</button>
     <button class="nb-row${on("trash")}" data-act="nbBook" data-id="trash"><span>🗑️</span>Lixeira<small>${trash}</small></button>
@@ -3249,6 +3257,88 @@ function nbPick(i) {
 }
 
 /* ---------- ações de dados ---------- */
+/* ---------- menu de botão direito, copiar/colar e arrastar notas ---------- */
+function nbCtxClose() { const m = $("#nbctx"); if (m) m.hidden = true; }
+function nbClipSet(n, cut) { NB.clip = { id: n.id, cut: !!cut }; try { navigator.clipboard.writeText(nbMdFile(n)).catch(() => {}); } catch {} toast(cut ? "Nota recortada. Use Colar na seção de destino" : "Nota copiada. Use Colar na seção de destino"); }
+function nbWhere(nbId, secId) { const b = nbBook(nbId), x = secId && state.nsec.find(y => y.id === secId); return (b ? b.name : "") + (x ? " › " + x.name : ""); }
+function nbCopyTo(n, nbId, secId, dup) {
+  const now = Date.now(), c = Object.assign(JSON.parse(JSON.stringify(n)), { id: "nt_" + uid(), nb: nbId, sec: secId, created: now, updated: now, pin: false, trashed: null, date: undefined });
+  if (dup || (n.nb === nbId && (n.sec || "") === secId)) c.title = nbTitle(n) + " (cópia)";
+  state.notes.unshift(c); save(); render(); toast("Cópia criada em " + nbWhere(nbId, secId), "Abrir", () => nbShow(c.id));
+}
+function nbMoveTo(id, nbId, secId, copy) {
+  const n = nbGet(id); if (!n || !nbBook(nbId)) return; if (secId && !state.nsec.some(x => x.id === secId && x.nb === nbId)) secId = "";
+  if (copy) return nbCopyTo(n, nbId, secId, false);
+  if (n.nb === nbId && (n.sec || "") === secId && !n.trashed) return;
+  const old = { nb: n.nb, sec: n.sec || "", trashed: n.trashed, updated: n.updated };
+  n.nb = nbId; n.sec = secId; n.trashed = null; n.updated = Date.now(); save(); render();
+  toast("Movida para " + nbWhere(nbId, secId), "Desfazer", () => { Object.assign(n, old); save(); render(); });
+}
+function nbTrashNote(n) { n.trashed = Date.now(); if (NB.sel === n.id) NB.sel = null; save(); render(); toast("Nota movida para a lixeira", "Desfazer", () => { n.trashed = null; save(); render(); }); }
+function nbPaste(nbId, secId) {
+  if (!nbBook(nbId)) nbId = state.notebooks.some(b => b.id === NB.nb) ? NB.nb : state.notebooks[0].id; secId = secId && state.nsec.some(x => x.id === secId && x.nb === nbId) ? secId : "";
+  const c = NB.clip && nbGet(NB.clip.id);
+  if (c) { if (NB.clip.cut) { NB.clip = null; return nbMoveTo(c.id, nbId, secId, false); } return nbCopyTo(c, nbId, secId, false); }
+  const mk = t => { t = (t || "").trim(); if (!t) return toast("Nada para colar"); const l = t.split("\n")[0].replace(/^#+\s*/, "").slice(0, 80); nbNew("", { title: l, body: t, nb: nbId, sec: secId }); };
+  try { navigator.clipboard.readText().then(mk, () => toast("Nada para colar")); } catch { toast("Nada para colar"); }
+}
+function nbCtxOpen(html, x, y) {
+  let m = $("#nbctx"); if (!m) { m = document.createElement("div"); m.id = "nbctx"; m.className = "ctx nbctx"; m.setAttribute("role", "menu"); document.body.appendChild(m); }
+  m.innerHTML = html; m.hidden = false; m.style.left = "0px"; m.style.top = "0px";
+  m.style.left = clamp(x, 6, Math.max(6, innerWidth - m.offsetWidth - 6)) + "px"; m.style.top = clamp(y, 6, Math.max(6, innerHeight - m.offsetHeight - 6)) + "px";
+}
+function nbCtxNote(id, x, y) {
+  const n = nbGet(id); if (!n) return; const tg = nbTarget(); NB.ctx = { id, nb: tg.nb, sec: tg.sec }; const b = (k, i, l, v, w, cls) => `<button type="button" role="menuitem"${cls ? ` class="${cls}"` : ""} data-act="nbC" data-k="${k}"${v !== undefined ? ` data-v="${v}"` : ""}${w !== undefined ? ` data-w="${w}"` : ""}><span class="nbc-i">${i}</span>${l}</button>`;
+  let h = `<div class="ctx-t" style="--pc:oklch(.6 .14 ${(nbBook(n.nb) || {}).hue || 190})">${esc(nbTitle(n))}</div>`;
+  if (n.trashed) h += b("rest", "↩", "Restaurar") + b("kill", "🗑", "Apagar de vez", undefined, undefined, "danger");
+  else {
+    h += b("open", "📖", "Abrir") + b("fav", n.fav ? "★" : "☆", n.fav ? "Tirar dos favoritos" : "Favoritar") + b("pin", "📌", n.pin ? "Desafixar" : "Fixar no topo") + "<hr>"
+      + b("cut", "✂", "Recortar") + b("copy", "⧉", "Copiar") + b("dup", "➕", "Duplicar") + b("paste", "📋", "Colar em " + esc(nbWhere(tg.nb, tg.sec)), tg.nb, tg.sec) + "<hr>"
+      + `<span class="lbl">Mover para</span><div class="nbc-mv">${state.notebooks.map(k => `<button type="button" role="menuitem" class="${n.nb === k.id && !n.sec ? "on" : ""}" data-act="nbC" data-k="mv" data-v="${k.id}"><span class="nbc-i">${k.icon}</span>${esc(k.name)}</button>${nbSecs(k.id).map(x => `<button type="button" role="menuitem" class="sub${n.sec === x.id ? " on" : ""}" style="--ch:${x.hue}" data-act="nbC" data-k="mv" data-v="${k.id}" data-w="${x.id}">${esc(x.name)}</button>`).join("")}`).join("")}</div><hr>`
+      + b("exp", "⬇", "Exportar .md") + b("del", "🗑", "Excluir", undefined, undefined, "danger");
+  }
+  nbCtxOpen(h, x, y);
+}
+function nbTarget() { const nbId = state.notebooks.some(b => b.id === NB.nb) ? NB.nb : (nbBook("nb_pessoal") ? "nb_pessoal" : state.notebooks[0].id); return { nb: nbId, sec: NB.sec && NB.sec !== "none" && nbSecs(nbId).some(x => x.id === NB.sec) ? NB.sec : "" }; }
+function nbCtxSec(id, x, y) {
+  const s = state.nsec.find(k => k.id === id); if (!s) return; NB.ctx = { id: null, nb: s.nb, sec: s.id };
+  const b = (k, i, l, v, w, cls) => `<button type="button" role="menuitem"${cls ? ` class="${cls}"` : ""} data-act="nbC" data-k="${k}"${v !== undefined ? ` data-v="${v}"` : ""}${w !== undefined ? ` data-w="${w}"` : ""}><span class="nbc-i">${i}</span>${l}</button>`;
+  nbCtxOpen(`<div class="ctx-t" style="--pc:oklch(.6 .14 ${s.hue})">${esc(s.name)}</div>` + b("new", "➕", "Nova nota aqui", s.nb, s.id) + b("paste", "📋", "Colar nota aqui", s.nb, s.id) + "<hr>" + b("secedit", "✎", "Renomear / cor", s.id) + b("secmv", "◀", "Mover para a esquerda", s.id, -1) + b("secmv", "▶", "Mover para a direita", s.id, 1) + b("secdel", "🗑", "Excluir seção", s.id, undefined, "danger"), x, y);
+}
+function nbCtxList(x, y) { const tg = nbTarget(); NB.ctx = { id: null, nb: tg.nb, sec: tg.sec }; const w = esc(nbWhere(tg.nb, tg.sec));
+  nbCtxOpen(`<div class="ctx-t" style="--pc:var(--accent)">${w}</div><button type="button" role="menuitem" data-act="nbC" data-k="new" data-v="${tg.nb}" data-w="${tg.sec}"><span class="nbc-i">➕</span>Nova nota aqui</button><button type="button" role="menuitem" data-act="nbC" data-k="paste" data-v="${tg.nb}" data-w="${tg.sec}"><span class="nbc-i">📋</span>Colar aqui</button>`, x, y);
+}
+/* destino de um arraste: devolve {nb, sec} | {fav} | {trash} | null */
+function nbDropTarget(el) {
+  if (!el) return null; const a = el.dataset.act, id = el.dataset.id;
+  if (a === "nbSec") { if (id === "") return null; if (id === "none") return { nb: NB.nb, sec: "" }; const s = state.nsec.find(k => k.id === id); return s ? { nb: s.nb, sec: s.id } : null; }
+  if (a === "nbBook") { if (id === "trash") return { trash: 1 }; if (id === "fav") return { fav: 1 }; if (id === "all") return null; return nbBook(id) ? { nb: id, sec: "" } : null; }
+  return null;
+}
+(function nbDnd() {
+  let dragId = null, lp = 0, lpT = 0;
+  const tgt = e => e.target.closest && e.target.closest(".nb-tab[data-act='nbSec'], .nb-row[data-act='nbBook'], .nb-row.sub[data-act='nbSec']");
+  const clr = () => $$(".dropt").forEach(x => x.classList.remove("dropt"));
+  document.addEventListener("dragstart", e => { const it = e.target.closest && e.target.closest(".nb-item"); if (!it || it.getAttribute("draggable") !== "true") return; dragId = it.dataset.id; nbCtxClose(); try { e.dataTransfer.setData("text/plain", "orbita-nb:" + dragId); e.dataTransfer.effectAllowed = "copyMove"; } catch {} it.classList.add("dragging"); const nv = $(".nb-nav"); if (nv) nv.classList.add("dragging"); });
+  document.addEventListener("dragend", () => { dragId = null; clr(); $$(".nb-item.dragging").forEach(x => x.classList.remove("dragging")); const nv = $(".nb-nav"); if (nv) nv.classList.remove("dragging"); });
+  document.addEventListener("dragover", e => { if (!dragId) return; const t = tgt(e); clr(); if (t && nbDropTarget(t)) { e.preventDefault(); e.dataTransfer.dropEffect = e.ctrlKey ? "copy" : "move"; t.classList.add("dropt"); } });
+  document.addEventListener("drop", e => { if (!dragId) return; const t = tgt(e), d = nbDropTarget(t), id = dragId; clr(); if (!d) return; e.preventDefault(); dragId = null;
+    if (d.trash) { const n = nbGet(id); if (n) nbTrashNote(n); } else if (d.fav) { const n = nbGet(id); if (n) { n.fav = true; save(); render(); toast("Nota nos favoritos"); } } else nbMoveTo(id, d.nb, d.sec, e.ctrlKey);
+    const nv = $(".nb-nav"); if (nv) nv.classList.remove("dragging"); });
+  document.addEventListener("contextmenu", e => {
+    if (ui.view !== "notas" || e.target.closest("input,textarea,#nb-ta")) return;
+    const it = e.target.closest(".nb-item"), tb = e.target.closest(".nb-tab[data-act='nbSec']"), sr = e.target.closest(".nb-row.sub[data-act='nbSec']"), ls = e.target.closest("#nb-items, .nb-lh");
+    if (it) { e.preventDefault(); nbCtxNote(it.dataset.id, e.clientX, e.clientY); }
+    else if ((tb || sr) && (tb || sr).dataset.id && (tb || sr).dataset.id !== "none") { e.preventDefault(); nbCtxSec((tb || sr).dataset.id, e.clientX, e.clientY); }
+    else if (ls && NB.nb !== "trash") { e.preventDefault(); nbCtxList(e.clientX, e.clientY); }
+  });
+  /* toque longo (celular) */
+  document.addEventListener("touchstart", e => { const it = e.target.closest && e.target.closest(".nb-item"); clearTimeout(lp); if (!it || ui.view !== "notas" || e.touches.length !== 1) return; const t = e.touches[0]; lp = setTimeout(() => { lpT = Date.now(); nbCtxNote(it.dataset.id, t.clientX, t.clientY); }, 550); }, { passive: true });
+  ["touchmove", "touchend", "touchcancel", "scroll"].forEach(ev => document.addEventListener(ev, () => clearTimeout(lp), { passive: true, capture: true }));
+  document.addEventListener("click", e => { if (Date.now() - lpT < 700) { lpT = 0; e.stopPropagation(); e.preventDefault(); return; } const m = $("#nbctx"); if (m && !m.hidden && !e.target.closest("#nbctx")) nbCtxClose(); }, true);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") nbCtxClose(); const it = e.target.closest && e.target.closest(".nb-item"); if (it && (e.key === "Enter" || e.key === " ") && e.target === it) { e.preventDefault(); it.click(); } else if (it && e.key === "ContextMenu") { e.preventDefault(); const r = it.getBoundingClientRect(); nbCtxNote(it.dataset.id, r.left + 30, r.top + 20); } });
+  window.addEventListener("resize", nbCtxClose); window.addEventListener("hashchange", nbCtxClose);
+})();
 function nbNew(k, props) {
   const t = NB_TPL.find(x => x.k === k) || NB_TPL[0], now = Date.now(), nbId = props && props.nb || t.nb || (state.notebooks.some(b => b.id === NB.nb) ? NB.nb : "nb_pessoal"), n = Object.assign({ id: "nt_" + uid(), title: nbFill(t.title || ""), body: nbFill(t.body), nb: nbBook(nbId) ? nbId : state.notebooks[0].id, sec: (nbId === NB.nb && NB.sec && NB.sec !== "none" && nbSecs(nbId).some(x => x.id === NB.sec)) ? NB.sec : "", tags: [], icon: "", cover: null, fav: false, pin: false, created: now, updated: now }, props || {});
   state.notes.unshift(n); save(); nbShow(n.id, true); return n;
@@ -3948,6 +4038,24 @@ const acts = {
   nbNew: el => { NB.tpl = false; nbNew(el.dataset.v); },
   nbTplToggle: () => { NB.tpl = !NB.tpl; nbSideRefresh(); },
   nbDaily: el => nbDaily(el.dataset.v),
+  nbC: el => { const k = el.dataset.k, id = NB.ctx && NB.ctx.id, v = el.dataset.v, w = el.dataset.w; nbCtxClose(); const n = id && nbGet(id);
+    if (k === "open" && n) return nbShow(n.id);
+    if (k === "fav" && n) { n.fav = !n.fav; n.updated = Date.now(); save(); return render(); }
+    if (k === "pin" && n) { n.pin = !n.pin; save(); return render(); }
+    if (k === "copy" && n) return nbClipSet(n, false);
+    if (k === "cut" && n) return nbClipSet(n, true);
+    if (k === "dup" && n) { nbCopyTo(n, n.nb, n.sec || "", true); return; }
+    if (k === "paste") return nbPaste(v || NB.ctx.nb, w === undefined ? NB.ctx.sec : w);
+    if (k === "new") return nbNew("", { nb: v, sec: w || "" });
+    if (k === "mv" && n) return nbMoveTo(n.id, v, w || "", false);
+    if (k === "exp" && n) return saveFile(nbSlug(nbTitle(n)) + ".md", nbMdFile(n));
+    if (k === "del" && n) return nbTrashNote(n);
+    if (k === "rest" && n) { n.trashed = null; save(); render(); return toast("Nota restaurada"); }
+    if (k === "kill" && n) { snapshotUndo("Nota apagada de vez"); tomb(n.id); state.notes = state.notes.filter(x => x !== n); if (NB.sel === n.id) NB.sel = null; save(); return render(); }
+    if (k === "secedit") { NB.sec = v; NB.editSec = v; NB.pane = "list"; NB.sel = null; return render(); }
+    if (k === "secmv") return acts.nbSecMove({ dataset: { id: v, d: w } });
+    if (k === "secdel") return acts.nbSecDel({ dataset: { id: v } });
+  },
   nbSec: el => { NB.sec = el.dataset.id; NB.editSec = null; NB.pane = "list"; NB.sel = null; render(); },
   nbSecAdd: () => { const b = nbBook(NB.nb); if (!b) return; const x = { id: "ns_" + uid(), nb: b.id, name: "Nova seção", hue: NB_COV[(nbSecs(b.id).length + 1) % NB_COV.length] }; state.nsec.push(x); NB.sec = x.id; NB.editSec = x.id; save(); render(); setTimeout(() => { const i = $("#nbsec_" + x.id); if (i) { i.focus(); i.select(); } }, 40); },
   nbSecEdit: el => { NB.editSec = NB.editSec === el.dataset.id ? null : el.dataset.id; render(); if (NB.editSec) setTimeout(() => { const i = $("#nbsec_" + NB.editSec); if (i) i.focus(); }, 40); },
