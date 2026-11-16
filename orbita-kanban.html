@@ -412,6 +412,9 @@ details.data table { margin-top: 6px; }
 .d-tabs button { flex: 1 1 0; min-width: 0; border: 0; background: transparent; color: var(--ink2); font: inherit; font-weight: 600; font-size: 13px; padding: 8px 4px; border-radius: 8px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .d-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(var(--shadow) / .18); }
 .d-tabs button i { font-style: normal; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 99px; background: var(--bg); color: var(--ink2); }
+.d-tabs .d-tabs-ord { flex: 0 0 34px; font-size: 15px; }
+.d-tabs-edit { display: grid; gap: 6px; background: var(--bg2); padding: 10px; border-radius: 10px; position: sticky; top: -14px; z-index: 6; }
+.dte-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: var(--surface); border-radius: 8px; }
 .dtab { display: grid; gap: 14px; align-content: start; } .dtab[hidden] { display: none; }
 .d-body { padding: 14px 16px 24px; overflow-y: auto; display: grid; gap: 14px; align-content: start; }
 .field { display: grid; gap: 4px; min-width: 0; }
@@ -1512,7 +1515,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.0809";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.0823";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2507,7 +2510,7 @@ const MANUAL = () => {
     + trick("Botão direito no cartão abre um menu rápido: prioridade, prazo, mover de coluna, tags, cronômetro, duplicar, arquivar e apagar."),
     "Para editar de verdade, abra a gaveta da tarefa.");
 
-  add("O dia a dia", "gaveta", "clip", "A gaveta da tarefa", "Clique em qualquer cartão e abre um painel com tudo sobre a tarefa, dividido em 5 abas: <b>Geral</b> (tipo, chamado, prioridade, prazo, tags, descrição), <b>Checklist</b> (passos, subtarefas e respostas prontas), <b>Notas</b> (observações e diário), <b>Dados</b> (modelo e campos do cartão, anexos e informações adicionais) e <b>Tempo</b> (cronômetro e calendário). A aba escolhida fica lembrada. Tudo salva sozinho enquanto você digita.",
+  add("O dia a dia", "gaveta", "clip", "A gaveta da tarefa", "Clique em qualquer cartão e abre um painel com tudo sobre a tarefa, dividido em 5 abas: <b>Geral</b> (tipo, chamado, prioridade, prazo, tags, descrição), <b>Checklist</b> (passos, subtarefas e respostas prontas), <b>Notas</b> (observações e diário), <b>Dados</b> (modelo e campos do cartão, anexos e informações adicionais) e <b>Tempo</b> (cronômetro e calendário). A aba escolhida fica lembrada e você pode mudar a ordem das abas no botão <b>⇅</b>, ao lado delas. Tudo salva sozinho enquanto você digita.",
     grid(["Tarefa", "Título, número do chamado e descrição."], ["Prioridade e prazo", "Quatro níveis de prioridade; prazo com data e hora opcional."],
       ["Tags", "Etiquetas coloridas para agrupar (Rede, Hardware, Faculdade…). Crie novas na hora."], ["Checklist", "Passos da tarefa, com progresso automático no cartão."],
       ["Modelo e campos", "Campos extras de acordo com o modelo do cartão. Veja o capítulo Modelos."], ["Observações e diário", "Texto formatado (negrito, listas, cores) e o diário por tema e dia."],
@@ -2753,7 +2756,7 @@ function render() { renderChrome(); renderView(); }
 
 /* ---------- gaveta da tarefa ---------- */
 function openTask(id) { const t0 = task(id); if (t0 && boardOf(t0) !== board().id) { setBoard(boardOf(t0)); render(); } ui.drawer = id; ui.overlay = "drawer"; renderDrawer(); }
-function closeLayer() { const was = ui.overlay === "drawer" ? ui.drawer : null; ui.tplForm = false; ui.drawer = null; ui.overlay = null; ui.armed = null; $("#layer").innerHTML = ""; if (was) setTimeout(() => askTplSync(was), 220); }
+function closeLayer() { const was = ui.overlay === "drawer" ? ui.drawer : null; ui.tplForm = false; ui.dtabEdit = false; ui.drawer = null; ui.overlay = null; ui.armed = null; $("#layer").innerHTML = ""; if (was) setTimeout(() => askTplSync(was), 220); }
 /* ===== Campos padrão do cartão: ocultar/restaurar por modelo ===== */
 const BF = [["ticket", "Nº do chamado"], ["col", "Coluna"], ["board", "Quadro"], ["pri", "Prioridade"], ["due", "Prazo e hora"], ["rep", "Repetição"], ["tags", "Tags"], ["desc", "Descrição"], ["notes", "Observações"], ["check", "Checklist"], ["files", "Anexos"], ["extra", "Informações adicionais"], ["time", "Tempo"], ["block", "Bloco no calendário"]];
 function applyBF(t) {
@@ -2769,6 +2772,14 @@ function bfRestore(t) {
 }
 const repBlock2 = t => `<div class="field" data-bf="replies"><span class="lbl">Respostas prontas</span><div class="set-row"><select class="inp" id="d_reply" data-in="repPick" aria-label="Escolher resposta pronta"><option value="">Escolher uma resposta para copiar…</option>${state.replies.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></div><span class="meta">Preenche nome, chamado e máquina desta tarefa e copia com a sua assinatura.</span></div>`;
 ui.dtab = ui.dtab || "geral";
+const DTABS = { geral: "Geral", check: "Checklist", notas: "Notas", dados: "Dados", tempo: "Tempo" };
+const dTabOrder = () => { const def = Object.keys(DTABS), o = (state.settings.dtabs || []).filter((k, i, a) => def.includes(k) && a.indexOf(k) === i); def.forEach(k => { if (!o.includes(k)) o.push(k); }); return o; };
+function dTabsHtml(t) {
+  const ord = dTabOrder();
+  if (ui.dtabEdit) return `<div class="d-tabs-edit" role="group" aria-label="Ordenar as abas"><div class="meta">Toque nas setas para mudar a ordem das abas.</div>${ord.map((k, i) => `<div class="dte-row"><b>${DTABS[k]}</b><span class="spacer"></span><button type="button" class="btn sm" data-act="dtabMove" data-v="${k}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="Subir ${DTABS[k]}">▲</button><button type="button" class="btn sm" data-act="dtabMove" data-v="${k}" data-d="1" ${i === ord.length - 1 ? "disabled" : ""} aria-label="Descer ${DTABS[k]}">▼</button></div>`).join("")}<div class="set-row"><button type="button" class="btn sm main" data-act="dtabEdit">Pronto</button><button type="button" class="btn sm ghost" data-act="dtabReset">Ordem original</button></div></div>`;
+  const bd = { check: t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : "", dados: (t.files.length + t.extra.length) || "", tempo: t.block ? "●" : "" };
+  return `<div class="d-tabs" role="tablist" aria-label="Seções da tarefa">${ord.map(k => `<button type="button" role="tab" id="dt_${k}" class="${ui.dtab === k ? "on" : ""}" aria-selected="${ui.dtab === k}" data-act="dTab" data-v="${k}">${DTABS[k]}${bd[k] ? `<i>${bd[k]}</i>` : ""}</button>`).join("")}<button type="button" class="d-tabs-ord" data-act="dtabEdit" title="Reordenar as abas" aria-label="Reordenar as abas">⇅</button></div>`;
+}
 function renderDrawer() {
   const t = task(ui.drawer); if (!t) return closeLayer();
   const run = state.timer && state.timer.id === t.id, [dd, dt] = [t.due.slice(0, 10), t.due.slice(11)], bk = blockOf(t);
@@ -2777,7 +2788,7 @@ function renderDrawer() {
   <div class="d-head p${t.priority}"><span class="lbl">Tarefa</span><span class="spacer"></span><button class="btn sm" data-act="mdExport" data-id="${t.id}" title="Baixar a tarefa como nota Markdown para o Obsidian">${ic("note")}Exportar .md</button><button class="btn sm" data-act="dup" data-id="${t.id}">${ic("copy")}Duplicar</button><button class="btn sm danger" data-act="del" data-id="${t.id}">${ic("trash")}Apagar</button><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div>
   <div class="d-body">
     <textarea class="inp title-inp" id="d_title" rows="2" data-in="tTitle" aria-label="Título">${esc(t.title)}</textarea>
-    <div class="d-tabs" role="tablist" aria-label="Seções da tarefa">${[["geral", "Geral", ""], ["check", "Checklist", t.check.length ? t.check.filter(c => c.d).length + "/" + t.check.length : ""], ["notas", "Notas", ""], ["dados", "Dados", (t.files.length + t.extra.length) || ""], ["tempo", "Tempo", t.block ? "●" : ""]].map(([k, n, b]) => `<button type="button" role="tab" id="dt_${k}" class="${ui.dtab === k ? "on" : ""}" aria-selected="${ui.dtab === k}" data-act="dTab" data-v="${k}">${n}${b ? `<i>${b}</i>` : ""}</button>`).join("")}</div>
+    ${dTabsHtml(t)}
     <div class="dtab" data-tab="geral" ${ui.dtab === "geral" ? "" : "hidden"}>
     <div class="field tipo-f"><label for="d_tipo">Tipo de tarefa</label><select class="inp" id="d_tipo" data-in="tplApply" aria-label="Tipo de tarefa (carrega o checklist)"><option value="">Escolha: Formatação, Descarte…</option>${state.templates.slice().sort((a, b) => a.name.localeCompare(b.name)).map(tp => `<option value="${tp.id}" ${t.tplId === tp.id ? "selected" : ""}>${esc(tp.name.replace(/^Exemplo:\s*/i, ""))} (${tp.items.length})</option>`).join("")}<option value="__new">＋ Inserir novo tipo…</option><option value="__edit">✎ Editar, renomear ou apagar tipos…</option></select><div class="set-row" style="margin-top:6px">${(() => { const tp = state.templates.find(x => x.id === t.tplId), r = tp && state.replies.find(x => x.id === tp.reply); return r ? `<button class="btn sm" data-act="tipoMsg" data-id="${t.id}" title="Copia a mensagem já preenchida">Copiar mensagem de finalização: ${esc(r.name)}</button>` : ""; })()}</div></div>
     <div class="row"><div class="field" data-bf="ticket"><label for="d_ticket">Nº do chamado</label><input class="inp mono" id="d_ticket" data-in="tTicket" value="${esc(t.ticket)}" placeholder="CH-00000"></div>
@@ -3707,6 +3718,9 @@ const acts = {
   soundTest: el => playSound(el.dataset.v, true),
   ics: () => { const t = cur(); if (!t.block) { t.block = blockOf(t); save(); render(); renderDrawer(); } saveFile("tarefa-" + (t.ticket || t.id) + ".ics", icsText(t)); },
   blockClear: () => { delete cur().block; save(); render(); renderDrawer(); },
+  dtabEdit: () => { ui.dtabEdit = !ui.dtabEdit; renderDrawer(); },
+  dtabMove: el => { const o = dTabOrder(), i = o.indexOf(el.dataset.v), j = i + +el.dataset.d; if (i < 0 || j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; state.settings.dtabs = o; save(); renderDrawer(); },
+  dtabReset: () => { delete state.settings.dtabs; save(); renderDrawer(); },
   dTab: el => { ui.dtab = el.dataset.v; $$(".d-tabs button").forEach(b => { const on = b.dataset.v === ui.dtab; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); }); $$(".dtab").forEach(x => { x.hidden = x.dataset.tab !== ui.dtab; }); const b = $(".d-body"); if (b) b.scrollTop = 0; },
   rt: el => { const ed = (el.closest(".info-row, .dentry, .field") || document).querySelector(".rt") || $("#d_notes"); if (!ed) return; ed.focus(); try { document.execCommand("styleWithCSS", false, /Color$/.test(el.dataset.v)); el.dataset.v === "stamp" ? document.execCommand("insertHTML", false, "<b>" + fmtDT(Date.now()) + "</b>&nbsp;") : document.execCommand(el.dataset.v, false, el.dataset.c || null); } catch {} const h = ins[ed.dataset.in]; if (h) h(ed); },
   xAdd: () => { const x = { id: uid(), k: "", v: "" }; cur().extra.push(x); save(); renderDrawer(); const i = $("#xk_" + x.id); if (i) i.focus(); },
