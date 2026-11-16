@@ -1515,7 +1515,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.0836";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.0859";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -1650,6 +1650,25 @@ function reportCsv() {
 }
 const TRASH_DAYS = 30;
 function toTrash(t, from) { state.trash = state.trash || []; const c = col(t.col); state.trash.unshift({ id: "tr_" + uid(), deletedAt: Date.now(), from: from || "", colName: c ? c.name : "", task: JSON.parse(JSON.stringify(t)) }); if (state.trash.length > 300) { const gone = state.trash.splice(300); tomb(...gone.map(e => e.id)); } }
+/* ---------- arquivamento automático das tarefas concluídas ---------- */
+const AA = () => Object.assign({ on: true, days: 7 }, state.settings.autoArch || {});
+function autoArchive(silent) {
+  const a = AA(); if (!a.on || !(a.days >= 1)) return 0;
+  const lim = Date.now() - a.days * DAY, old = state.tasks.filter(t => !t.archived && isDone(t) && t.doneAt && Math.max(t.doneAt, t.restoredAt || 0) <= lim && !(state.timer && state.timer.id === t.id) && kids(t).every(isDone));
+  if (!old.length) return 0;
+  if (silent === true) { old.forEach(t => { t.archived = true; t.archivedAt = Date.now(); }); save(); render(); return old.length; }
+  snapshotUndo(`${old.length} tarefa${old.length > 1 ? "s concluídas" : " concluída"} há mais de ${a.days} dias ${old.length > 1 ? "foram arquivadas" : "foi arquivada"}. Continuam nos relatórios e na busca`);
+  old.forEach(t => { t.archived = true; t.archivedAt = Date.now(); }); save(); render(); return old.length;
+}
+function openArchive() {
+  ui.overlay = "arch"; ui.drawer = null; const q = norm(ui.archQ || "");
+  const all = state.tasks.filter(t => t.archived).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0)), list = all.filter(t => !q || norm(t.title + " " + t.ticket + " " + t.tags.map(g => (tag(g) || {}).name || "").join(" ")).includes(q));
+  $("#layer").innerHTML = `<div class="scrim" data-act="close"></div><div class="modal enter" role="dialog" aria-label="Tarefas arquivadas"><div class="d-head" style="border-top:0"><h2>Tarefas arquivadas (${all.length})</h2><span class="spacer"></span><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div><div class="m-body" style="max-height:72vh;overflow:auto">
+    <p class="meta" style="margin:0 0 8px">Tarefas concluídas ficam aqui depois de ${AA().days} dias${AA().on ? "" : " (arquivamento automático desligado)"}. Elas continuam nos relatórios e na busca.</p>
+    <input class="inp" id="arch_q" data-in="archQ" placeholder="Buscar nas arquivadas…" value="${esc(ui.archQ || "")}" aria-label="Buscar nas arquivadas">
+    ${list.length ? list.slice(0, 200).map(t => `<div class="tpl-box"><div class="set-row"><span class="spacer" style="flex:1;min-width:0"><b>${t.ticket ? `<span class="mono">#${esc(t.ticket)}</span> ` : ""}${esc(t.title)}</b><br><span class="meta">${esc((bcfg(boardOf(t)) || {}).name || "")}${t.doneAt ? " · concluída em " + fmtDT(t.doneAt) : ""}</span></span><button class="btn sm" data-act="archOpen" data-id="${t.id}">Abrir</button><button class="btn sm main" data-act="archRestore" data-id="${t.id}">Restaurar</button></div></div>`).join("") + (list.length > 200 ? `<p class="meta">Mostrando 200 de ${list.length}. Use a busca.</p>` : "") : `<p class="meta" style="margin-top:10px">${all.length ? "Nada encontrado." : "Nenhuma tarefa arquivada ainda."}</p>`}
+    ${all.length ? `<div class="set-row" style="margin-top:10px"><button class="btn sm" data-act="unarchive2">Restaurar todas</button></div>` : ""}</div></div>`;
+}
 function trashPurge() { const lim = Date.now() - TRASH_DAYS * 864e5, old = (state.trash || []).filter(e => e.deletedAt < lim); if (!old.length) return; tomb(...old.map(e => e.id)); state.trash = state.trash.filter(e => e.deletedAt >= lim); save(); gcAnexos(); }
 function mergeById(a = [], b = [], dead) { const ids = new Set(a.map(x => x.id)); return a.filter(x => !dead[x.id]).concat(b.filter(x => !ids.has(x.id) && !dead[x.id])); }
 function mergeStates(p, s) {
@@ -1902,7 +1921,7 @@ async function iniciarSalvamento() {
   if (!temDados) { try { const old = JSON.parse(localStorage.getItem(LS)); if (valido(old) && old.updatedAt) { state = normalize(old); rev = 1; persistir(); temDados = true; } } catch {} }
   if (!temDados) state = normalize(demoState());
   LK.ready = true; revAoAbrir = rev; applySettings(); route(); checkDue(true);
-  await iniciarArquivo(); gistStart(); initRemote(); setTimeout(gcAnexos, 4000); setTimeout(() => { trashPurge(); bakSnap(); }, 6000); setTimeout(dailySummary, 4000); setInterval(() => bakSnap(), 30 * 6e4);
+  await iniciarArquivo(); gistStart(); initRemote(); setTimeout(gcAnexos, 4000); setTimeout(() => { trashPurge(); bakSnap(); }, 6000); setTimeout(() => autoArchive(), 5000); setInterval(() => autoArchive(), 36e5); document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(() => autoArchive(), 800); }); setTimeout(dailySummary, 4000); setInterval(() => bakSnap(), 30 * 6e4);
   if (!EMBED && !handle && !pendingHandle && !localStorage.getItem(SAVE_CFG.lsKey + "_wizard")) {   // primeiro acesso: já salva e baixa o arquivo de dados sozinho
     try { localStorage.setItem(SAVE_CFG.lsKey + "_wizard", "1"); } catch {}
     if (!rev) { rev = 1; persistir(); }
@@ -2039,7 +2058,7 @@ function renderChrome() {
   { const cb = board(), n = b => state.tasks.filter(t => !t.archived && boardOf(t) === b.id && !isDone(t)).length;
     $("#board-list").innerHTML = `<div class="bm-h">Seus quadros</div>` + state.boards.map(b => `<button class="${b.id === cb.id ? "on" : ""}" data-act="boardGo" data-id="${b.id}">${esc(b.name)}<small>${n(b)} abertas</small></button>`).join("")
     + `<button class="bm-new" data-act="boardAdd"><span class="qa-ico">${ic("plus")}</span>Novo quadro</button><hr><div class="bm-h">Quadro atual: <b>${esc(cb.name)}</b></div>`
-    + `<button data-act="boardRename">${ic("note")}Renomear</button><button data-act="boardDup">${ic("copy")}Duplicar quadro</button><button data-act="boardArchive">${ic("check")}Arquivar tarefas concluídas</button>`
+    + `<button data-act="boardRename">${ic("note")}Renomear</button><button data-act="boardDup">${ic("copy")}Duplicar quadro</button><button data-act="boardArchive">${ic("check")}Arquivar tarefas concluídas</button><button data-act="archView">${ic("note")}Ver arquivadas (${state.tasks.filter(t => t.archived).length})</button>`
     + `<label class="bm-sel">Modelo padrão das novas tarefas<select class="inp" data-in="boardModelSel" id="bm_model">${state.models.map(m => `<option value="${m.id}" ${boardModelId() === m.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}</select></label>`
     + (state.boards.length > 1 ? `<hr><button class="danger" data-act="boardDel">${ic("trash")}${ui.armed === "board" ? "Clique de novo para apagar" : "Apagar este quadro"}</button>` : ""); }
   $("#tabs").innerHTML = VIEWS.map(([k, n]) => `<a href="#${k}" class="${ui.view === k ? "on" : ""}">${k === "manual" ? `Manual<span class="tab-x"> do Usuário</span>` : k === "foco" ? `Foco<span class="tab-x"> do dia</span>` : k === "relatorios" ? `Relat<span class="tab-x">órios</span><span class="tab-s">.</span>` : k === "notas" ? `<span class="tl-l">Notebook</span><span class="tl-s">Notas</span>` : n}</a>`).join("");
@@ -2487,7 +2506,7 @@ const MANUAL = () => {
     step(`Clique nos <b>três pontinhos</b> do cabeçalho da coluna.`, `Escolha uma <b>cor</b>, defina um <b>Limite (WIP)</b>, marque <b>Coluna de concluídas</b> ou apague.`, `Para <b>mudar a ordem</b>, segure a alça <b>⋮⋮</b> no início do cabeçalho e arraste a lista para onde quiser (o menu também tem Mover para a esquerda/direita).`, `Para criar outra, use <b>+ Nova coluna</b> no fim do quadro.`)
     + grid(["Limite (WIP)", "É o máximo de tarefas que você aceita ter ao mesmo tempo naquela etapa. Passou do limite, o contador fica em alerta. Serve para não começar mil coisas e não terminar nenhuma."],
       ["Coluna de concluídas", "Tudo o que cai nela conta como feito (aparece riscado e entra nos relatórios). Pode haver mais de uma."],
-      ["Arquivar", "Na coluna de concluídas, o menu tem <b>Arquivar tarefas desta coluna</b>: elas saem do quadro, mas continuam na busca e nos relatórios."])
+      ["Arquivar", "Na coluna de concluídas, o menu tem <b>Arquivar tarefas desta coluna</b>: elas saem do quadro, mas continuam na busca e nos relatórios."], ["Arquivamento automático", "Tarefas concluídas há mais de <b>7 dias</b> vão sozinhas para o arquivo (o app avisa e dá para <b>Desfazer</b>). Mude o prazo ou desligue em <b>Configurações → ☁ App e dados → Arquivamento automático</b>. Veja e restaure em <b>Ver arquivadas</b>, no menu do quadro ou no Ctrl+K."])
     + tip("Clique no nome da coluna para renomear. Sem precisar abrir menu."),
     "Com as colunas prontas, é hora de criar tarefas do jeito mais rápido possível.");
 
@@ -2839,6 +2858,7 @@ function renderDrawer() {
 
 /* ---------- paleta de comandos ---------- */
 const COMMANDS = () => [
+  { n: "Ver tarefas arquivadas", run: () => openArchive() },
   { n: "Nova tarefa", k: "N", run: () => acts.newTask() },
   { n: "Nova nota", run: () => nbNew() },
   { n: "Diário de hoje", run: () => nbDaily() },
@@ -3472,6 +3492,9 @@ function openSettings() {
   <section><h3>Aplicativo</h3><p class="meta" style="margin:0 0 6px">Busca a versão mais nova do app (a do GitHub) e recarrega. Suas tarefas, quadros, modelos e anexos ficam como estão.</p><div class="set-row"><button class="btn upd-btn" data-act="appUpdate">${ic("ref")}<span>Atualizar app</span></button><button class="btn sm" data-act="appInstall" id="btn-install">⤓ Instalar app</button></div><p class="meta" id="install-msg" style="margin:6px 0 0"></p>
     <h3 style="margin-top:14px">Layout da tela</h3><p class="meta" style="margin:0 0 6px">Use <b>Celular</b> ou <b>Computador</b> se o aparelho não for reconhecido sozinho. A página recarrega, seus dados ficam como estão.</p><div class="seg">${[["auto", "Automático"], ["mobile", "Celular"], ["desktop", "Computador"]].map(([v, l]) => `<button class="${(localStorage.getItem("orbita_layout") || "auto") === v ? "on" : ""}" data-act="layoutSet" data-v="${v}">${l}</button>`).join("")}</div></section>
   <section><h3>Sincronizar entre computadores</h3>${gistBox()}</section>
+  <section><h3>Arquivamento automático</h3><p class="meta" style="margin:0 0 6px">Tarefas concluídas há mais tempo que o prazo abaixo vão sozinhas para o arquivo. Elas saem do quadro, mas continuam nos relatórios e na busca, e dá para restaurar.</p>
+    <div class="set-row"><span class="lbl" style="width:110px">Arquivar sozinho</span><button class="btn ${AA().on ? "on" : ""}" data-act="aaToggle">${AA().on ? "Ligado" : "Desligado"}</button><label class="meta" style="display:flex;align-items:center;gap:4px">após<input class="inp" style="width:62px" type="number" min="1" max="365" value="${AA().days}" data-in="aaDays" aria-label="Dias em Concluídas antes de arquivar">dias</label></div>
+    <div class="set-row"><button class="btn" data-act="aaNow">Arquivar agora as que já passaram do prazo</button><button class="btn" data-act="archView">Ver arquivadas (${state.tasks.filter(t => t.archived).length})</button></div></section>
   <section><h3>Dados</h3><p class="meta" style="margin:0 0 6px">${esc(saveInfo()[1])}. ${FS_OK ? "Com um arquivo de dados conectado, cada alteração é gravada nele sozinha (Ctrl+S grava na hora)." : EMBED ? "Aberto pelo Claude, os dados ficam na sua conta. Para gravar em um arquivo .json no computador, abra o arquivo .html no Chrome ou Edge." : "Este navegador não grava direto em arquivo. Use Chrome ou Edge, ou baixe backups."}</p>${FS_OK ? `<div class="set-row">${handle ? `<button class="btn main" data-act="fileSave">Salvar agora</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : pendingHandle ? `<button class="btn main" data-act="fileReconnect">Reconectar arquivo</button><button class="btn" data-act="fileDisconnect">Desconectar arquivo</button>` : `<button class="btn main" data-act="fileCreate">Criar arquivo de dados</button><button class="btn" data-act="fileOpen">Abrir arquivo existente</button>`}</div>` : ""}<div class="set-row"><button class="btn" data-act="exportJson">Baixar backup (JSON)</button><button class="btn" data-act="importJson">Restaurar backup</button><button class="btn" data-act="csv">Baixar CSV</button></div>
     <div class="set-row">${hasDemo ? `<button class="btn" data-act="clearDemo">Remover tarefas de exemplo</button>` : ""}<button class="btn" data-act="unarchive">Desarquivar tudo (${state.tasks.filter(t => t.archived).length})</button><button class="btn danger" data-act="reset">${ui.armed === "reset" ? "Clique de novo para apagar tudo" : "Apagar tudo e recomeçar"}</button></div></section>
   </div></div>`;
@@ -3808,7 +3831,13 @@ const acts = {
   colMove: el => { const cs = cols(), a = col(el.dataset.id), b = cs[cs.indexOf(a) + (+el.dataset.v)]; if (!b) return; const i = state.columns.indexOf(a), j = state.columns.indexOf(b); state.columns[i] = b; state.columns[j] = a; save(); render(); },
   colDel: el => { const id = el.dataset.id; if (cols().length < 2) return toast("O quadro precisa de pelo menos uma coluna"); if (ui.armed !== "col" + id) { ui.armed = "col" + id; el.textContent = "Clique de novo para apagar"; return; } ui.armed = null; snapshotUndo("Coluna apagada. As tarefas foram para a primeira coluna"); tomb(id); state.columns = state.columns.filter(c => c.id !== id); state.tasks.forEach(t => { if (t.col === id) setCol(t, cols()[0].id); }); save(); render(); },
   archive: el => { const list = state.tasks.filter(t => t.col === el.dataset.id && !t.archived); if (!list.length) return; snapshotUndo(list.length + " tarefas arquivadas. Elas continuam nos relatórios e na busca"); list.forEach(t => t.archived = true); save(); render(); },
-  unarchive: () => { state.tasks.forEach(t => t.archived = false); save(); render(); openSettings(); },
+  unarchive: () => { state.tasks.forEach(t => { if (t.archived) { t.archived = false; t.restoredAt = Date.now(); } }); save(); render(); openSettings(); },
+  archOpen: el => { closeLayer(); openTask(el.dataset.id); },
+  archRestore: el => { const t = task(el.dataset.id); if (!t) return; t.archived = false; t.restoredAt = Date.now(); delete t.archivedAt; save(); render(); openArchive(); toast("Tarefa restaurada no quadro"); },
+  unarchive2: () => { state.tasks.forEach(t => { if (t.archived) { t.archived = false; t.restoredAt = Date.now(); } }); save(); render(); openArchive(); },
+  archView: () => { const m = $("#board-menu"); if (m) m.open = false; openArchive(); },
+  aaToggle: el => { const a = AA(); state.settings.autoArch = { on: !a.on, days: a.days }; save(); el.classList.toggle("on", !a.on); el.textContent = !a.on ? "Ligado" : "Desligado"; if (!a.on) autoArchive(); },
+  aaNow: () => { const n = autoArchive(); if (!n) toast("Nada para arquivar agora: nenhuma concluída passou de " + AA().days + " dias"); },
   boardGo: el => { $("#board-menu").open = false; ui.armed = null; const id = el.dataset.id; if (id === board().id) return; transit("turn", () => { setBoard(id); render(); }); },
   boardAdd: () => { $("#board-menu").open = false; const b = { id: uid(), name: "Novo quadro" }; state.boards.push(b); state.columns.push(...newCols(b.id)); setBoard(b.id); save(); if (ui.overlay) closeLayer(); location.hash = "quadro"; ui.view = "quadro"; render(); const i = $("#board-name"); i.value = b.name; i.focus(); i.select(); },
   boardRename: () => { $("#board-menu").open = false; const i = $("#board-name"); i.focus(); i.select(); },
@@ -4007,6 +4036,8 @@ const ins = {
   rpName: el => { const r = state.replies.find(x => x.id === el.dataset.id); if (r) { r.name = el.value || "Resposta"; save(); } },
   rpText: el => { const r = state.replies.find(x => x.id === el.dataset.id); if (r) { r.text = el.value; save(); } },
   setHours: el => { state.settings.notifyHours = clamp(+el.value || 24, 1, 168); save(); renderChrome(); },
+  archQ: el => { ui.archQ = el.value; const pos = el.selectionStart; openArchive(); const i = $("#arch_q"); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch {} } },
+  aaDays: el => { const a = AA(); state.settings.autoArch = { on: a.on, days: clamp(+el.value || 7, 1, 365) }; save(); },
   tagName: el => { tag(el.dataset.id).name = el.value; save(); render(); },
   fieldName: el => { state.fields.find(f => f.id === el.dataset.id).name = el.value; save(); },
   pal: el => { ui.pal.q = el.value; ui.pal.i = 0; renderPal(); }
