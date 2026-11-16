@@ -1512,7 +1512,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.0800";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.0809";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -1536,9 +1536,11 @@ function tomb(...ids) { state.deleted = state.deleted || {}; const t = new Date(
 const valido = d => d && Array.isArray(d.columns) && Array.isArray(d.tasks);
 
 /* junta dois bancos por id; em conflito vale o principal (p); excluídos somem dos dois */
-function repFill(txt, t) { const i = t.info || {}, v = { nome: i.usuario || "", chamado: t.ticket ? "#" + t.ticket : "", maquina: i.maqNova || i.maqAntiga || "", patrimonio: i.patrimonio || "", titulo: t.title || "", assinatura: state.settings.sig || "" }; return txt.replace(/\{(\w+)\}/g, (m, k) => k in v ? v[k] : m).replace(/Olá, !/, "Olá!").replace(/[ \t]+\n/g, "\n").replace(/ {2,}/g, " "); }
+function repFill(txt, t) { const i = t.info || {}, v = { nome: i.usuario || "", chamado: t.ticket ? "#" + t.ticket : "", maquina: i.maqNova || i.maqAntiga || "", patrimonio: i.patrimonio || "", titulo: t.title || "", assinatura: bSig(bcfg(boardOf(t))) }; return txt.replace(/\{(\w+)\}/g, (m, k) => k in v ? v[k] : m).replace(/Olá, !/, "Olá!").replace(/[ \t]+\n/g, "\n").replace(/ {2,}/g, " "); }
 async function copyText(x) { try { await navigator.clipboard.writeText(x); return true; } catch { const a = document.createElement("textarea"); a.value = x; a.style.cssText = "position:fixed;opacity:0"; document.body.append(a); a.select(); let ok = false; try { ok = document.execCommand("copy"); } catch {} a.remove(); return ok; } }
-const slaDue = p => { const h = state.settings.sla.h[p]; if (!state.settings.sla.on || !h) return ""; const d = new Date(Date.now() + h * 36e5); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+const bcfg = id => state.boards.find(b => b.id === id) || state.boards[0];
+const bSla = b => b.sla || state.settings.sla, bSig = b => (b.sig !== undefined ? b.sig : state.settings.sig) || "";
+const slaDue = (p, bid) => { const sl = bSla(bcfg(bid || ui.board)), h = sl.h[p]; if (!sl.on || !h) return ""; const d = new Date(Date.now() + h * 36e5); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
 function impParse(txt) {
   const L = txt.split(/\r?\n/).map(x => x.trim()).filter(Boolean); if (!L.length) return [];
   const sep = L[0].includes(";") ? ";" : L[0].includes("\t") ? "\t" : L[0].split(",").length > 2 ? "," : null;
@@ -2006,7 +2008,7 @@ function parseQuick(text) {
 }
 function addTask(colId, props) {
   const t = Object.assign({ id: uid(), title: "Nova tarefa", desc: "", ticket: "", info: {}, diary: [], model: boardModelId(), priority: 2, due: "", tags: [], check: [], extra: [], files: [], notes: "", custom: {}, timeMs: 0, createdAt: Date.now(), doneAt: null, archived: false }, props);
-  if (!t.due && !(props && props.due)) t.due = slaDue(t.priority);
+  if (!t.due && !(props && props.due)) t.due = slaDue(t.priority, (col(colId) || {}).board);
   t.col = colId || cols()[0].id; if (isDone(t)) t.doneAt = Date.now();
   state.tasks.push(t); save(); return t;
 }
@@ -2053,7 +2055,7 @@ function renderChrome() {
   h += `<div class="chips">` + PRI.map((p, i) => `<button class="chip p${i} ${f.pri.has(i) ? "on" : ""}" data-act="fPri" data-v="${i}"><i></i>${p}</button>`).join("") +
     [["over", "Atrasadas"], ["today", "Hoje"], ["week", "7 dias"]].map(([k, l]) => `<button class="chip ${f.due === k ? "on" : ""}" data-act="fDue" data-v="${k}">${l}</button>`).join("") +
     state.tags.map(t => `<button class="tag ${f.tags.has(t.id) ? "on" : ""}" style="--h:${t.hue}" data-act="fTag" data-v="${t.id}">${esc(t.name)}</button>`).join("") +
-    state.settings.savedF.map(x => { const on = !!any && x.due === f.due && x.pri.length === f.pri.size && x.pri.every(i => f.pri.has(i)) && x.tags.length === f.tags.size && x.tags.every(i => f.tags.has(i)); return `<button class="chip saved ${on ? "on" : ""}" data-act="fApply" data-id="${x.id}" title="Filtro salvo">★ ${esc(x.name)}</button>`; }).join("") + (any ? `<button class="chip" data-act="fSave" title="Guardar este filtro como atalho">★ Salvar filtro</button><button class="chip" data-act="fClear">Limpar filtros</button>` : "") + `</div><span class="spacer"></span><button class="btn sm" id="reconnectBtn" data-act="fileReconnect" hidden>Reconectar arquivo</button><span id="sync" class="sync"></span>`;
+    state.settings.savedF.filter(x => !x.board || x.board === ui.board).map(x => { const on = !!any && x.due === f.due && x.pri.length === f.pri.size && x.pri.every(i => f.pri.has(i)) && x.tags.length === f.tags.size && x.tags.every(i => f.tags.has(i)); return `<button class="chip saved ${on ? "on" : ""}" data-act="fApply" data-id="${x.id}" title="Filtro salvo">★ ${esc(x.name)}</button>`; }).join("") + (any ? `<button class="chip" data-act="fSave" title="Guardar este filtro como atalho">★ Salvar filtro</button><button class="chip" data-act="fClear">Limpar filtros</button>` : "") + `</div><span class="spacer"></span><button class="btn sm" id="reconnectBtn" data-act="fileReconnect" hidden>Reconectar arquivo</button><span id="sync" class="sync"></span>`;
   $("#strip").innerHTML = h; setSaveStatus();
 }
 const INFO = [["maqAntiga", "Máquina antiga"], ["maqNova", "Máquina nova"], ["patrimonio", "Patrimônio"], ["serviceTag", "Service Tag"], ["office", "Pacote Office"], ["lic365", "Licença 365"], ["usuario", "Usuário"], ["rede", "Senha rede"], ["email", "E-mail"], ["ramal", "Ramal"], ["celular", "Celular"]];
@@ -2554,7 +2556,7 @@ const MANUAL = () => {
     "Com muitas tarefas, filtros e busca poupam tempo.");
 
   add("O dia a dia", "busca", "search", "Filtros, busca e comandos", "Achar rápido é metade da produtividade.",
-    grid(["Filtros da faixa", "Prioridade, tags e prazo (Atrasadas, Hoje, 7 dias). Combine quantos quiser. Para limpar, clique de novo ou use o comando <b>Limpar filtros</b>."], ["Filtros salvos", "Com algum filtro ligado, toque em <b>★ Salvar filtro</b>: ele vira um botão fixo na faixa (ex.: ★ Alta + Hoje). Renomeie ou apague em <b>Configurações → Atendimento</b>."], ["Busca e comandos", `${k("Ctrl")} ${k("K")} (ou ${k("/")}) abre a busca. Digite parte do título, o número do chamado (#CH-48213), tag ou até texto de campos e do diário.`])
+    grid(["Filtros da faixa", "Prioridade, tags e prazo (Atrasadas, Hoje, 7 dias). Combine quantos quiser. Para limpar, clique de novo ou use o comando <b>Limpar filtros</b>."], ["Filtros salvos", "Com algum filtro ligado, toque em <b>★ Salvar filtro</b>: ele vira um botão fixo na faixa (ex.: ★ Alta + Hoje). Renomeie ou apague em <b>Configurações</b>, na aba do quadro. Cada quadro tem os seus filtros."], ["Busca e comandos", `${k("Ctrl")} ${k("K")} (ou ${k("/")}) abre a busca. Digite parte do título, o número do chamado (#CH-48213), tag ou até texto de campos e do diário.`])
     + step(`Aperte ${k("Ctrl")} ${k("K")}.`, `Digite o que procura. Use ↑ ↓ para escolher e Enter para abrir.`, `Para executar uma ação, digite o nome dela: <i>tema</i>, <i>novo quadro</i>, <i>backup</i>, <i>csv</i>, <i>configurações</i>…`)
     + trick("A busca também <b>cria</b> tarefas: escreva a frase com marcadores e escolha Criar tarefa.")
     + `<p class="man-try-row">${go("Abrir a busca agora", "palette")}</p>`,
@@ -2678,7 +2680,7 @@ const MANUAL = () => {
     "Mais um cuidado: sua segurança e seus dados.");
 
   add("Ajustes", "abas", "gear", "Configurações em abas", "As configurações ficam separadas em 5 abas para você achar tudo mais rápido.",
-    grid(["🎨 Aparência", "Ícone do app, temas, cores, densidade e animações."], ["🎧 Trabalho", "Atendimento (respostas prontas, SLA, filtros salvos), modelos de checklist, tags e campos personalizados."], ["🔒 Segurança", "Lixeira, backups, estado da sincronização e bloqueio do app com senha, padrão e biometria."], ["🔔 Avisos", "Avisos de prazo, sons dos alertas e conta de calendário."], ["☁ App e dados", "Atualizar o app, layout da tela, sincronização com o GitHub e arquivo de dados."])
+    grid(["🎨 Aparência", "Ícone do app, temas, cores, densidade e animações."], ["📋 Uma aba por quadro", "Cada quadro aparece com o seu próprio nome (Trabalho JBS, Faculdade…) e guarda os seus ajustes: nome, modelo padrão, importação de chamados, SLA, assinatura e filtros salvos."], ["🧩 Tipos e tags", "Tipos de tarefa (checklist e mensagem de finalização), respostas prontas, tags e campos personalizados."], ["🔒 Segurança", "Lixeira, backups, estado da sincronização e bloqueio do app com senha, padrão e biometria."], ["🔔 Avisos", "Avisos de prazo, sons dos alertas e conta de calendário."], ["☁ App e dados", "Atualizar o app, layout da tela, sincronização com o GitHub e arquivo de dados."])
     + tip("O app lembra a última aba aberta. Os comandos do Ctrl K (ex.: <i>ícone</i>, <i>tema</i>) já abrem na aba certa."),
     "Veja também como puxar a tela para atualizar.");
 
@@ -2702,9 +2704,9 @@ const MANUAL = () => {
     + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
     "Para atender chamados mais rápido, veja Atendimento.");
 
-  add("O dia a dia", "atendimento", "bell", "Atendimento: respostas prontas, SLA e importação", "Ferramentas para a rotina de chamados. Tudo se configura em <b>Configurações → 🎧 Atendimento</b>.",
+  add("O dia a dia", "atendimento", "bell", "Atendimento: respostas prontas, SLA e importação", "Ferramentas para a rotina de chamados. O SLA, a assinatura e a importação se configuram por quadro, em <b>Configurações → aba com o nome do quadro</b>; as respostas prontas ficam em <b>Configurações → 🧩 Tipos e tags</b>.",
     grid(["Respostas prontas", "Na gaveta da tarefa, o campo <b>Respostas prontas</b> copia o texto já preenchido com o usuário, o nº do chamado e a máquina, mais a sua assinatura. É só colar no chamado."], ["Variáveis", "Nos textos use {nome} {chamado} {maquina} {patrimonio} {titulo} {assinatura}. O nome vem do campo Usuário da tarefa."], ["SLA por prioridade", "Ligue o <b>Prazo automático</b> e defina as horas de cada prioridade. Tarefas novas sem prazo ganham um prazo com hora. Quando faltam menos de 24h, o cartão mostra a contagem (<i>faltam 3h59</i>)."], ["Importar chamados", "Cole uma lista (<i>CH-48300 Trocar toner</i>) ou linhas de uma planilha com cabeçalho (Chamado, Título, Prioridade, Prazo, Usuário). Elas entram na 1ª coluna do quadro."])
-    + step(`Abra <b>Configurações → Atendimento</b> e edite a assinatura e as respostas, ou crie novas com <b>Nova resposta</b>.`, `Em qualquer tarefa, escolha a resposta no campo <b>Respostas prontas</b>: o texto é copiado na hora.`, `Para criar tarefas já com checklist, aperte ${k("Ctrl")} + ${k("K")} e escolha <b>Nova tarefa do modelo</b>.`)
+    + step(`Abra <b>Configurações</b>: a assinatura fica na aba do quadro e as respostas em <b>🧩 Tipos e tags</b> (crie novas com <b>Nova resposta</b>).`, `Em qualquer tarefa, escolha a resposta no campo <b>Respostas prontas</b>: o texto é copiado na hora.`, `Para criar tarefas já com checklist, aperte ${k("Ctrl")} + ${k("K")} e escolha <b>Nova tarefa do modelo</b>.`)
     + tip("O aviso antes de vencer continua em <b>Avisos de prazo</b>: ele avisa quando faltar o número de horas que você definir.")
     + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
     "Atalhos e gestos para ir mais rápido.");
@@ -2839,7 +2841,7 @@ const COMMANDS = () => [
   { n: "Escolher ícone do app", run: () => { openSettings(); setTimeout(() => { const e = $("#sec-icon"); if (e) e.scrollIntoView({ block: "start" }); }, 50); } },
   { n: "Salvar filtro atual como atalho", run: () => acts.fSave() },
   { n: "Importar chamados (texto ou CSV)", run: () => openImport() },
-  { n: "Respostas prontas e SLA (configurar)", run: () => { openSettings(); setTimeout(() => { const e = $("#sec-desk"); if (e) e.scrollIntoView({ block: "start" }); }, 50); } },
+  { n: "Ajustes do quadro: SLA, assinatura, filtros (configurar)", run: () => { openSettings(); setTimeout(() => { const e = $("#sec-desk"); if (e) e.scrollIntoView({ block: "start" }); }, 50); } },
   ...state.templates.map(tp => ({ n: "Nova tarefa do modelo: " + tp.name.replace(/^Exemplo:\s*/i, ""), run: () => acts.tplNew({ dataset: { id: tp.id } }) })),
   { n: "Nova coluna", run: () => acts.colAdd() },
   { n: state.timer ? "Pausar cronômetro" : "Cronometrar a próxima sugerida", run: () => { const t = state.timer ? task(state.timer.id) : nextUp(); if (t) toggleTimer(t.id); } },
@@ -3401,14 +3403,14 @@ async function safeBox() {
   ${bl.length ? bl.map(b => `<div class="set-row"><span style="flex:1;min-width:0">${fdt(b.ts)}<br><span class="meta">${b.tasks} tarefa(s)${b.trash ? " · " + b.trash + " na lixeira" : ""}</span></span><button class="btn sm" data-act="bakRestore" data-k="${b.key}">Restaurar</button></div>`).join("") : `<p class="meta" style="margin:0">O primeiro backup é feito poucos segundos depois de abrir o app.</p>`}
   <div class="set-row"><button class="btn sm" data-act="bakNow">Fazer backup agora</button></div>`;
 }
-const STABS = [["Aparência", "🎨", /Ícone|Temas|Aparência/], ["Trabalho", "🎧", /Atendimento|Modelos de checklist|Tags|Campos/], ["Segurança", "🔒", /Segurança|Bloqueio/], ["Avisos", "🔔", /Avisos|Sons|Calendário/], ["App e dados", "☁", /./]];
+const stabs = () => [["Aparência", "🎨", /Ícone|Temas|Aparência/], ...state.boards.map(b => ["b:" + b.id, "📋", null, b.name]), ["Tipos e tags", "🧩", /Tipos de tarefa|Respostas prontas|Tags|Campos/], ["Segurança", "🔒", /Segurança|Bloqueio/], ["Avisos", "🔔", /Avisos|Sons|Calendário/], ["App e dados", "☁", /./]];
 ui.stab = ui.stab || "Aparência";
 function stabShow(name) { ui.stab = name; $$(".modal .m-body > section[data-stab]").forEach(e => { e.hidden = e.dataset.stab !== name; }); $$(".set-tabs button").forEach(b => { const on = b.dataset.v === name; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); }); const b = $(".modal .m-body"); if (b) b.scrollTop = 0; }
 function settingsTabs() {
   const body = $(".modal .m-body"); if (!body) return; const secs = [...body.children].filter(e => e.tagName === "SECTION"); if (!secs.length) return;
-  secs.forEach(sec => { const h = (($("h3", sec) || {}).textContent) || ""; sec.dataset.stab = (STABS.find(m => m[2].test(h)) || STABS[4])[0]; });
-  body.insertAdjacentHTML("afterbegin", `<div class="set-tabs" role="tablist" aria-label="Seções das configurações">${STABS.map(([n, i]) => `<button role="tab" data-act="stab" data-v="${n}" aria-selected="false">${i} ${n}</button>`).join("")}</div>`);
-  stabShow(STABS.some(t => t[0] === ui.stab) ? ui.stab : "Aparência");
+  const ST = stabs(); secs.forEach(sec => { if (sec.dataset.stab) return; const h = (($("h3", sec) || {}).textContent) || ""; sec.dataset.stab = (ST.find(m => m[2] && m[2].test(h)) || ST[ST.length - 1])[0]; });
+  body.insertAdjacentHTML("afterbegin", `<div class="set-tabs" role="tablist" aria-label="Seções das configurações">${ST.map(([n, i, , lb]) => `<button role="tab" data-act="stab" data-v="${n}" aria-selected="false">${i} ${esc(lb || n)}</button>`).join("")}</div>`);
+  stabShow(ST.some(t => t[0] === ui.stab) ? ui.stab : "Aparência");
 }
 { const _sv = Element.prototype.scrollIntoView; Element.prototype.scrollIntoView = function (o) { const p = this.closest && this.closest("[data-stab]"); if (p && p.hidden) stabShow(p.dataset.stab); return _sv.call(this, o); }; }
 function openSettings() {
@@ -3427,13 +3429,16 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Abertura da Órbita</span>${seg("orbIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Abertura do Quadro</span>${seg("boardIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}<button class="btn sm" data-act="bdReplay">Rever</button></div>
     <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div></section>
-  <section id="sec-desk"><h3>🎧 Atendimento</h3>
-    <div class="set-row"><button class="btn" data-act="impOpen">Importar chamados (texto ou CSV)</button></div>
-    <div class="set-row"><span class="lbl" style="width:110px">Prazo automático (SLA)</span><button class="btn ${s.sla.on ? "on" : ""}" data-act="slaToggle">${s.sla.on ? "Ligado" : "Desligado"}</button><span class="meta">Tarefas novas sem prazo recebem um prazo pela prioridade.</span></div>
-    <div class="set-row">${PRI.map((p, i) => `<label class="meta" style="display:flex;align-items:center;gap:4px">${p}<input class="inp" style="width:62px" type="number" min="0" max="999" value="${s.sla.h[i]}" data-in="slaH" data-p="${i}" aria-label="Horas para ${p}">h</label>`).join("")}</div>
-    <h4 style="margin:10px 0 4px">Filtros salvos</h4>${s.savedF.length ? s.savedF.map(x => `<div class="set-row"><input class="inp" value="${esc(x.name)}" data-in="fsName" data-id="${x.id}" aria-label="Nome do filtro"><button class="btn sm ghost" data-act="fsDel" data-id="${x.id}" title="Apagar">${ic("trash")}</button></div>`).join("") : `<p class="meta" style="margin:0">Escolha filtros no topo do quadro e toque em ★ Salvar filtro.</p>`}
-    <h4 style="margin:10px 0 4px">Assinatura</h4><textarea class="inp" rows="2" data-in="sigSet" aria-label="Assinatura" style="width:100%">${esc(s.sig)}</textarea>
-    <h4 style="margin:10px 0 4px">Respostas prontas</h4><p class="meta" style="margin:0 0 6px">Variáveis: {nome} {chamado} {maquina} {patrimonio} {titulo} {assinatura}</p>
+  ${state.boards.map(bd => { const sl = bSla(bd), cur = bd.id === ui.board, fl = s.savedF.filter(x => !x.board || x.board === bd.id); return `<section ${cur ? 'id="sec-desk" ' : ""}data-stab="b:${bd.id}"><h3>📋 ${esc(bd.name)}</h3>
+    <p class="meta" style="margin:0 0 6px">Ajustes só deste quadro. ${cur ? "É o quadro aberto agora." : ""}</p>
+    <div class="set-row"><span class="lbl" style="width:110px">Nome do quadro</span><input class="inp" value="${esc(bd.name)}" data-in="bdName" data-id="${bd.id}" id="bdn_${bd.id}" aria-label="Nome do quadro"></div>
+    <div class="set-row"><span class="lbl" style="width:110px">Modelo padrão</span><select class="inp" data-in="bdModel" data-id="${bd.id}" aria-label="Modelo padrão das novas tarefas"><option value="">Nenhum</option>${state.models.map(m => `<option value="${m.id}" ${bd.model === m.id ? "selected" : ""}>${esc(m.name)}</option>`).join("")}</select></div>
+    <div class="set-row"><button class="btn" data-act="impOpen" data-id="${bd.id}">Importar chamados para este quadro (texto ou CSV)</button></div>
+    <div class="set-row"><span class="lbl" style="width:110px">Prazo automático (SLA)</span><button class="btn ${sl.on ? "on" : ""}" data-act="slaToggle" data-id="${bd.id}">${sl.on ? "Ligado" : "Desligado"}</button><span class="meta">Tarefas novas sem prazo recebem um prazo pela prioridade.</span></div>
+    <div class="set-row">${PRI.map((p, i) => `<label class="meta" style="display:flex;align-items:center;gap:4px">${p}<input class="inp" style="width:62px" type="number" min="0" max="999" value="${sl.h[i]}" data-in="slaH" data-id="${bd.id}" data-p="${i}" aria-label="Horas para ${p}">h</label>`).join("")}</div>
+    <h4 style="margin:10px 0 4px">Assinatura das mensagens</h4><textarea class="inp" rows="2" data-in="sigSet" data-id="${bd.id}" aria-label="Assinatura" style="width:100%">${esc(bSig(bd))}</textarea>
+    <h4 style="margin:10px 0 4px">Filtros salvos</h4>${fl.length ? fl.map(x => `<div class="set-row"><input class="inp" value="${esc(x.name)}" data-in="fsName" data-id="${x.id}" aria-label="Nome do filtro"><button class="btn sm ghost" data-act="fsDel" data-id="${x.id}" title="Apagar">${ic("trash")}</button></div>`).join("") : `<p class="meta" style="margin:0">Abra este quadro, escolha filtros no topo e toque em ★ Salvar filtro.</p>`}</section>`; }).join("")}
+  <section id="sec-resp"><h3>Respostas prontas</h3><p class="meta" style="margin:0 0 6px">Valem para todos os quadros. Variáveis: {nome} {chamado} {maquina} {patrimonio} {titulo} {assinatura}</p>
     ${state.replies.map(r => `<div class="tpl-box"><div class="set-row"><input class="inp" id="rp_${r.id}" value="${esc(r.name)}" data-in="rpName" data-id="${r.id}" aria-label="Nome da resposta"><button class="btn sm ghost" data-act="rpDel" data-id="${r.id}" title="Apagar">${ic("trash")}</button></div><textarea class="inp" rows="4" data-in="rpText" data-id="${r.id}" aria-label="Texto da resposta" style="width:100%">${esc(r.text)}</textarea></div>`).join("")}
     <div class="set-row"><button class="btn sm" data-act="rpAdd">${ic("plus")}Nova resposta</button></div></section>
   <section id="sec-safe"><h3>🛟 Segurança dos dados</h3><div id="safe-box"></div></section>
@@ -3597,7 +3602,7 @@ function openTipos(from) {
     <p class="meta" style="margin:0 0 8px">Cada tipo (Formatação, Descarte…) tem um checklist e uma mensagem de finalização para o cliente. Na tarefa, escolha o <b>Tipo de tarefa</b> e tudo vem pronto.</p>
     ${state.templates.length ? state.templates.map(card).join("") : `<p class="meta">Nenhum tipo ainda.</p>`}${wiz}
     ${w ? "" : `<div class="set-row"><button class="btn sm main" data-act="tipoNew">${ic("plus")}Novo tipo de tarefa</button></div>`}
-    <h4 style="margin:14px 0 4px">Mensagens de finalização</h4><p class="meta" style="margin:0 0 6px">Variáveis: {nome} {chamado} {maquina} {patrimonio} {titulo} {assinatura}. São as mesmas “Respostas prontas” do Atendimento.</p>
+    <h4 style="margin:14px 0 4px">Mensagens de finalização</h4><p class="meta" style="margin:0 0 6px">Variáveis: {nome} {chamado} {maquina} {patrimonio} {titulo} {assinatura}. São as mesmas “Respostas prontas” de Configurações → Tipos e tags.</p>
     ${state.replies.map(rcard).join("")}<div class="set-row"><button class="btn sm" data-act="rpAdd2">${ic("plus")}Nova mensagem</button></div></div></div>`;
 }
 function twRead() { const w = ui.tipoWiz; if (!w) return; const g = id => { const e = $("#" + id); return e ? e.value : null; }; const v = { name: g("tw_name"), items: g("tw_items"), rn: g("tw_rn"), rt: g("tw_rt") }; Object.keys(v).forEach(k => { if (v[k] !== null) w[k] = v[k]; }); }
@@ -3794,7 +3799,7 @@ const acts = {
   agWeek: el => { ui.cal.mode = "week"; ui.cal.ref = el.dataset.day; render(); },
   agAdd: el => { const t = addTask(cols()[0].id, { due: el.dataset.day }); render(); openTask(t.id); const i = $("#d_title"); if (i) { i.focus(); i.select(); } },
   foDone: el => { const t = task(el.dataset.id); if (!t) return; const c = cols(boardOf(t)).find(c => c.done); if (!c) return toast("Este quadro não tem coluna de concluídas"); if (state.timer && state.timer.id === t.id) stopTimer(); snapshotUndo("Tarefa concluída"); setCol(t, c.id); save(); render(); },
-  fSave: () => { const f = ui.f; if (!(f.pri.size || f.tags.size || f.due)) return; const nm = [...[...f.pri].sort().map(i => PRI[i]), ...[...f.tags].map(id => (tag(id) || {}).name).filter(Boolean), ({ over: "Atrasadas", today: "Hoje", week: "7 dias" })[f.due]].filter(Boolean).join(" + "); state.settings.savedF.push({ id: uid(), name: nm, pri: [...f.pri], tags: [...f.tags], due: f.due }); save(); render(); toast("Filtro salvo como “" + nm + "”. Renomeie em Configurações › Atendimento"); },
+  fSave: () => { const f = ui.f; if (!(f.pri.size || f.tags.size || f.due)) return; const nm = [...[...f.pri].sort().map(i => PRI[i]), ...[...f.tags].map(id => (tag(id) || {}).name).filter(Boolean), ({ over: "Atrasadas", today: "Hoje", week: "7 dias" })[f.due]].filter(Boolean).join(" + "); state.settings.savedF.push({ id: uid(), board: ui.board, name: nm, pri: [...f.pri], tags: [...f.tags], due: f.due }); save(); render(); toast("Filtro salvo como “" + nm + "”. Renomeie em Configurações, na aba deste quadro"); },
   fApply: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (!x) return; ui.f = { pri: new Set(x.pri), tags: new Set(x.tags.filter(id => tag(id))), due: x.due || "" }; render(); },
   fsDel: el => { snapshotUndo("Filtro apagado"); state.settings.savedF = state.settings.savedF.filter(x => x.id !== el.dataset.id); save(); openSettings(); render(); },
   updNow: () => { updHide(); acts.appUpdate($("#btn-upd")); },
@@ -3844,7 +3849,7 @@ const acts = {
   repCsv: () => saveFile("relatorio-" + dkey(Date.now()) + ".csv", reportCsv()),
   stab: el => stabShow(el.dataset.v),
   iconSet: el => { state.settings.appIcon = el.dataset.id; save(); applyIcon(); const g = $("#ic-grid"); if (g) g.innerHTML = iconGrid(); haptic && haptic(); },
-  slaToggle: el => { state.settings.sla.on = !state.settings.sla.on; save(); el.classList.toggle("on", state.settings.sla.on); el.textContent = state.settings.sla.on ? "Ligado" : "Desligado"; },
+  slaToggle: el => { const b = bcfg(el.dataset.id); if (!b.sla) b.sla = JSON.parse(JSON.stringify(state.settings.sla)); b.sla.on = !b.sla.on; save(); el.classList.toggle("on", b.sla.on); el.textContent = b.sla.on ? "Ligado" : "Desligado"; },
   tiposOpen: el => openTipos(el && el.dataset && el.dataset.id || null),
   tiposClose: () => tiposClose(),
   tipoNew: () => { ui.tipoWiz = { step: 1, name: "", items: "", reply: "", rn: "", rt: "Olá, {nome}!\n\nO chamado {chamado} ({titulo}) foi concluído.\nSe precisar de algo mais ou o problema voltar, é só responder este chamado.\n\n{assinatura}" }; openTipos(); const i = $("#tw_name"); if (i) i.focus(); },
@@ -3862,7 +3867,7 @@ const acts = {
   tipoMsg: async el => { const t = task(el.dataset.id), tp = t && state.templates.find(x => x.id === t.tplId), r = tp && state.replies.find(x => x.id === tp.reply); if (!r) return toast("Este tipo não tem mensagem de finalização"); toast(await copyText(repFill(r.text, t)) ? `“${r.name}” copiada. Cole no chamado` : "Não consegui copiar"); },
   rpAdd: () => { const r = { id: uid(), name: "Nova resposta", text: "Olá, {nome}!\n\n\n\n{assinatura}" }; state.replies.push(r); save(); openSettings(); setTimeout(() => { const e = $("#rp_" + r.id); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); e.select(); } }, 60); },
   rpDel: el => { snapshotUndo("Resposta apagada"); tomb(el.dataset.id); state.replies = state.replies.filter(x => x.id !== el.dataset.id); save(); openSettings(); },
-  impOpen: () => openImport(),
+  impOpen: el => { if (el && el.dataset && el.dataset.id && el.dataset.id !== ui.board) { setBoard(el.dataset.id); render(); } openImport(); },
   impRun: () => { const o = impParse($("#imp_txt").value); if (!o.length) return toast("Não encontrei chamados no texto"); snapshotUndo(o.length + " chamado(s) importado(s)"); const c = cols()[0].id; o.forEach(x => { const t = addTask(c, { title: x.title, ticket: x.ticket, priority: x.priority, due: x.due || "", tags: x.tags || [] }); if (x.user) { t.info = t.info || {}; t.info.usuario = x.user; } }); save(); closeLayer(); render(); },
   tplNew: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (!tp) return; const t = addTask(cols()[0].id, { title: tp.name.replace(/^Exemplo:\s*/i, "") }); applyTpl(t, tp); closeLayer(); render(); openTask(t.id); },
   trRestore: el => { const e = (state.trash || []).find(x => x.id === el.dataset.id); if (!e) return; const t = JSON.parse(JSON.stringify(e.task)); t.id = uid(); if (!col(t.col)) { const c = (state.columns.find(c => c.name === e.colName && c.board === ui.board) || cols()[0]); t.col = c.id; } t.archived = false; state.tasks.push(t); tomb(e.id); state.trash = state.trash.filter(x => x.id !== e.id); save(); render(); toast("Tarefa restaurada em “" + col(t.col).name + "”", "Abrir", () => openTask(t.id)); safeBox(); },
@@ -3963,8 +3968,10 @@ const ins = {
   ckText: el => { const c = cur().check.find(c => c.id === el.dataset.ck); if (c) { c.t = el.value; save(); } },
   setVol: el => { state.settings.volume = +el.value; save(); },
   fsName: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (x) { x.name = el.value || "Filtro"; save(); renderChrome(); } },
-  sigSet: el => { state.settings.sig = el.value; save(); },
-  slaH: el => { state.settings.sla.h[+el.dataset.p] = clamp(+el.value || 0, 0, 999); save(); },
+  sigSet: el => { const b = bcfg(el.dataset.id); b.sig = el.value; save(); },
+  bdName: el => { const b = bcfg(el.dataset.id); b.name = el.value || "Quadro"; save(); renderChrome(); const t = $(`.set-tabs [data-v="b:${b.id}"]`); if (t) t.textContent = "📋 " + b.name; const h = $(`#bdn_${b.id}`) && $(`#bdn_${b.id}`).closest("section").querySelector("h3"); if (h) h.textContent = "📋 " + b.name; },
+  bdModel: el => { const b = bcfg(el.dataset.id); if (el.value) b.model = el.value; else delete b.model; save(); },
+  slaH: el => { const b = bcfg(el.dataset.id); if (!b.sla) b.sla = JSON.parse(JSON.stringify(state.settings.sla)); b.sla.h[+el.dataset.p] = clamp(+el.value || 0, 0, 999); save(); },
   rpName: el => { const r = state.replies.find(x => x.id === el.dataset.id); if (r) { r.name = el.value || "Resposta"; save(); } },
   rpText: el => { const r = state.replies.find(x => x.id === el.dataset.id); if (r) { r.text = el.value; save(); } },
   setHours: el => { state.settings.notifyHours = clamp(+el.value || 24, 1, 168); save(); renderChrome(); },
