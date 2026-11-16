@@ -1507,7 +1507,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.0600";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.0608";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2511,7 +2511,7 @@ const MANUAL = () => {
 
   add("O dia a dia", "checklist", "check", "Checklist e modelos de checklist", "Quebre a tarefa em passos pequenos e acompanhe o progresso sem esforço.",
     step(`Na gaveta, em <b>Checklist</b>, digite um passo e aperte Enter. Repita para os outros.`, `Marque cada item ao concluir: a barra e o percentual do cartão atualizam na hora.`, `Ou marque direto no cartão, clicando no item da faixa que passa.`)
-    + grid(["Modelo de checklist", "Um <b>Tipo de tarefa</b> (Formatação, Descarte, Certificado digital…) com os passos prontos. Na gaveta, escolha o tipo em <b>Tipo de tarefa</b> e o checklist vem junto; se o tipo tiver <b>mensagem de finalização</b>, o botão para copiá-la aparece logo abaixo (e ao concluir a tarefa o app oferece copiá-la). As <b>tags</b> ficam só para busca e referência."], ["Como criar", "Monte um checklist na gaveta e use <b>Salvar como modelo</b>. Crie, edite e apague tipos em <b>Configurações → Tipos de tarefa</b> (ou em <b>Gerenciar tipos</b> na gaveta): ao criar, o app pede o nome, os itens do checklist e a mensagem de finalização (escolha da lista ou crie uma nova)."])
+    + grid(["Modelo de checklist", "Um <b>Tipo de tarefa</b> (Formatação, Descarte, Certificado digital…) com os passos prontos. Na gaveta, escolha o tipo em <b>Tipo de tarefa</b> e o checklist vem junto; se o tipo tiver <b>mensagem de finalização</b>, o botão para copiá-la aparece logo abaixo (e ao concluir a tarefa o app oferece copiá-la). As <b>tags</b> ficam só para busca e referência."], ["Como criar", "Monte um checklist na gaveta e use <b>Salvar como modelo</b>. Crie, edite e apague tipos em <b>Configurações → Tipos de tarefa</b> (ou pela própria lista <b>Tipo de tarefa</b> na gaveta, com “Inserir novo tipo” e “Editar, renomear ou apagar”): ao criar, o app pede o nome, os itens do checklist e a mensagem de finalização (escolha da lista ou crie uma nova)."])
     + tip("Ótimo para rotinas repetidas, como o preventivo de uma sala ou a instalação de um equipamento: monte uma vez, reaproveite sempre."),
     "Se cada tipo de tarefa pede campos diferentes, use os modelos de cartão.");
 
@@ -2769,7 +2769,7 @@ function renderDrawer() {
   <div class="d-head p${t.priority}"><span class="lbl">Tarefa</span><span class="spacer"></span><button class="btn sm" data-act="mdExport" data-id="${t.id}" title="Baixar a tarefa como nota Markdown para o Obsidian">${ic("note")}Exportar .md</button><button class="btn sm" data-act="dup" data-id="${t.id}">${ic("copy")}Duplicar</button><button class="btn sm danger" data-act="del" data-id="${t.id}">${ic("trash")}Apagar</button><button class="icon-btn" data-act="close" aria-label="Fechar">${ic("x")}</button></div>
   <div class="d-body">
     <textarea class="inp title-inp" id="d_title" rows="2" data-in="tTitle" aria-label="Título">${esc(t.title)}</textarea>
-    <div class="field tipo-f"><label for="d_tipo">Tipo de tarefa</label><select class="inp" id="d_tipo" data-in="tplApply" aria-label="Tipo de tarefa (carrega o checklist)"><option value="">Escolha: Formatação, Descarte…</option>${state.templates.slice().sort((a, b) => a.name.localeCompare(b.name)).map(tp => `<option value="${tp.id}" ${t.tplId === tp.id ? "selected" : ""}>${esc(tp.name.replace(/^Exemplo:\s*/i, ""))} (${tp.items.length})</option>`).join("")}</select><div class="set-row" style="margin-top:6px">${(() => { const tp = state.templates.find(x => x.id === t.tplId), r = tp && state.replies.find(x => x.id === tp.reply); return r ? `<button class="btn sm" data-act="tipoMsg" data-id="${t.id}" title="Copia a mensagem já preenchida">Copiar mensagem de finalização: ${esc(r.name)}</button>` : ""; })()}<button class="btn sm ghost" data-act="tiposOpen" data-id="${t.id}">Gerenciar tipos</button></div></div>
+    <div class="field tipo-f"><label for="d_tipo">Tipo de tarefa</label><select class="inp" id="d_tipo" data-in="tplApply" aria-label="Tipo de tarefa (carrega o checklist)"><option value="">Escolha: Formatação, Descarte…</option>${state.templates.slice().sort((a, b) => a.name.localeCompare(b.name)).map(tp => `<option value="${tp.id}" ${t.tplId === tp.id ? "selected" : ""}>${esc(tp.name.replace(/^Exemplo:\s*/i, ""))} (${tp.items.length})</option>`).join("")}<option value="__new">＋ Inserir novo tipo…</option><option value="__edit">✎ Editar, renomear ou apagar tipos…</option></select><div class="set-row" style="margin-top:6px">${(() => { const tp = state.templates.find(x => x.id === t.tplId), r = tp && state.replies.find(x => x.id === tp.reply); return r ? `<button class="btn sm" data-act="tipoMsg" data-id="${t.id}" title="Copia a mensagem já preenchida">Copiar mensagem de finalização: ${esc(r.name)}</button>` : ""; })()}</div></div>
     <div class="row"><div class="field" data-bf="ticket"><label for="d_ticket">Nº do chamado</label><input class="inp mono" id="d_ticket" data-in="tTicket" value="${esc(t.ticket)}" placeholder="CH-00000"></div>
       <div class="field" data-bf="col"><label for="d_col">Coluna</label><select class="inp" id="d_col" data-in="tCol">${cols(boardOf(t)).map(c => `<option value="${c.id}" ${c.id === t.col ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div></div>
     ${modelBlock(t)}
@@ -3562,7 +3562,7 @@ function tplRow(t) {
 /* ---------- Tipos de tarefa: criar / editar / apagar, com checklist + mensagem de finalização ---------- */
 const tpName = tp => tp.name.replace(/^Exemplo:\s*/i, "");
 const repOpts = sel => `<option value="">Sem mensagem de finalização</option>` + state.replies.map(r => `<option value="${r.id}" ${sel === r.id ? "selected" : ""}>${esc(r.name)}</option>`).join("");
-function tiposClose() { const f = ui.tiposFrom; ui.tipoWiz = null; ui.tiposFrom = null; closeLayer(); if (f && task(f)) openTask(f); }
+function tiposClose() { const f = ui.tiposFrom; ui.tipoWiz = null; ui.tiposFrom = null; ui.tiposAuto = false; closeLayer(); if (f && task(f)) openTask(f); }
 function openTipos(from) {
   if (from !== undefined) ui.tiposFrom = from || null;
   ui.overlay = "tipos"; ui.drawer = null; const w = ui.tipoWiz;
@@ -3837,7 +3837,7 @@ const acts = {
     if (w.step === 2) { if (!w.items.split("\n").some(x => x.trim())) return toast("Coloque pelo menos um item no checklist"); w.step = 3; openTipos(); return; }
     let rid = w.reply === "__new" || !state.replies.length ? "" : w.reply;
     if (w.reply === "__new" || !state.replies.length) { if (w.rn.trim() || w.rt.trim()) { if (!w.rn.trim()) return toast("Dê um nome à mensagem"); const r = { id: uid(), name: w.rn.trim(), text: w.rt }; state.replies.push(r); rid = r.id; } }
-    const tp = { id: uid(), name: w.name.trim(), items: w.items.split("\n").map(x => x.trim()).filter(Boolean), reply: rid }; state.templates.push(tp); ui.tipoWiz = null; save(); openTipos(); toast(`Tipo “${tp.name}” criado`); },
+    const tp = { id: uid(), name: w.name.trim(), items: w.items.split("\n").map(x => x.trim()).filter(Boolean), reply: rid }; state.templates.push(tp); ui.tipoWiz = null; save(); const from = ui.tiposFrom, auto = ui.tiposAuto; if (from && auto && task(from)) { tiposClose(); applyTpl(task(from), tp); return; } openTipos(); toast(`Tipo “${tp.name}” criado`); },
   tipoDel: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (!tp) return; snapshotUndo("Tipo de tarefa apagado"); tomb(tp.id); state.templates = state.templates.filter(x => x.id !== tp.id); state.tasks.forEach(t => { if (t.tplId === tp.id) { delete t.tplId; delete t.tplBase; } }); save(); openTipos(); },
   rpAdd2: () => { const r = { id: uid(), name: "Nova mensagem", text: "Olá, {nome}!\n\n\n\n{assinatura}" }; state.replies.push(r); save(); openTipos(); setTimeout(() => { const e = $("#rp_" + r.id); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); e.select(); } }, 50); },
   rpDel2: el => { snapshotUndo("Mensagem apagada"); tomb(el.dataset.id); state.replies = state.replies.filter(x => x.id !== el.dataset.id); state.templates.forEach(tp => { if (tp.reply === el.dataset.id) tp.reply = ""; }); save(); openTipos(); },
@@ -3980,7 +3980,7 @@ const chg = {
   repPick: async el => { const r = state.replies.find(x => x.id === el.value); el.value = ""; if (!r) return; const x = repFill(r.text, cur()); toast(await copyText(x) ? `“${r.name}” copiada. Cole no chamado` : "Não consegui copiar neste navegador"); },
   twReply: el => { twRead(); ui.tipoWiz.reply = el.value; openTipos(); },
   tplReply: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.reply = el.value; save(); } },
-  tplApply: el => { const tp = state.templates.find(x => x.id === el.value); if (tp) applyTpl(cur(), tp); },
+  tplApply: el => { if (el.value === "__new" || el.value === "__edit") { const nw = el.value === "__new"; el.value = cur().tplId || ""; ui.tiposAuto = nw; openTipos(cur().id); if (nw) acts.tipoNew(); return; } const tp = state.templates.find(x => x.id === el.value); if (tp) applyTpl(cur(), tp); },
   tplItems: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (tp) { tp.items = el.value.split("\n").map(x => x.trim()).filter(Boolean); save(); } },
   tBoard: el => { const t = cur(), c = cols(el.value)[0]; state.tasks.splice(state.tasks.indexOf(t), 1); setCol(t, c.id); state.tasks.push(t); setBoard(el.value); save(); render(); renderDrawer(); },
   tCol: el => { const t = cur(); state.tasks.splice(state.tasks.indexOf(t), 1); setCol(t, el.value); state.tasks.push(t); save(); render(); renderDrawer(); },
