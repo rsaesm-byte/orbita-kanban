@@ -1568,7 +1568,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1606";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.1627";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -3120,7 +3120,9 @@ function nbSide() {
 }
 /* seções: as "abas" de cada caderno, como no OneNote (Caderno › Seção › Nota) */
 function nbSecBar() {
-  const b = nbBook(NB.nb); if (!b) return ""; const ss = nbSecs(b.id), live = nbLive().filter(n => n.nb === b.id), loose = live.filter(n => !n.sec).length;
+  const b = nbBook(NB.nb);
+  if (!b) return NB.nb === "all" || NB.nb === "fav" ? `<div class="nb-sechint"><b>🗂️ Divisórias</b><span>As divisórias (abas) ficam dentro de cada caderno. Escolha um caderno para criar, renomear, editar ou apagar divisórias:</span><div class="chips">${state.notebooks.map(k => `<button type="button" class="chip" data-act="nbBook" data-id="${k.id}">${k.icon} ${esc(k.name)}</button>`).join("")}</div></div>` : "";
+  const ss = nbSecs(b.id), live = nbLive().filter(n => n.nb === b.id), loose = live.filter(n => !n.sec).length;
   const tab = (id, label, n, ch) => `<button type="button" class="nb-tab${NB.sec === id ? " on" : ""}" style="--ch:${ch}" data-act="nbSec" data-id="${id}" role="tab" aria-selected="${NB.sec === id}"><span data-secl="${id}">${esc(label)}</span><small>${n}</small></button>`;
   const ed = ss.find(x => x.id === NB.editSec);
   const SUG = nbSug(b.id);
