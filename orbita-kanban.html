@@ -926,6 +926,13 @@ body[data-view="notas"] #strip { display: none; }
 .tp-row i { width: 10px; height: 10px; border-radius: 50%; flex: none; } .tp-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tp-ck { width: 18px; height: 18px; border: 1.5px solid var(--ink3); border-radius: 5px; display: grid; place-items: center; font-size: 12px; flex: none; color: var(--accent-ink); } .tp-row.on .tp-ck { background: var(--accent); border-color: var(--accent); }
 .tp-foot { display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--line); padding-top: 6px; } .tp-cnt { flex: 1; }
+.nbc { color: color-mix(in oklab, oklch(.62 calc(.24 * var(--cz, 1)) var(--h)) 72%, var(--ink)); font-weight: 600; } .nbh { background: color-mix(in oklab, oklch(.8 calc(.15 * var(--cz, 1)) var(--h)) 58%, var(--surface)); color: var(--ink); border-radius: 3px; padding: 0 2px; }
+.nbk-vermelho { --h: 25; } .nbk-laranja { --h: 55; } .nbk-amarelo { --h: 95; } .nbk-verde { --h: 150; } .nbk-azul { --h: 250; } .nbk-roxo { --h: 300; } .nbk-rosa { --h: 350; } .nbk-cinza { --h: 260; --cz: 0; }
+.nb-tbc { font-weight: 800; border-bottom: 3px solid linear-gradient(90deg, red, blue); background: linear-gradient(90deg, #e5484d, #f5a524, #30a46c, #3e63dd) bottom / 100% 3px no-repeat; padding-bottom: 1px; } .nb-tbh { filter: saturate(1.4); }
+.nbpal { position: fixed; z-index: 95; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 34px rgba(0,0,0,.28); padding: 8px; display: grid; gap: 6px; width: 188px; } .nbpal[hidden] { display: none; }
+.nbp-t { font-size: 12px; font-weight: 700; color: var(--ink2); } .nbp-g { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.nbpal .nbp-s { height: 34px; border-radius: 8px; border: 1px solid var(--line); font-weight: 800; font-size: 14px; cursor: pointer; padding: 0; background: var(--surface2); } .nbpal .nbp-s.nbh { background: oklch(.86 .13 var(--h)); color: #1f1f1f; } .nbpal .nbp-s.nbc { background: var(--surface2); }
+.nbpal .nbp-s:hover { transform: scale(1.08); } .nbp-x { border: 0; background: none; text-align: left; color: var(--ink2); font: inherit; font-size: 12.5px; padding: 4px 2px; cursor: pointer; } .nbp-x:hover { color: var(--ink); }
 .nb-item { cursor: grab; } .nb-item.dragging { opacity: .45; } .nb-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .nb-row.sub.off { display: none; } .nb-nav.dragging .nb-row.sub.off { display: flex; }
 .dropt { outline: 2px dashed var(--accent) !important; outline-offset: -2px; background: var(--accent-soft) !important; }
@@ -1575,7 +1582,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1830";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261116.1905";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2699,6 +2706,7 @@ const MANUAL = () => {
     step(`Abra a aba <b>Notebook</b>. À esquerda ficam os <b>cadernos</b> (Diário, Trabalho, Pessoal, Faculdade; crie os seus com <b>Novo caderno</b> e use o ✎ para trocar nome, ícone e cor).`, `Toque em <b>Nova nota</b> (a seta ▾ ao lado abre <b>modelos</b>: reunião, aula, passo a passo de TI, projeto…). Digite o título e escreva. Tudo é salvo sozinho.`, `Para o <b>diário</b>, toque em <b>Diário de hoje</b> ou em qualquer dia do <b>calendário</b>: a nota do dia é criada (ou aberta) já com um roteiro.`)
     + grid(["Digite / para blocos", "Em qualquer linha, escreva <b>/</b> e escolha: títulos, listas, checklist, tabela, código, destaque, data, tarefa…"], ["Digite [[ para ligar notas", "<code>[[Nome da nota]]</code> cria um link, como no Obsidian. Em <b>Mencionada em</b> (rodapé da nota) você vê quem aponta para ela. Se mudar o título, os links nas outras notas são atualizados."], ["Ligue tarefas", "Use <code>[[#</code> e escolha um cartão do quadro. O botão <b>▢→</b> transforma a linha atual em tarefa nova e deixa o link."], ["Escrever, Dividir, Ler", "<b>Ler</b> mostra a nota formatada e deixa marcar os checklists com um toque. <b>Dividir</b> (computador) mostra texto e resultado lado a lado."], ["Mapa de notas", "Veja suas notas como um grafo: pontos são notas, linhas são links. Arraste, passe o mouse para destacar, clique para abrir."], ["Organize", "★ favorita, 📌 fixar no topo, ícone e capa (clique no emoji ao lado do título), #tags no texto e busca. Apagadas ficam 30 dias na <b>Lixeira</b>."])
     + tip(`<b>Seções (como num fichário):</b> dentro de um caderno, as abas coloridas no topo da lista são as <b>seções</b>. Toque em <b>＋ Seção</b> para criar; a seção ativa mostra <b>✎ Editar seção</b> (nome, cor, ◀ ▶ para reordenar, Excluir). A nota nova entra na seção aberta, e na própria nota você troca de seção ou de caderno. Excluir uma seção não apaga as notas: elas ficam em <b>Sem seção</b>.`)
+    + tip(`<b>Cores:</b> selecione um trecho e use <b>A</b> (cor do texto) ou <b>🖍</b> (marca-texto colorido) na barra: são 8 cores, e há a opção de tirar. Fica escrito como <code>[cor=vermelho]texto[/cor]</code> e <code>[fundo=amarelo]texto[/fundo]</code> e funciona em tema claro e escuro. O <b>▐</b> continua sendo o destaque amarelo simples.`)
     + tip(`<b>Botão direito nas notas:</b> clique com o botão direito (ou segure o dedo no celular) numa nota para abrir o menu: favoritar, fixar, recortar, copiar, duplicar, <b>colar</b>, mover para outro caderno ou seção, exportar e excluir. Botão direito num <b>caderno</b> na lateral permite adicionar divisória (ou criar as sugeridas), criar/colar nota, renomear e excluir o caderno. Botão direito numa aba de seção permite criar/colar nota ali, renomear, reordenar e excluir. <b>Arrastar e soltar:</b> arraste uma nota da lista para uma aba de seção ou para um caderno na lateral (durante o arraste as seções de todos os cadernos aparecem); solte em <b>Favoritas</b> ou <b>Lixeira</b> para favoritar ou apagar. Segure <b>Ctrl</b> ao soltar para copiar em vez de mover.`)
     + tip(`<b>Imagens:</b> copie uma imagem ou tire um print e use Ctrl+V no texto da nota (ou arraste o arquivo para lá). Ela aparece em <b>Dividir</b> ou <b>Ler</b>; clique nela para ampliar. As imagens ficam guardadas neste navegador, não vão no .json nem para outro aparelho. Ctrl+B negrito, Ctrl+I itálico, Ctrl+K liga a uma nota, Tab recua item de lista, Enter continua a lista. O botão ⛶ abre o <b>modo escrita</b> (Esc sai). Exporte uma nota ou tudo em <b>.md</b> (compatível com Obsidian) e importe arquivos .md/.txt.`)
     + warn("As notas ficam salvas com o resto dos dados (navegador, arquivo e GitHub). Elas não têm senha própria: use o bloqueio do app para proteger.")
@@ -3022,12 +3030,13 @@ function nbTaskFind(name) { const k = norm(String(name).trim().replace(/^#/, "")
 const nbBack = n => { const k = norm(nbTitle(n)); return nbLive().filter(m => m.id !== n.id && nbLinkNames(m).some(x => norm(x) === k)); };
 function nbUnlinked(n) { if (!(n.title || "").trim() || n.title.trim().length < 3) return []; const k = norm(n.title.trim()); return nbLive().filter(m => m.id !== n.id && norm(m.body).includes(k) && !nbLinkNames(m).some(x => norm(x) === k)).slice(0, 5); }
 function nbPurge() { const lim = Date.now() - 30 * 864e5, old = state.notes.filter(n => n.trashed && n.trashed < lim); if (!old.length) return; tomb(...old.map(n => n.id)); state.notes = state.notes.filter(n => !old.includes(n)); save(); }
-function nbSnip(n) { const l = String(n.body).replace(/```[\s\S]*?```/g, "").split("\n").map(x => x.replace(/^[#>\-*+\s\d.]+(\[[ xX]\])?/, "").replace(/[*_`~=]|\[\[|\]\]|\{\{.*?\}\}/g, "").trim()).filter(Boolean); return (l[0] || "Nota vazia").slice(0, 110); }
+function nbSnip(n) { const l = String(n.body).replace(/```[\s\S]*?```/g, "").split("\n").map(x => x.replace(/^[#>\-*+\s\d.]+(\[[ xX]\])?/, "").replace(/\[\/?(?:cor|fundo)(?:=[a-zà-ú]+)?\]/gi, "").replace(/[*_`~=]|\[\[|\]\]|\{\{.*?\}\}/g, "").trim()).filter(Boolean); return (l[0] || "Nota vazia").slice(0, 110); }
 const nbWhen = ts => { const d = new Date(ts), n = new Date(); return dkey(d) === dkey(n) ? pad2(d.getHours()) + ":" + pad2(d.getMinutes()) : pad2(d.getDate()) + "/" + pad2(d.getMonth() + 1) + (d.getFullYear() !== n.getFullYear() ? "/" + String(d.getFullYear()).slice(2) : ""); };
 const nbDateLong = key => { const s = new Date(key + "T12:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }); return s.charAt(0).toUpperCase() + s.slice(1); };
 const nbFill = s => s.replace(/\{\{data\}\}/g, new Date().toLocaleDateString("pt-BR")).replace(/\{\{hora\}\}/g, new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
 
 /* ---------- Markdown → HTML (tudo escapado antes) ---------- */
+const NB_CORES = [["vermelho", "Vermelho", 25], ["laranja", "Laranja", 55], ["amarelo", "Amarelo", 95], ["verde", "Verde", 150], ["azul", "Azul", 250], ["roxo", "Roxo", 300], ["rosa", "Rosa", 350], ["cinza", "Cinza", 260]];
 function nbInline(raw) {
   const codes = []; let h = esc(raw);
   h = h.replace(/`([^`\n]+)`/g, (_, c) => "\u0001" + (codes.push(c) - 1) + "\u0002");
@@ -3036,6 +3045,8 @@ function nbInline(raw) {
   h = h.replace(/!\[([^\]\n]*)\]\(nbimg:([\w-]+)\)/g, '<img class="nb-img nb-loc" data-nbimg="$2" data-act="nbImgOpen" alt="$1" loading="lazy">');
   h = h.replace(/!\[([^\]\n]*)\]\((https?:\/\/[^)\s]+)\)/g, '<img class="nb-img" loading="lazy" alt="$1" src="$2">');
   h = h.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:)[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  const nbColRe = /\[(cor|fundo)=([a-zà-ú]+)\]([\s\S]*?)\[\/\1\]/gi;
+  for (let r = 0; r < 3 && /\[(cor|fundo)=/i.test(h); r++) h = h.replace(nbColRe, (m, k, c, t) => NB_CORES.some(x => x[0] === c.toLowerCase()) ? `<span class="nb${k.toLowerCase() === "cor" ? "c" : "h"} nbk-${c.toLowerCase()}">${t}</span>` : m);
   h = h.replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>").replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<i>$2</i>").replace(/(^|[\s(])_([^_\n]+)_(?=[\s).,!?:;]|$)/g, "$1<i>$2</i>").replace(/~~([^~\n]+)~~/g, "<s>$1</s>").replace(/==([^=\n]+)==/g, "<mark>$1</mark>");
   h = h.replace(/(^|[\s(>])#([\p{L}][\p{L}\p{N}_-]*)/gu, '$1<a href="#notas" class="nb-tg" data-act="nbTag" data-v="$2">#$2</a>');
   return h.replace(/\u0001(\d+)\u0002/g, (_, i) => "<code>" + codes[+i] + "</code>");
@@ -3188,7 +3199,7 @@ function nbEditor() {
     <div class="nb-head"><button class="nb-icon" data-act="nbEmo" aria-label="Escolher ícone da nota">${n.icon || (b ? b.icon : "📝")}</button><input class="nb-title" id="nb-title" value="${esc(n.title)}" placeholder="Sem título" data-in="nbTitle" data-id="${n.id}" data-old="${esc(n.title)}" aria-label="Título da nota" ${ro ? "readonly" : ""}></div>
     ${NB.emo ? `<div class="nb-emo-g big">${NB_EMO.map(e => `<button type="button" data-act="nbIcon" data-v="${e}">${e}</button>`).join("")}<button type="button" class="btn sm" data-act="nbIcon" data-v="">Padrão</button></div>` : ""}
     <div class="nb-meta"><select class="inp" data-in="nbMove" aria-label="Caderno da nota" ${ro ? "disabled" : ""}>${state.notebooks.map(x => `<option value="${x.id}" ${x.id === n.nb ? "selected" : ""}>${x.icon} ${esc(x.name)}</option>`).join("")}</select>${nbSecs(n.nb).length ? `<select class="inp" data-in="nbMoveSec" aria-label="Seção da nota" ${ro ? "disabled" : ""}><option value="">Sem seção</option>${nbSecs(n.nb).map(x => `<option value="${x.id}" ${x.id === n.sec ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select>` : ""}<span>Criada ${new Date(n.created).toLocaleDateString("pt-BR")}</span><span id="nb-stats"></span></div>
-    ${ro ? "" : `<div class="nb-tb" role="toolbar" aria-label="Formatação">${[["h1", "H1", "Título 1"], ["h2", "H2", "Título 2"], ["b", "<b>B</b>", "Negrito (Ctrl+B)"], ["i", "<i>I</i>", "Itálico (Ctrl+I)"], ["s", "<s>S</s>", "Riscado"], ["hl", "▐", "Destacar"], ["ul", "•", "Lista"], ["ol", "1.", "Lista numerada"], ["todo", "☑", "Checklist"], ["quote", "❝", "Citação"], ["code", "&lt;/&gt;", "Código"], ["callout", "💡", "Destaque"], ["table", "▦", "Tabela"], ["link", "[[ ]]", "Ligar a uma nota (Ctrl+K)"], ["task", "▢→", "Transformar a linha em tarefa do quadro"]].map(([k, l, t]) => `<button type="button" data-act="nbFmt" data-v="${k}" title="${t}" aria-label="${t}">${l}</button>`).join("")}</div>`}
+    ${ro ? "" : `<div class="nb-tb" role="toolbar" aria-label="Formatação">${[["h1", "H1", "Título 1"], ["h2", "H2", "Título 2"], ["b", "<b>B</b>", "Negrito (Ctrl+B)"], ["i", "<i>I</i>", "Itálico (Ctrl+I)"], ["s", "<s>S</s>", "Riscado"], ["hl", "▐", "Destacar"], ["pal:c", '<span class="nb-tbc">A</span>', "Cor do texto"], ["pal:h", '<span class="nb-tbh">🖍</span>', "Marca-texto colorido"], ["ul", "•", "Lista"], ["ol", "1.", "Lista numerada"], ["todo", "☑", "Checklist"], ["quote", "❝", "Citação"], ["code", "&lt;/&gt;", "Código"], ["callout", "💡", "Destaque"], ["table", "▦", "Tabela"], ["link", "[[ ]]", "Ligar a uma nota (Ctrl+K)"], ["task", "▢→", "Transformar a linha em tarefa do quadro"]].map(([k, l, t]) => k.startsWith("pal:") ? `<button type="button" data-act="nbPal" data-v="${k.slice(4)}" title="${t}" aria-label="${t}" aria-haspopup="true">${l}</button>` : `<button type="button" data-act="nbFmt" data-v="${k}" title="${t}" aria-label="${t}">${l}</button>`).join("")}</div>`}
     <div class="nb-split"><div class="nb-edwrap"><textarea id="nb-ta" class="nb-ta" spellcheck="true" placeholder="Comece a escrever…  Digite / para blocos e [[ para ligar notas" aria-label="Texto da nota" ${ro ? "readonly" : ""}>${esc(n.body)}</textarea><div id="nb-menu" class="nb-menu" role="listbox" hidden></div></div><article id="nb-pv" class="nb-pv" aria-label="Pré-visualização"></article></div>
     <div class="nb-foot" id="nb-foot"></div></div></div></div>`;
 }
@@ -3222,6 +3233,24 @@ function nbOnInput() { const n = nbGet(NB.sel), ta = $("#nb-ta"); if (!n || !ta 
 function nbIns(ta, text) { ta.focus(); let ok = false; try { ok = document.execCommand("insertText", false, text); } catch {} if (!ok) { ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, "end"); nbOnInput(); } }
 function nbDel(ta, a, b) { ta.focus(); ta.setSelectionRange(a, b); if (a === b) return; let ok = false; try { ok = document.execCommand("delete"); } catch {} if (!ok) { ta.setRangeText("", a, b, "end"); nbOnInput(); } }
 function nbBlock(ta, text) { const v = ta.value, s = ta.selectionStart; nbIns(ta, (s > 0 && v[s - 1] !== "\n" ? "\n" : "") + text); }
+/* cores de texto e marca-texto: [cor=vermelho]texto[/cor] e [fundo=amarelo]texto[/fundo] */
+function nbPalClose() { const p = $("#nbpal"); if (p) p.hidden = true; }
+function nbPalOpen(btn, kind) {
+  let p = $("#nbpal"); if (!p) { p = document.createElement("div"); p.id = "nbpal"; p.className = "nbpal"; document.body.appendChild(p); }
+  p.innerHTML = `<div class="nbp-t">${kind === "c" ? "Cor do texto" : "Marca-texto"}</div><div class="nbp-g">${NB_CORES.map(([k, n, h]) => `<button type="button" class="nbp-s nb${kind === "c" ? "c" : "h"} nbk-${k}" data-act="nbColor" data-k="${kind}" data-v="${k}" title="${n}" aria-label="${n}">${kind === "c" ? "A" : "ab"}</button>`).join("")}</div><button type="button" class="nbp-x" data-act="nbColor" data-k="${kind}" data-v="">⊘ Tirar ${kind === "c" ? "cor" : "marca-texto"}</button>`;
+  p.hidden = false; const r = btn.getBoundingClientRect(); p.style.left = "0px"; p.style.top = "0px";
+  p.style.left = Math.max(8, Math.min(r.left, innerWidth - p.offsetWidth - 8)) + "px"; p.style.top = Math.min(r.bottom + 6, Math.max(8, innerHeight - p.offsetHeight - 8)) + "px";
+}
+function nbColor(kind, name) {
+  const ta = $("#nb-ta"); if (!ta || ta.readOnly) return; ta.focus(); const tg = kind === "c" ? "cor" : "fundo", v = ta.value; let s = ta.selectionStart, e = ta.selectionEnd, sel = v.slice(s, e);
+  const open = new RegExp("^\\[" + tg + "=[a-zà-ú]+\\]"), close = "[/" + tg + "]", op = "[" + tg + "=" + name + "]";
+  const before = v.slice(0, s).match(new RegExp("\\[" + tg + "=[a-zà-ú]+\\]$")), afterOk = v.slice(e, e + close.length) === close;
+  if (sel && before && afterOk) { const a = s - before[0].length; ta.setSelectionRange(a, e + close.length); nbIns(ta, name ? op + sel + close : sel); ta.setSelectionRange(a, a + (name ? op.length : 0) + sel.length + (name ? close.length : 0)); return; }
+  if (sel && open.test(sel) && sel.endsWith(close)) { const inner = sel.replace(open, "").slice(0, -close.length); nbIns(ta, name ? op + inner + close : inner); return; }
+  if (!name) return toast("Selecione o trecho que está colorido");
+  if (!sel) { nbIns(ta, op + "texto" + close); const a = s + op.length; ta.setSelectionRange(a, a + 5); return; }
+  const out = sel.split("\n").map(l => l.trim() ? l.match(/^\s*/)[0] + op + l.trim() + close : l).join("\n"); nbIns(ta, out); ta.setSelectionRange(s, s + out.length);
+}
 function nbFmt(k) {
   const ta = $("#nb-ta"); if (!ta || ta.readOnly) return; ta.focus(); const v = ta.value, s = ta.selectionStart, e = ta.selectionEnd, sel = v.slice(s, e);
   const wrap = (p, q, ph) => { if (sel && v.slice(s - p.length, s) === p && v.slice(e, e + q.length) === q) { ta.setSelectionRange(s - p.length, e + q.length); nbIns(ta, sel); ta.setSelectionRange(s - p.length, s - p.length + sel.length); return; } nbIns(ta, p + (sel || ph) + q); ta.setSelectionRange(s + p.length, s + p.length + (sel || ph).length); };
@@ -3427,7 +3456,8 @@ function nbGraphStart() {
   svg.onpointerover = e => { const g = e.target.closest(".nb-gn"); svg.classList.toggle("hov", !!g); nodes.forEach(x => x.classList.remove("hi")); lines.forEach(x => x.classList.remove("hi")); if (!g) return; const i = +g.dataset.i; g.classList.add("hi"); ed.forEach(([a, b], k) => { if (a === i || b === i) { lines[k].classList.add("hi"); nodes[a].classList.add("hi"); nodes[b].classList.add("hi"); } }); };
   svg.onpointerleave = () => { svg.classList.remove("hov"); $$(".hi", svg).forEach(x => x.classList.remove("hi")); };
 }
-document.addEventListener("mousedown", e => { if (e.target.closest("#nb-menu, .nb-tb, .nb-emo-g button")) e.preventDefault(); });
+document.addEventListener("click", e => { const p = $("#nbpal"); if (p && !p.hidden && !e.target.closest("#nbpal, [data-act='nbPal']")) nbPalClose(); }, true);
+document.addEventListener("mousedown", e => { if (e.target.closest("#nb-menu, .nb-tb, .nb-emo-g button, #nbpal")) e.preventDefault(); });
 
 const nbSideRefresh = () => { const a = $(".nb-side"); if (a) a.innerHTML = nbSide(); };
 const nbReEsc = x => String(x).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -4128,7 +4158,9 @@ const acts = {
   nbPin: () => { const n = nbGet(NB.sel); if (n) { n.pin = !n.pin; save(); render(); } },
   nbFocus: () => { NB.focus = !NB.focus; const e = $(".nb"); if (e) e.classList.toggle("focus", NB.focus); },
   nbMode: el => { NB.mode = el.dataset.v; const ed = $(".nb-ed"); if (ed) ed.dataset.mode = NB.mode; $$(".nb-seg button").forEach(b => b.classList.toggle("on", b.dataset.v === NB.mode)); nbPaint(true); },
-  nbFmt: el => nbFmt(el.dataset.v),
+  nbFmt: el => { nbPalClose(); nbFmt(el.dataset.v); },
+  nbPal: el => { const p = $("#nbpal"); if (p && !p.hidden && p.dataset.k === el.dataset.v) return nbPalClose(); nbPalOpen(el, el.dataset.v); $("#nbpal").dataset.k = el.dataset.v; },
+  nbColor: el => { nbColor(el.dataset.k, el.dataset.v); nbPalClose(); },
   nbPick: el => nbPick(+el.dataset.i),
   nbCopy: async el => { if (await copyText(NB.codes[+el.dataset.i] || "")) { el.textContent = "Copiado ✓"; setTimeout(() => { el.textContent = "Copiar"; }, 1200); } },
   nbIcon: el => { const n = nbGet(NB.sel); if (n) { n.icon = el.dataset.v; NB.emo = false; save(); render(); } },
