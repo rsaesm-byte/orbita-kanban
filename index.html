@@ -1582,7 +1582,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261116.1905";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261117.1537";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -4061,7 +4061,7 @@ const acts = {
   tTag: el => { const t = cur(), v = el.dataset.v, i = t.tags.indexOf(v); i < 0 ? t.tags.push(v) : t.tags.splice(i, 1); save(); render(); renderDrawer(); },
   ckStyle: el => { ui.ckStyle = ui.ckStyle === el.dataset.v ? null : el.dataset.v; renderDrawer(); },
   ckColor: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; if (el.dataset.v === "") delete c.color; else c.color = +el.dataset.v; save(); render(); renderDrawer(); },
-  ckIcon: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; if (el.dataset.v === "") delete c.icon; else c.icon = el.dataset.v; save(); render(); renderDrawer(); },
+  ckIcon: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; if (el.dataset.v === "") delete c.icon; else c.icon = el.dataset.v; ui.ckStyle = null; save(); render(); renderDrawer(); },
   ckDel: el => { const t = cur(); t.check = t.check.filter(c => c.id !== el.dataset.v); save(); render(); renderDrawer(); },
   fPri: el => { const v = +el.dataset.v, s = ui.f.pri; s.has(v) ? s.delete(v) : s.add(v); render(); },
   tagPop: el => { const p = $("#tagpop"); p && !p.hidden ? tagPopClose() : tagPopOpen(el); },
@@ -4306,7 +4306,7 @@ const ins = {
   xKey: el => { el.title = el.value; const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.k = el.value; save(); } },
   xVal: el => { const x = cur().extra.find(x => x.id === el.dataset.x); if (x) { x.v = el.value; save(); } },
   tCustom: el => { cur().custom[el.dataset.v] = el.value; save(); },
-  ckIconCustom: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; const v = el.value.trim(); const f = v ? ((window.Intl && Intl.Segmenter) ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(v)][0].segment : Array.from(v)[0]) : ""; if (f) c.icon = f; else delete c.icon; save(); render(); },
+  ckIconCustom: el => { const c = cur().check.find(x => x.id === el.dataset.id); if (!c) return; const v = el.value.trim(); const f = v ? ((window.Intl && Intl.Segmenter) ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(v)][0].segment : Array.from(v)[0]) : ""; if (f) c.icon = f; else delete c.icon; if (f) ui.ckStyle = null; save(); render(); renderDrawer(); },
   ckText: el => { const c = cur().check.find(c => c.id === el.dataset.ck); if (c) { c.t = el.value; save(); } },
   setVol: el => { state.settings.volume = +el.value; save(); },
   fsName: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (x) { x.name = el.value || "Filtro"; save(); renderChrome(); } },
