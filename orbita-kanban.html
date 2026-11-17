@@ -293,6 +293,7 @@ body.dragging .card { cursor: grabbing; }
 .planet .tex { background: var(--tex) 0 0 / calc(var(--d) * 3) 100% repeat-x; opacity: .8; animation: prot calc(46s + var(--k, 0) * 5s) linear calc(var(--k, 0) * -9s) infinite; }
 .planet .crack { background: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='100' preserveAspectRatio='none'%3E%3Cfilter id='f' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='turbulence' baseFrequency='.028 .05' numOctaves='3' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 .5  0 0 0 0 .12  -15 0 0 0 1.5'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E") 0 0 / calc(var(--d) * 2.4) 100% repeat-x; opacity: .8; animation: protc calc(34s + var(--k, 0) * 4s) linear calc(var(--k, 0) * -7s) infinite, breathe 1.9s ease-in-out infinite alternate; }
 @keyframes prot { to { transform: translateX(calc(var(--d) * -3)); } } @keyframes protc { to { transform: translateX(calc(var(--d) * -2.4)); } } @keyframes breathe { from { opacity: .45; } to { opacity: 1; } }
+.planet .pcv { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; } .planet .sph { background: none !important; box-shadow: none !important; } .planet .sph::after { display: none; } .planet.late i::before { display: none; }
 /* temperatura: até 3 dias esquenta, agora queima, atrasada arde */
 .planet[data-r="1"] { --heat: .25; } .planet[data-r="0"] { --heat: 1; } .planet.late { --heat: 1.6; }
 .planet .smk { pointer-events: none; } .planet .smk { position: absolute; left: 50%; top: calc(var(--pd) + var(--d) * .24); width: 0; height: 0; z-index: 2; }
@@ -1608,7 +1609,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261117.1903";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261117.1914";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2385,8 +2386,7 @@ function renderOrbit() {
   base += `<div class="sun-glow"></div><div class="sun-rays"></div><div class="sun-ping"></div><div class="bb" style="--x:0px;--y:0px"><div class="sun" title="Tarefas atrasadas ou para hoje"><span class="cnt" data-to="${rings[0].length}">${rings[0].length}</span><small>agora</small></div></div>`;
   rings.forEach((list, i) => { const fit = Math.max(2, Math.floor(2 * Math.PI * R(i) / 210));
     list.forEach((t, j) => { const a = (j / list.length) * Math.PI * 2 + i * 1.1 + 0.5, x = Math.cos(a) * R(i), y = Math.sin(a) * R(i), di = dueInfo(t), ck = t.check.length, pct = ck ? Math.round(t.check.filter(c => c.d).length / ck * 100) : 0, k = n++, late = i === 0 && di && di.ms < 0;
-      const heat = i === 0 ? `<u class="smk"><s></s><s></s><s></s><s></s><s class="e"></s><s class="e"></s><s class="e"></s>${late ? `<s class="f"></s><s class="f"></s><s class="f"></s><s class="e"></s><s class="e"></s>` : ""}</u>` : i === 1 ? `<u class="smk"><s></s><s></s></u>` : "";
-      spin += `<button class="bb planet p${t.priority} t${k % 4}${list.length > fit ? " nolabel" : ""}${ck ? " ck" : ""}${late ? " late" : ""}" data-r="${i}" data-p="${t.priority}" style="--x:${x.toFixed(1)}px;--y:${y.toFixed(1)}px;--ux:${Math.cos(a).toFixed(3)};--uy:${Math.sin(a).toFixed(3)};--o0:${(k * 67) % 300}px;--d:${sizes[t.priority]}px;--k:${k}" data-act="open" data-id="${t.id}" data-tip="${esc(t.title + " · " + PRI[t.priority] + " · " + (di ? di.label : "sem prazo") + " · " + col(t.col).name + (ck ? " · checklist " + pct + "%" : ""))}"><span>${esc(t.title)}</span>${t.ticket ? `<em>#${esc(t.ticket)}</em>` : ""}<i style="--pct:${pct}%"><u class="glo"></u><u class="sph"><u class="tex"></u>${i === 0 ? `<u class="crack"></u>` : ""}</u>${heat}</i></button>`; }); });
+      spin += `<button class="bb planet p${t.priority} t${k % 4}${list.length > fit ? " nolabel" : ""}${ck ? " ck" : ""}${late ? " late" : ""}" data-r="${i}" data-p="${t.priority}" style="--x:${x.toFixed(1)}px;--y:${y.toFixed(1)}px;--ux:${Math.cos(a).toFixed(3)};--uy:${Math.sin(a).toFixed(3)};--o0:${(k * 67) % 300}px;--d:${sizes[t.priority]}px;--k:${k}" data-act="open" data-id="${t.id}" data-tip="${esc(t.title + " · " + PRI[t.priority] + " · " + (di ? di.label : "sem prazo") + " · " + col(t.col).name + (ck ? " · checklist " + pct + "%" : ""))}"><span>${esc(t.title)}</span>${t.ticket ? `<em>#${esc(t.ticket)}</em>` : ""}<i style="--pct:${pct}%"><canvas class="pcv" aria-hidden="true"></canvas><u class="sph"></u></i></button>`; }); });
   const total = open.length, byPri = [0, 1, 2, 3].map(p => open.filter(t => t.priority === p).length);
   const next = open.slice().sort((a, b) => { const da = dueInfo(a), db = dueInfo(b); return (da ? da.ms : Infinity) - (db ? db.ms : Infinity) || a.priority - b.priority; })[0], nd = next && dueInfo(next);
   const left = `<aside class="obs-side L" aria-label="Distância e prazo"><h4>Distância = prazo</h4><p class="obs-lead"><b>${total}</b> ${total === 1 ? "tarefa aberta orbita" : "tarefas abertas orbitam"} o seu dia. Quanto mais perto do sol, mais perto do prazo.</p><ul>${RING_INFO.map((r, i) => `<li><button type="button" class="obs-item" data-ring="${i}" style="--rc:${RING_COL[i]};--i:${i}" aria-pressed="false"><span class="sw"></span><span class="tx"><b>${r[0]}</b><small>${r[1]}</small></span><span class="n cnt" data-to="${rings[i].length}">${rings[i].length}</span></button></li>`).join("")}</ul></aside>`;
@@ -2397,10 +2397,155 @@ function renderOrbit() {
   v.innerHTML = `<div class="orbit-wrap"><div class="obs${wide ? " wide" : ""}${cine ? " cine" : ""}" style="--cs:${cs}"><canvas class="obs-stars" aria-hidden="true"></canvas>${cine ? `<button class="obs-skip" data-act="orbSkip" aria-label="Pular a abertura">Pular ⏎</button>` : ""}
     <div class="obs-grid">${wide ? left + scene + right : scene}</div>${wide ? "" : `<details class="obs-more" style="margin:0 10px 10px"${ORB.more ? " open" : ""}><summary>Como ler esta tela</summary><div class="obs-notes">${left}${right}</div></details>`}</div></div>`;
   const obs = $(".obs", v); if (!obs) return;
-  orbStars($(".obs-stars", obs), cs, cine);
+  orbStars($(".obs-stars", obs), cs, cine); orbPlanets(obs);
   clearTimeout(ORB.endT); if (cine) ORB.endT = setTimeout(() => { const o = $(".obs.cine"); if (o) o.classList.remove("cine"); }, 3800 * cs + 300);
   if (cine) $$(".cnt", obs).forEach(el => { const to = +el.dataset.to; if (!to) return; el.textContent = "0"; const t0 = performance.now() + 2100 * cs, dur = 900 * cs + 250; const step = now => { const u = Math.min(1, Math.max(0, (now - t0) / dur)); el.textContent = Math.round(to * (1 - Math.pow(1 - u, 3))); if (u < 1 && el.isConnected) requestAnimationFrame(step); }; requestAnimationFrame(step); });
   if (ORB.lock) { obs.dataset[ORB.lock.k] = ORB.lock.v; if (window.orbPaint) orbPaint(); }
+}
+/* planetas: cada um é desenhado num canvas próprio — esfera 3D com textura girando, luz vinda do sol,
+   calor (lava, brilho) e fogo/fumaça/brasas feitos de partículas */
+const PLN = { tex: {}, spr: null };
+const PL_PAL = [[[46, 8, 14], [176, 38, 46], [255, 150, 120]], [[56, 24, 6], [206, 108, 30], [255, 204, 140]], [[38, 32, 8], [166, 140, 40], [240, 220, 140]], [[10, 26, 40], [62, 126, 150], [190, 230, 240]]];
+function plNoise(seed) {
+  const P = 256, g = new Float32Array(P * P); let s = (seed * 48271) % 2147483647 || 1;
+  for (let i = 0; i < g.length; i++) { s = s * 16807 % 2147483647; g[i] = s / 2147483647; }
+  return (x, y, px) => { const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi, ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy), X0 = ((xi % px) + px) % px, X1 = (X0 + 1) % px, Y0 = yi & 255, Y1 = (yi + 1) & 255, a = g[Y0 * P + X0], b = g[Y0 * P + X1], c = g[Y1 * P + X0], d = g[Y1 * P + X1]; return a + (b - a) * ux + (c - a) * uy + (a - b - c + d) * ux * uy; };
+}
+const plFbm = (n, u, v, F, oct) => { let a = .5, s = 0, t = 0; for (let o = 0; o < oct; o++) { const f = F << o; s += a * n(u * f, v * f * .5 + o * 31.7, f); t += a; a *= .5; } return s / t; };
+function plTex(type, pri) {
+  const key = type + "|" + pri; if (PLN.tex[key]) return PLN.tex[key];
+  const TW = 256, TH = 128, out = new Uint8ClampedArray(TW * TH * 4), n1 = plNoise(11 + type * 7 + pri * 3), n2 = plNoise(97 + type * 5 + pri), n3 = plNoise(331 + type + pri * 13), [D, M, L] = PL_PAL[pri];
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t], cl = t => t < 0 ? 0 : t > 1 ? 1 : t;
+  const ramp = t => (t = cl(t)) < .5 ? mix(D, M, t * 2) : mix(M, L, (t - .5) * 2);
+  const su = .2 + ((pri * 37 + type * 23) % 60) / 100, sv = .58 + ((pri + type) % 3) * .07;
+  for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) {
+    const u = x / TW, v = y / TH; let c;
+    if (type === 0) { /* rochoso: relevo + crateras escuras */
+      const h = plFbm(n1, u, v, 4, 5), d2 = plFbm(n2, u, v, 16, 3); c = ramp((h - .5) * 2.3 + .5 + (d2 - .5) * .5);
+      const cr = plFbm(n3, u, v, 12, 2); if (cr > .62) c = mix(c, D, cl((cr - .62) * 6) * .6);
+    } else if (type === 1) { /* gasoso: faixas + tempestade */
+      const w = plFbm(n1, u, v, 4, 4), b = .5 + .5 * Math.sin((v * 10 + w * 2.8) * Math.PI), f = plFbm(n2, u, v, 8, 3);
+      c = ramp(.12 + (b * .72 + f * .28) * .82);
+      let du = Math.abs(u - su); du = Math.min(du, 1 - du); const e = (du / .075) ** 2 + ((v - sv) / .055) ** 2;
+      if (e < 1) { const sw = .5 + .5 * Math.sin(Math.sqrt(e) * 9 + Math.atan2(v - sv, du) * 2); c = mix(c, mix(L, M, sw * .6), (1 - e) * .9); }
+    } else if (type === 2) { /* marmorizado com redemoinhos */
+      const q = plFbm(n1, u, v, 3, 4), r = plFbm(n1, u + q * .5, v + q * .5, 3, 5), h = plFbm(n2, u + r * .7, v + r * .5, 4, 4);
+      c = ramp((h - .5) * 2.5 + .5);
+    } else { /* oceano, continentes, nuvens e polos */
+      const h = plFbm(n1, u, v, 3, 5), land = h > .53;
+      c = land ? mix(M, L, cl((h - .53) * 5)) : mix(D, M, cl(h * 1.25 - .1));
+      const cld = plFbm(n2, u, v, 5, 4), pv = Math.abs(v - .5), pole = pv > .4 ? cl((pv - .4) * 14) : 0;
+      c = mix(c, [238, 244, 248], Math.min(.88, Math.max(pole, cl((cld - .55) * 3))));
+    }
+    const lv = Math.pow(cl(1 - Math.abs(plFbm(n3, u, v, 6, 4) * 2 - 1) * 6), 1.5);
+    const i = (y * TW + x) * 4; out[i] = c[0]; out[i + 1] = c[1]; out[i + 2] = c[2]; out[i + 3] = lv * 255;
+  }
+  return PLN.tex[key] = out;
+}
+function plSphere(D, dpr, tilt) {
+  const TW = 256, TH = 128, N = Math.ceil(D * dpr) + 2, R = D * dpr / 2, c = N / 2, ct = Math.cos(tilt), st = Math.sin(tilt), A = { idx: [], u0: [], vr: [], nx: [], ny: [], nz: [], al: [] };
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = (x + .5 - c) / R, dy = (y + .5 - c) / R, r = Math.hypot(dx, dy), a = Math.min(1, Math.max(0, (1 - r) * R + .5)); if (a <= 0) continue;
+    const s = r > 1 ? 1 / r : 1, X = dx * s, Y = dy * s, Z = Math.sqrt(Math.max(0, 1 - X * X - Y * Y)), xr = X * ct - Y * st, yr = X * st + Y * ct;
+    const lat = Math.asin(Math.max(-1, Math.min(1, -yr))), lon = Math.atan2(xr, Z);
+    A.idx.push((y * N + x) * 4); A.u0.push((lon / (2 * Math.PI) + .5) * TW); A.vr.push(Math.min(TH - 1, Math.max(0, Math.round((.5 - lat / Math.PI) * (TH - 1)))) * TW); A.nx.push(X); A.ny.push(Y); A.nz.push(Z); A.al.push(a * 255);
+  }
+  return { N, idx: Int32Array.from(A.idx), u0: Float32Array.from(A.u0), vr: Int32Array.from(A.vr), nx: Float32Array.from(A.nx), ny: Float32Array.from(A.ny), nz: Float32Array.from(A.nz), al: Float32Array.from(A.al) };
+}
+function plSprites() {
+  if (PLN.spr) return PLN.spr;
+  const cv = () => { const c = document.createElement("canvas"); c.width = c.height = 64; return c; };
+  const soft = (rgb, mid, ma) => { const c = cv(), x = c.getContext("2d"), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, `rgba(${rgb},1)`); g.addColorStop(mid, `rgba(${rgb},${ma})`); g.addColorStop(1, `rgba(${rgb},0)`); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return c; };
+  const puff = rgb => { const c = cv(), x = c.getContext("2d"); [[32, 32, 27, .5], [23, 28, 17, .45], [41, 29, 16, .45], [29, 41, 16, .4], [40, 39, 15, .4]].forEach(([a, b, r, o]) => { const g = x.createRadialGradient(a, b, 0, a, b, r); g.addColorStop(0, `rgba(${rgb},${o})`); g.addColorStop(1, `rgba(${rgb},0)`); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }); return c; };
+  const st = [[255, 252, 230], [255, 232, 140], [255, 184, 60], [255, 124, 28], [222, 66, 16], [150, 32, 10], [70, 16, 8]], fire = [];
+  for (let i = 0; i < 16; i++) { const t = i / 15 * (st.length - 1), a = Math.floor(t), f = t - a, s0 = st[a], s1 = st[Math.min(st.length - 1, a + 1)]; fire.push(soft(s0.map((v, j) => Math.round(v + (s1[j] - v) * f)).join(","), .4, .5)); }
+  return PLN.spr = { fire, smokeL: puff("205,198,194"), smokeD: puff("78,70,68"), dot: soft("255,226,150", .25, .6) };
+}
+function orbPlanets(obs) {
+  cancelAnimationFrame(ORB.praf);
+  const els = $$(".planet", obs); if (!els.length) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2), motion = fxOn(), spr = plSprites(), sun = $(".sun", obs);
+  const P = els.map((el, k) => {
+    const cv = $(".pcv", el); if (!cv) return null;
+    const D = parseFloat(el.style.getPropertyValue("--d")) || 30, box = D + 104, r = +el.dataset.r, pri = +el.dataset.p || 0, type = +((/\bt(\d)\b/.exec(el.className) || [0, 0])[1]);
+    cv.width = cv.height = Math.round(box * dpr);
+    const sp = plSphere(D, dpr, (((k * 37) % 50) - 25) * Math.PI / 180), off = document.createElement("canvas"); off.width = off.height = sp.N;
+    const octx = off.getContext("2d");
+    return { k, el, cv, ctx: cv.getContext("2d"), D, R: D / 2, box, pri, heat: r === 0 ? (el.classList.contains("late") ? 3 : 2) : r === 1 ? 1 : 0, tex: plTex(type, pri), sp, off, octx, img: octx.createImageData(sp.N, sp.N), rot: (k * 53) % 256, rs: 256 / (52000 + (k % 5) * 9000), parts: [], acc: [Math.random(), Math.random(), Math.random()], L: [-.6, -.3, .74] };
+  }).filter(Boolean);
+  const light = () => { if (!sun) return; const s = sun.getBoundingClientRect(), sx = s.left + s.width / 2, sy = s.top + s.height / 2; P.forEach(p => { const r = p.cv.getBoundingClientRect(), dx = sx - (r.left + r.width / 2), dy = sy - (r.top + r.height / 2), len = Math.hypot(dx, dy) || 1, n = Math.hypot(1, .5); p.L = [dx / len / n, dy / len / n, .5 / n]; }); };
+  const shade = (p, t) => {
+    const { sp, tex, img } = p, d = img.data, [lx, ly, lz] = p.L, h = p.heat, rot = p.rot, fl = .78 + .22 * Math.sin(t * .006 + p.k) * Math.sin(t * .0137 + p.k * 2);
+    const hn = Math.hypot(lx, ly, lz + 1), hx = lx / hn, hy = ly / hn, hz = (lz + 1) / hn, chr = h === 3 ? .42 : h === 2 ? .75 : 1, spec = p.pri === 3 ? 90 : 45;
+    for (let i = 0, n = sp.idx.length; i < n; i++) {
+      let u = (sp.u0[i] + rot) % 256; if (u < 0) u += 256;
+      const ti = (sp.vr[i] + (u | 0)) * 4, nx = sp.nx[i], ny = sp.ny[i], nz = sp.nz[i], dd = nx * lx + ny * ly + nz * lz;
+      let lit = (dd + .12) / 1.05; lit = lit < 0 ? 0 : lit > 1 ? 1 : lit; lit = lit * lit * (3 - 2 * lit);
+      const sh = (.045 + 1.12 * lit) * chr, rim = 1 - nz, rim3 = rim * rim * rim;
+      let r = tex[ti] * sh, g = tex[ti + 1] * sh, b = tex[ti + 2] * sh;
+      const hd = nx * hx + ny * hy + nz * hz; if (hd > .9) { const s = Math.pow((hd - .9) * 10, 6) * spec * lit; r += s; g += s; b += s; }
+      const at = rim3 * (.12 + .88 * lit) * 150; r += at * .5; g += at * .72; b += at;
+      if (h === 1) { const w = rim3 * 170 * (.55 + .45 * lit); r += w; g += w * .42; b += w * .1; r += 10; g += 3; }
+      else if (h > 1) {
+        const lv = tex[ti + 3] / 255, e = (h === 3 ? Math.pow(lv, .65) * 1.2 : lv * (1 - lit * .55)) * fl * 255; r += e; g += e * .45; b += e * .1;
+        const w = rim * rim * (h === 3 ? 260 : 150) * fl; r += w; g += w * .36; b += w * .06;
+      }
+      const o = sp.idx[i]; d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = sp.al[i];
+    }
+    p.octx.putImageData(img, 0, 0);
+  };
+  const RATE = [null, [0, 1.6, 0], [70, 3.4, 5], [140, 6, 12]];
+  const emit = (p, kind) => {
+    const R = p.R, h = p.heat, rnd = Math.random;
+    if (kind === 0) { const a = (rnd() - .5) * (h === 3 ? 4.6 : 2.5), rr = R * .9; p.parts.push({ k: 0, x: Math.sin(a) * rr, y: -Math.cos(a) * rr, vx: Math.sin(a) * R * .35 + (rnd() - .5) * R * .3, vy: -R * (1.5 + rnd() * 1.1) * (h === 3 ? 1.25 : 1), l: 0, m: .35 + rnd() * .38, s: R * (.26 + rnd() * .17) * (h === 3 ? 1.15 : 1), sd: rnd() * 99 }); }
+    else if (kind === 1) { const a = (rnd() - .5) * 1.4, y0 = h === 1 ? -R * .85 : -R * (1.3 + rnd() * .3); p.parts.push({ k: 1, x: Math.sin(a) * R * .6, y: y0, vx: (rnd() - .5) * R * .15, vy: -R * (h === 1 ? .32 + rnd() * .18 : .75 + rnd() * .4), l: 0, m: h === 1 ? 4.5 + rnd() * 2 : 2.3 + rnd() * 1.2, s: R * (h === 1 ? .3 : .45), g: R * (h === 1 ? 1 : 1.5), a: h === 1 ? .3 : h === 2 ? .32 : .44, sd: rnd() * 99, rt: rnd() * 6.28 }); }
+    else { const a = (rnd() - .5) * 2.6; p.parts.push({ k: 2, x: Math.sin(a) * R * .9, y: -Math.cos(a) * R * .9, vx: (rnd() - .5) * R * 1.3, vy: -R * (1.6 + rnd() * 1.8), l: 0, m: .9 + rnd() * 1.1, s: .9 + rnd() * 1.1, sd: rnd() * 99 }); }
+  };
+  const glowC = [null, "255,150,60", "255,110,30", "255,80,20"], glowA = [0, .3, .42, .62], baseC = PL_PAL.map(p => p[1].join(","));
+  const draw = (p, t, dt) => {
+    const c = p.ctx, W = p.cv.width, half = p.box / 2, R = p.R, h = p.heat, fl = .85 + .15 * Math.sin(t * .008 + p.k);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = "source-over"; c.globalAlpha = 1; c.clearRect(0, 0, W, W);
+    c.setTransform(dpr, 0, 0, dpr, half * dpr, half * dpr);
+    const g = c.createRadialGradient(0, 0, R * .7, 0, 0, R * (h ? 2.1 : 1.6)), gc = h ? glowC[h] : baseC[p.pri], ga = h ? glowA[h] * (h === 3 ? fl : 1) : .2;
+    g.addColorStop(0, `rgba(${gc},${ga})`); g.addColorStop(1, `rgba(${gc},0)`); c.globalCompositeOperation = "lighter"; c.fillStyle = g; c.fillRect(-half, -half, p.box, p.box);
+    c.globalCompositeOperation = "source-over";
+    c.setTransform(1, 0, 0, 1, 0, 0); const o = Math.round(half * dpr - p.sp.N / 2); c.drawImage(p.off, o, o);
+    c.setTransform(dpr, 0, 0, dpr, half * dpr, half * dpr);
+    if (!motion || !h) return;
+    const rt = RATE[h]; for (let q = 0; q < 3; q++) { p.acc[q] += rt[q] * dt; while (p.acc[q] >= 1) { p.acc[q]--; if (p.parts.length < 260) emit(p, q); } }
+    const top = -half + 4, fade = y => Math.min(1, Math.max(0, (y - top) / 18));
+    p.parts = p.parts.filter(q => (q.l += dt) < q.m);
+    c.globalCompositeOperation = "lighter";
+    for (const q of p.parts) if (q.k === 0) {
+      q.x += (q.vx + Math.sin(t * .011 + q.sd) * R * .45) * dt; q.y += q.vy * dt; q.vx *= .93;
+      const u = q.l / q.m, s = q.s * (1 - u * .7), a = (u < .12 ? u / .12 : 1) * Math.pow(1 - u, .7) * .7 * fade(q.y);
+      if (a <= 0) continue; c.globalAlpha = a; c.drawImage(spr.fire[Math.min(15, (u * 16) | 0)], q.x - s, q.y - s * 1.35, s * 2, s * 2.6);
+    }
+    c.globalCompositeOperation = "source-over";
+    for (const q of p.parts) if (q.k === 1) {
+      q.vx += Math.sin(t * .0016 + q.sd) * R * .12 * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy *= 1 - .12 * dt;
+      const u = q.l / q.m, s = q.s + (q.g - q.s) * Math.sqrt(u), a = q.a * Math.sin(Math.PI * Math.min(1, u * 1.15)) * fade(q.y - s * .5);
+      if (a <= 0) continue; c.globalAlpha = a; c.save(); c.translate(q.x, q.y); c.rotate(q.rt + u * .8); c.drawImage(h === 3 ? spr.smokeD : spr.smokeL, -s, -s, s * 2, s * 2); c.restore();
+    }
+    c.globalCompositeOperation = "lighter";
+    for (const q of p.parts) if (q.k === 2) {
+      q.vx += Math.sin(t * .02 + q.sd) * R * 2 * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy *= 1 - .4 * dt;
+      const u = q.l / q.m, a = (1 - u) * (.55 + .45 * Math.sin(t * .045 + q.sd * 7)) * fade(q.y), s = q.s * 2.4;
+      if (a <= 0) continue; c.globalAlpha = a; c.drawImage(spr.dot, q.x - s, q.y - s, s * 2, s * 2);
+    }
+    c.globalAlpha = 1; c.globalCompositeOperation = "source-over";
+  };
+  let last = performance.now(), fc = 0;
+  const frame = now => {
+    if (!obs.isConnected) return;
+    if (motion) ORB.praf = requestAnimationFrame(frame);
+    if (document.hidden) { last = now; return; }
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (fc % 8 === 0) light();
+    const sph = !motion || fc % 2 === 0; fc++;
+    for (const p of P) { if (motion) p.rot += p.rs * dt * 1000; if (sph) shade(p, now); draw(p, now, dt); }
+  };
+  if (motion) ORB.praf = requestAnimationFrame(frame); else requestAnimationFrame(frame);
 }
 /* céu: estrelas em profundidade; na abertura viram a "dobra espacial" e depois só flutuam */
 function orbStars(cv, cs, cine) {
@@ -2699,7 +2844,7 @@ const MANUAL = () => {
   add("Visões", "orbita", "play", "Visão Órbita", "As mesmas tarefas, vistas como um sistema solar. Boa para decidir o que fazer agora sem se perder em listas.",
     grid(["Distância do sol = prazo", "Quanto mais perto do centro, mais urgente. O núcleo reúne atrasadas e de hoje."], ["Tamanho = prioridade", "Planeta grande pede mais atenção. Crítica é o maior."], ["Anel = checklist", "O anel ao redor do planeta enche conforme você marca os itens."], ["Cor", "Segue a prioridade: vermelho, laranja, amarelo e azul-acinzentado."])
     + step(`<b>Arraste</b> o espaço para girar e inclinar; solte e ele continua girando com inércia.`, `<b>Clique num planeta</b> para abrir a tarefa.`, `Passe o mouse (ou toque) na legenda dos painéis laterais para destacar os planetas correspondentes.`, `Use <b>Rever abertura</b> para rever a animação de entrada.`)
-    + tip("Os planetas têm textura e giram com luz vinda do sol. O anel <b>até 3 dias</b> esquenta e solta uma fumacinha leve; o núcleo <b>agora</b> solta fumaça, brasas e chamas; e as <b>atrasadas</b> ficam em brasa, com rachaduras de lava.")
+    + tip("Cada planeta é uma esfera 3D desenhada em tempo real: tem relevo, faixas, nuvens ou oceanos, gira devagar e recebe a luz do sol (o lado oposto fica na sombra). O anel <b>até 3 dias</b> esquenta e solta uma fumacinha leve; o núcleo <b>agora</b> solta fumaça, brasas e chamas; e as <b>atrasadas</b> ficam em brasa, com rachaduras de lava.")
     + tip("O painel da direita mostra a <b>Próxima da fila</b>: a tarefa que o sistema sugere atacar primeiro.")
     + `<p class="man-try-row">${go("Ir para a Órbita", "view:orbita")}</p>`,
     "Se você prefere números e filtros, a Lista é o seu lugar.");
