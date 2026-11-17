@@ -1582,7 +1582,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261117.1537";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261117.1601";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2826,7 +2826,7 @@ const MANUAL = () => {
     <tr><td>${k("Ctrl")} ${k("K")} ou ${k("/")}</td><td>Buscar tarefas e executar comandos</td></tr><tr><td>${k("N")}</td><td>Nova tarefa</td></tr>
     <tr><td>${k("1")} ${k("2")} ${k("3")} ${k("4")} ${k("5")}</td><td>Quadro, Órbita, Lista, Relatórios, Manual</td></tr><tr><td>${k("Ctrl")} ${k("S")}</td><td>Gravar no arquivo de dados agora</td></tr>
     <tr><td>${k("?")}</td><td>Atalhos rápidos</td></tr><tr><td>${k("Esc")}</td><td>Fechar janelas, caixas de nova tarefa e pular aberturas</td></tr><tr><td>Botão direito</td><td>Menu rápido no cartão</td></tr>
-    <tr><td>Deslizar</td><td>No celular, deslize a barra de abas para trocar de visão</td></tr></table>`,
+    <tr><td>Roda do mouse</td><td>Com o mouse sobre as abas do topo (Quadro, Órbita, Lista…), gire a roda para trocar de tela</td></tr><tr><td>Deslizar</td><td>No celular, deslize a barra de abas para trocar de visão</td></tr></table>`,
     "");
   return S;
 };
@@ -4664,6 +4664,10 @@ document.addEventListener("mousemove", e => { const el = e.target.closest && e.t
 /* ================= início ================= */
 function route() { const h = location.hash.slice(1), prev = ui.view; ui.view = VIEWS.some(v => v[0] === h) ? h : "quadro"; if (route.done && prev !== ui.view) { renderChrome(); transit("flip", render); } else { if (!route.done) ui.enter = true; render(); } route.done = true; }
 window.addEventListener("hashchange", route);
+/* roda do mouse sobre as abas (Quadro, Órbita, Lista…) troca de tela */
+(function () { const el = $("#tabs"); if (!el) return; let acc = 0, last = 0;
+  el.addEventListener("wheel", e => { const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX; if (!d) return; e.preventDefault(); const now = Date.now(); if (now - last > 220) acc = 0; acc += d;
+    if (Math.abs(acc) < 40 || now - last < 180) return; const i = VIEWS.findIndex(v => v[0] === ui.view), j = clamp(i + (acc > 0 ? 1 : -1), 0, VIEWS.length - 1); acc = 0; last = now; if (j !== i) location.hash = VIEWS[j][0]; }, { passive: false }); })();
 window.addEventListener("resize", () => { if (ui.view === "orbita" || ui.view === "relatorios") renderView(); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { pull(); checkDue(); } });
 setInterval(() => { $$("[data-timer]").forEach(el => { const t = task(el.dataset.timer); if (t) el.textContent = fmtClock(spent(t)); }); }, 1000);
