@@ -461,6 +461,8 @@ details.data table { margin-top: 6px; }
 .d-tabs .d-tabs-ord { flex: 0 0 34px; font-size: 15px; }
 .d-tabs-edit { display: grid; gap: 6px; background: var(--bg2); padding: 10px; border-radius: 10px; position: sticky; top: -14px; z-index: 6; }
 .dte-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px; background: var(--surface); border-radius: 8px; }
+.dtab.dt-in-r { animation: dtInR .22s ease-out; } .dtab.dt-in-l { animation: dtInL .22s ease-out; }
+@keyframes dtInR { from { opacity: 0; transform: translateX(18px); } } @keyframes dtInL { from { opacity: 0; transform: translateX(-18px); } }
 .dtab { display: grid; gap: 14px; align-content: start; } .dtab[hidden] { display: none; }
 .d-body { padding: 14px 16px 24px; overflow-y: auto; display: grid; gap: 14px; align-content: start; }
 .field { display: grid; gap: 4px; min-width: 0; }
@@ -1738,7 +1740,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261118.1307";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261118.1450";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2915,7 +2917,7 @@ const MANUAL = () => {
     + trick("Botão direito no cartão abre um menu rápido: prioridade, prazo, mover de coluna, tags, cronômetro, duplicar, arquivar e apagar."),
     "Para editar de verdade, abra a gaveta da tarefa.");
 
-  add("O dia a dia", "gaveta", "clip", "A gaveta da tarefa", "Clique em qualquer cartão e abre um painel com tudo sobre a tarefa, dividido em 5 abas: <b>Geral</b> (tipo, chamado, prioridade, prazo, tags, descrição), <b>Checklist</b> (passos, subtarefas e respostas prontas), <b>Notas</b> (observações e diário), <b>Dados</b> (modelo e campos do cartão, anexos e informações adicionais) e <b>Tempo</b> (cronômetro e calendário). A aba escolhida fica lembrada e você pode mudar a ordem das abas no botão <b>⇅</b>, ao lado delas. Tudo salva sozinho enquanto você digita.",
+  add("O dia a dia", "gaveta", "clip", "A gaveta da tarefa", "Clique em qualquer cartão e abre um painel com tudo sobre a tarefa, dividido em 5 abas: <b>Geral</b> (tipo, chamado, prioridade, prazo, tags, descrição), <b>Checklist</b> (passos, subtarefas e respostas prontas), <b>Notas</b> (observações e diário), <b>Dados</b> (modelo e campos do cartão, anexos e informações adicionais) e <b>Tempo</b> (cronômetro e calendário). A aba escolhida fica lembrada e você pode mudar a ordem das abas no botão <b>⇅</b>, ao lado delas. Para <b>trocar de aba rápido</b>: gire a roda do mouse em cima das abas, deslize dois dedos para os lados no touchpad ou, no celular, arraste o dedo para a esquerda ou direita no meio do painel. Tudo salva sozinho enquanto você digita.",
     grid(["Tarefa", "Título, número do chamado e descrição."], ["Prioridade e prazo", "Quatro níveis de prioridade; prazo com data e hora opcional."],
       ["Tags", "Etiquetas coloridas para busca e referência (Rede, Hardware, Faculdade…), sempre em ordem alfabética. Crie novas na hora; para renomear, trocar a cor ou apagar, use <b>✎ Editar tags</b> na tarefa ou <b>Configurações → 🧩 Tipos e tags</b>."], ["Checklist", "Passos da tarefa, com progresso automático no cartão."],
       ["Modelo e campos", "Campos extras de acordo com o modelo do cartão. Veja o capítulo Modelos."], ["Observações e diário", "Texto formatado (negrito, listas, cores) e o diário por tema e dia."],
@@ -4973,6 +4975,25 @@ window.addEventListener("hashchange", route);
 (function () { const el = $("#tabs"); if (!el) return; let acc = 0, last = 0;
   el.addEventListener("wheel", e => { const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX; if (!d) return; e.preventDefault(); const now = Date.now(); if (now - last > 220) acc = 0; acc += d;
     if (Math.abs(acc) < 40 || now - last < 180) return; const i = VIEWS.findIndex(v => v[0] === ui.view), j = clamp(i + (acc > 0 ? 1 : -1), 0, VIEWS.length - 1); acc = 0; last = now; if (j !== i) location.hash = VIEWS[j][0]; }, { passive: false }); })();
+/* abas dentro do cartão: roda do mouse sobre as abas, deslize lateral do touchpad ou arrasto do dedo troca de aba */
+(function () {
+  const go = dir => { const o = dTabOrder(), i = o.indexOf(ui.dtab), j = clamp(i + dir, 0, o.length - 1); if (i < 0 || j === i) return false; acts.dTab({ dataset: { v: o[j] } }); const b = $(".d-tabs button.on"); if (b) b.scrollIntoView({ block: "nearest", inline: "nearest" }); const p = $(".dtab:not([hidden])"); if (p && fxOn()) { p.classList.remove("dt-in-l", "dt-in-r"); void p.offsetWidth; p.classList.add(dir > 0 ? "dt-in-r" : "dt-in-l"); } return true; };
+  const skip = t => { const f = t && t.closest && t.closest("textarea, input, select, [contenteditable]"); if (t && t.closest && t.closest(".no-swipe, input[type=range]")) return true; if (f && (f === document.activeElement || f.contains(document.activeElement))) return true; return (() => { for (let n = t; n && n !== document.body && !(n.classList && n.classList.contains("d-body")); n = n.parentElement) { if (n.scrollWidth > n.clientWidth + 2) { const ox = getComputedStyle(n).overflowX; if (ox === "auto" || ox === "scroll") return true; } } return false; })(); };
+  let acc = 0, last = 0;
+  document.addEventListener("wheel", e => {
+    if (ui.overlay !== "drawer" || ui.dtabEdit) return;
+    const onTabs = e.target.closest && e.target.closest(".d-tabs"), inBody = e.target.closest && e.target.closest(".d-body");
+    if (!onTabs && !inBody) return;
+    const horiz = Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.3;
+    if (!onTabs && (!horiz || skip(e.target))) return;
+    const d = onTabs ? (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) : e.deltaX; if (!d) return;
+    e.preventDefault(); const now = Date.now(); if (now - last > 220) acc = 0; acc += d;
+    if (Math.abs(acc) < (onTabs ? 40 : 70) || now - last < (onTabs ? 180 : 420)) return; acc = 0; last = now; go(d > 0 ? 1 : -1);
+  }, { passive: false });
+  let sx = 0, sy = 0, st = 0, ok = false;
+  document.addEventListener("touchstart", e => { ok = ui.overlay === "drawer" && !ui.dtabEdit && e.touches.length === 1 && !!e.target.closest(".d-body") && !skip(e.target); if (!ok) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); }, { passive: true });
+  document.addEventListener("touchend", e => { if (!ok) return; ok = false; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; if (Date.now() - st < 700 && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.8) go(dx < 0 ? 1 : -1); }, { passive: true });
+})();
 window.addEventListener("resize", () => { if (ui.view === "orbita" || ui.view === "relatorios") renderView(); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { pull(); checkDue(); } });
 setInterval(() => { $$("[data-timer]").forEach(el => { const t = task(el.dataset.timer); if (t) el.textContent = fmtClock(spent(t)); }); }, 1000);
