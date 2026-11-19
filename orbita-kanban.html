@@ -2005,7 +2005,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261119.0715";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261119.0722";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2809,7 +2809,7 @@ function orbGL(obs) {
   const gl = cv.getContext("webgl", { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, powerPreference: "high-performance" });
   if (!gl) return false;
   const HEAD = "#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\nuniform float T;\n"
-    + "float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\n"
+    + "float h1(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\n"
     + "float h3(vec3 p){ p = fract(p * .3183099 + .1); p *= 17.; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }\n"
     + "float n3(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3. - 2. * f); return mix(mix(mix(h3(i), h3(i + vec3(1,0,0)), f.x), mix(h3(i + vec3(0,1,0)), h3(i + vec3(1,1,0)), f.x), f.y), mix(mix(h3(i + vec3(0,0,1)), h3(i + vec3(1,0,1)), f.x), mix(h3(i + vec3(0,1,1)), h3(i + vec3(1,1,1)), f.x), f.y), f.z); }\n"
     + "float fbm(vec3 p){ float a = .5, s = 0.; for (int i = 0; i < 5; i++) { s += a * n3(p); p = p * 2.03 + vec3(1.7, 9.2, 3.1); a *= .5; } return s; }\n"
@@ -2821,7 +2821,7 @@ function orbGL(obs) {
     + " float bd = exp(-pow(dot(uv, normalize(vec2(-.45, 1.))), 2.) * 22.); c += vec3(.35, .38, .55) * bd * fbm4(vec3(uv * 6., 9.)) * .22;"
     + " for (int l = 0; l < 4; l++) { float fl = float(l), sc = 70. + fl * fl * 80.; vec2 g = uv * sc, id = floor(g), f = fract(g) - .5; float r = h1(id + fl * 17.31), th = .94 - bd * .08 + fl * .01; if (r > th) { vec2 o = vec2(h1(id + 3.1), h1(id + 5.7)) - .5; float b = (r - th) / (1. - th), d = length(f - o * .7); c += mix(vec3(.65, .78, 1.), vec3(1., .85, .65), h1(id + 9.)) * smoothstep((.05 + .08 * b) / (1. + fl * .6), 0., d) * b * (1.5 - fl * .25); } }"
     + " gl_FragColor = vec4(c, 1.); }";
-  const FS_BG = "precision mediump float; uniform sampler2D S; uniform vec2 R; uniform float T, A; float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); } void main(){ vec2 u = gl_FragCoord.xy / R; vec3 c = texture2D(S, u).rgb; float l = dot(c, vec3(.33)); float tw = 1. + .45 * sin(T * (1.5 + h1(floor(gl_FragCoord.xy / 3.)) * 3.) + h1(floor(gl_FragCoord.xy / 3.) + 7.) * 60.) * smoothstep(.25, .6, l); gl_FragColor = vec4(c * tw * A, A); }";
+  const FS_BG = "precision mediump float; uniform sampler2D S; uniform vec2 R; uniform float T, A; float h1(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); } void main(){ vec2 u = gl_FragCoord.xy / R; vec3 c = texture2D(S, u).rgb; float l = dot(c, vec3(.33)); float tw = 1. + .45 * sin(T * (1.5 + h1(floor(gl_FragCoord.xy / 3.)) * 3.) + h1(floor(gl_FragCoord.xy / 3.) + 7.) * 60.) * smoothstep(.25, .6, l); gl_FragColor = vec4(c * tw * A, A); }";
   const FS_SUN = HEAD + "uniform float K; varying vec2 vp; void main(){ vec2 p = vp * K; float r = length(p); vec4 o = vec4(0.);"
     + " float a = atan(p.y, p.x); float cor = exp(-max(r - 1., 0.) * 2.6) * .75 + exp(-max(r - 1., 0.) * 9.) * .6; float ray = pow(.5 + .5 * sin(a * 12. + T * .12) * sin(a * 7. - T * .09 + 1.), 5.) * exp(-max(r - 1., 0.) * 1.6) * .55;"
     + " float pr = smoothstep(.55, .85, fbm4(vec3(a * 3., r * 3. - T * .25, 4.))) * exp(-max(r - 1., 0.) * 7.) * .9; vec3 cc = vec3(1., .62, .2) * cor + vec3(1., .8, .45) * ray + vec3(1., .4, .12) * pr;"
@@ -5405,7 +5405,7 @@ window.addEventListener("hashchange", route);
 /* fundos em WebGL (temas Terra e Via Láctea): texturas geradas uma vez na placa de vídeo e animadas em alta resolução */
 (function () {
   const HEAD = "#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n#define PI 3.14159265\nuniform vec2 R; uniform float T; uniform sampler2D S0, S1;\n"
-    + "float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\n"
+    + "float h1(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\n"
     + "float h3(vec3 p){ p = fract(p * .3183099 + .1); p *= 17.; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }\n"
     + "float n3(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3. - 2. * f); return mix(mix(mix(h3(i), h3(i + vec3(1,0,0)), f.x), mix(h3(i + vec3(0,1,0)), h3(i + vec3(1,1,0)), f.x), f.y), mix(mix(h3(i + vec3(0,0,1)), h3(i + vec3(1,0,1)), f.x), mix(h3(i + vec3(0,1,1)), h3(i + vec3(1,1,1)), f.x), f.y), f.z); }\n"
     + "float n1(float x){ float i = floor(x), f = fract(x); f = f * f * (3. - 2. * f); return mix(h1(vec2(i, 0.)), h1(vec2(i + 1., 0.)), f); }\n"
@@ -5452,7 +5452,7 @@ window.addEventListener("hashchange", route);
     + " gl_FragColor = vec4(sqrt(clamp(g / 2., 0., 1.)), band); }";
   const MW = "void main(){ vec2 uv = (gl_FragCoord.xy - .5 * R) / R.y; float asp = R.x / R.y; float a = .16 * sin(T * .0075) + .03; vec2 pv = vec2(-asp * .6, -1.2); vec2 q = uv - pv; vec2 p = pv + vec2(cos(a) * q.x - sin(a) * q.y, sin(a) * q.x + cos(a) * q.y);"
     + " vec4 tx = texture2D(S0, p / (2. * " + MW_S.toFixed(2) + ") + .5); vec3 g = tx.rgb * tx.rgb * 2.; float band = tx.a;"
-    + " vec2 gp = floor(p * R.y * .85); float sk = h1(gp); float ms = step(1. - .006 - .07 * band * band, sk) * (.2 + .8 * h1(gp + 3.7)) * (.7 + .3 * sin(T * 2. + sk * 90.)); vec3 col = vec3(.004, .006, .016) + g * .8 + stars(p, band, .55) + vec3(.92, .94, 1.) * ms * .9 + vec3(.75, .8, 1.) * h1(gp + 1.3) * band * .035;"
+    + " vec2 gq = p * R.y * .4, gp = floor(gq); float sk = h1(gp); float ms = step(1. - .02 - .2 * band * band, sk) * (.25 + .75 * h1(gp + 3.7)) * (.75 + .25 * sin(T * 2. + sk * 90.)) * smoothstep(.55, .1, length(fract(gq) - .5 - (vec2(h1(gp + 1.1), h1(gp + 2.2)) - .5) * .5)); vec3 col = vec3(.004, .006, .016) + g * .8 + stars(p, band, .55) + vec3(.92, .94, 1.) * ms * .9 + vec3(.75, .8, 1.) * fbm4(vec3(p * 60., 2.)) * band * .05;"
     + " float sid = floor(T / 6.5), sf = fract(T / 6.5); if (sf < .14 && h1(vec2(sid, 9.)) > .25) { vec2 s0 = vec2((h1(vec2(sid, 1.)) - .3) * asp, .05 + .4 * h1(vec2(sid, 2.))); vec2 dr = normalize(vec2(-.85, -.42 - .3 * h1(vec2(sid, 3.)))); vec2 sp = s0 + dr * sf * 4.; float al = dot(uv - sp, -dr), pe = abs(dot(uv - sp, vec2(-dr.y, dr.x))); col += vec3(.9, .95, 1.) * smoothstep(1.6 / R.y, 0., pe) * step(0., al) * smoothstep(.3, 0., al) * (1. - sf / .14) * 2.; }"
     + " float x = uv.x; float rg = -.36 + .1 * fbm4(vec3(x * 1.3, 0., 3.)) + .035 * fbm4(vec3(x * 6., 0., 8.)) + .012 * n3(vec3(x * 30., 1., 1.)); if (asp < 1.) rg -= .08;"
     + " float hy = uv.y - rg; col += (vec3(.1, .3, .16) * exp(-max(hy, 0.) * 7.) * .45 + vec3(.45, .2, .08) * exp(-max(hy, 0.) * 18.) * .35) * step(0., hy);"
@@ -5506,7 +5506,7 @@ window.addEventListener("hashchange", route);
   let st = null;
   const HEAD = "#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n"
     + "uniform vec2 R; uniform float T; uniform vec3 RO, TA; uniform float FO;\n"
-    + "float h1(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\n"
+    + "float h1(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\n"
     + "float h3(vec3 p){ p = fract(p * .3183099 + .1); p *= 17.; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }\n"
     + "float n3(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3. - 2. * f); return mix(mix(mix(h3(i), h3(i + vec3(1,0,0)), f.x), mix(h3(i + vec3(0,1,0)), h3(i + vec3(1,1,0)), f.x), f.y), mix(mix(h3(i + vec3(0,0,1)), h3(i + vec3(1,0,1)), f.x), mix(h3(i + vec3(0,1,1)), h3(i + vec3(1,1,1)), f.x), f.y), f.z); }\n"
     + "float fbm4(vec3 p){ float a = .5, s = 0.; for (int i = 0; i < 4; i++) { s += a * n3(p); p = p * 2.03 + vec3(1.7, 9.2, 3.1); a *= .5; } return s; }\n"
