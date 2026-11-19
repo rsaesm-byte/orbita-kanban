@@ -1996,7 +1996,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261118.2121";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261118.2125";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -5548,7 +5548,7 @@ window.addEventListener("hashchange", route);
     + "void main(){ vec3 ro; vec3 rd = camRay(gl_FragCoord.xy, ro); vec3 col = texture2D(S, gl_FragCoord.xy / R).rgb; vec3 fogc = vec3(.42, .38, .36);"
     + " if (rd.y < 0.) { vec3 g = ro + rd * (-ro.y / rd.y); for (int i = 0; i < 3; i++) { if (CB[i].z < .5) continue; vec2 d = (g.xz - CA[i].xy) / vec2(i == 1 ? .32 : .26, .16); col *= 1. - .55 * exp(-dot(d, d) * 2.2); } }"
     + " vec3 act = vec3(inb(BX[0]) * step(.5, CB[0].z), inb(BX[1]) * step(.5, CB[1].z), inb(BX[2]) * step(.5, CB[2].z));"
-    + " if (act.x + act.y + act.z > .5) { float t = 2.5; vec2 h = vec2(0.); bool hit = false; for (int i = 0; i < 90; i++) { vec3 p = ro + rd * t; h = map(p, act); if (h.x < .0007 * t) { hit = true; break; } t += h.x * .9; if (t > 9.) break; }"
+    + " if (act.x + act.y + act.z > .5) { float t = max(1., length(RO) - 3.); vec2 h = vec2(0.); bool hit = false; for (int i = 0; i < 128; i++) { vec3 p = ro + rd * t; h = map(p, act); if (h.x < .0006 * t) { hit = true; break; } t += h.x * .92; if (t > length(RO) + 4.) break; }"
     + "  if (hit) { vec3 p = ro + rd * t, n = nrm(p, act); vec3 L = normalize(vec3(-.55, .75, .55)), L2 = normalize(vec3(.8, .3, -.3)); float m = h.y; float ao = clamp(map(p + n * .03, act).x / .03, 0., 1.) * .5 + .5 * clamp(map(p + n * .09, act).x / .09, 0., 1.);"
     + "   float dif = clamp(dot(n, L), 0., 1.), wrap = clamp(dot(n, L) * .5 + .5, 0., 1.), fr = pow(1. - clamp(dot(n, -rd), 0., 1.), 4.); vec3 hv = normalize(L - rd); float sp = clamp(dot(n, hv), 0., 1.); vec3 c;"
     + "   if (m < 1.5) { vec3 base = vec3(.3, .86, .08); float ln = .97 + .03 * sin(p.y * 900.); c = base * ln * (wrap * wrap * vec3(1., .93, .8) * 1.15 + vec3(.3, .32, .35) * .45 * ao) + vec3(.35, .55, .08) * pow(1. - abs(dot(n, L)), 2.) * .12; c += vec3(1., .95, .85) * pow(sp, 45.) * .4 + vec3(.6, .65, .7) * fr * .5 + vec3(.2, .45, .05) * pow(clamp(dot(n, L2), 0., 1.), 1.5) * .25; }"
@@ -5560,7 +5560,7 @@ window.addEventListener("hashchange", route);
     + "   else if (m < 7.5) { c = vec3(1., .35, .06) * (1.6 + .9 * sin(T * 6.)) ; }"
     + "   else if (m < 8.5) { c = vec3(.9, .9, .88) * (wrap * 1.1 + .25 * ao) + vec3(1.) * pow(sp, 30.) * .5; }"
     + "   else { c = vec3(.85, .1, .08) * (wrap + .2); }"
-    + "   c *= .55 + .45 * ao; c = mix(c, fogc, 1. - exp(-t * .045)); col = c; } }"
+    + "   c *= .55 + .45 * ao; c = mix(c, fogc, 1. - exp(-max(t - length(RO) + 5., 0.) * .045)); col = c; } }"
     + " if (CB[2].z > .5 && TIP.x > 0.) { vec2 d = (gl_FragCoord.xy - TIP) / R.y; if (d.y > -.01 && d.y < .35 && abs(d.x) < .2) { float u = d.y / .35; float sm = fbm4(vec3(d.x * 18. - T * .15, d.y * 9. - T * .9, 3.)); float w = .008 + u * .07; float den = smoothstep(.45, .75, sm) * exp(-pow((d.x - sin(d.y * 14. + T) * .02 * u) / w, 2.)) * (1. - u) * smoothstep(-.01, .02, d.y); col = mix(col, vec3(.82, .82, .84), den * .55); } }"
     + " vec2 uv = gl_FragCoord.xy / R; float fm = fbm4(vec3(uv * vec2(3., 1.5) + vec2(T * .02, 0.), T * .03)); col = mix(col, vec3(.5, .46, .43), smoothstep(.45, .8, fm) * .18 * smoothstep(.75, .1, uv.y));"
     + " col *= 1. - .35 * pow(length(uv - .5) * 1.25, 2.); col = pow(col, vec3(.95)); col += (h1(gl_FragCoord.xy + fract(T) * 70.) - .5) * .018; gl_FragColor = vec4(col, 1.); }";
@@ -5576,7 +5576,7 @@ window.addEventListener("hashchange", route);
     let PB, PM; try { PB = prog(FS_BAKE); PM = prog(FS_MAIN); } catch (e) { console.warn("Cadê o Bahia WebGL", e); cv.classList.add("nogl"); st = { cv, lay, gl: null, raf: 0 }; return; }
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     const tex = gl.createTexture(), fb = gl.createFramebuffer(); let W = 0, H = 0, dpr = 1, cam = null;
-    const camFor = (w, h) => { const asp = w / h; if (asp < 1) return { ro: [0, 1.3, 9.2], ta: [0, 1.7, 0], fo: 1.75, half: 1.15 }; return { ro: [0, 1.15, 6.6], ta: [0, 1.75, 0], fo: 1.7, half: Math.min(3.2, 2.05 * asp) }; };
+    const camFor = (w, h) => { const asp = w / h; if (asp < 1) return { ro: [0, 1.45, 12.5], ta: [0, 2.15, 0], fo: 1.75 }; return { ro: [0, 1.2, 7.4], ta: [0, 1.85, 0], fo: 1.7 }; };
     const size = () => { const big = innerWidth * innerHeight > 1.6e6; dpr = Math.min(devicePixelRatio || 1, big ? 1.25 : 1.75); const w = Math.round(innerWidth * dpr), h = Math.round(innerHeight * dpr); if (w === W && h === H) return; W = w; H = h; cv.width = W; cv.height = H; cam = camFor(W, H);
       gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.NEAREST)); [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE));
       gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0); gl.viewport(0, 0, W, H); gl.useProgram(PB.p); setCam(PB.u); gl.uniform1f(PB.u.T, 0); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindFramebuffer(gl.FRAMEBUFFER, null); };
@@ -5585,11 +5585,11 @@ window.addEventListener("hashchange", route);
       const d = [p[0] - ro[0], p[1] - ro[1], p[2] - ro[2]], x = d[0] * rt[0] + d[1] * rt[1] + d[2] * rt[2], y = d[0] * up[0] + d[1] * up[1] + d[2] * up[2], z = d[0] * fw[0] + d[1] * fw[1] + d[2] * fw[2]; return [W / 2 + x / z * cam.fo * H, H / 2 + y / z * cam.fo * H]; };
     /* comportamento dos três */
     const C = [{ x: -1, z: .2, dir: 1, sp: .42, yaw: 1, mode: "walk", tm: 3, w: 0, wa: 1, raise: 0, hy: 0, say: 0, txt: "" }, { x: 1.3, z: -.45, dir: -1, sp: .3, yaw: -1, mode: "walk", tm: 6, w: 1, wa: 1, raise: 0, hy: 0, say: 0, txt: "" }, { x: 9, z: .75, dir: -1, sp: .32, yaw: -1.2, mode: "off", tm: 0, w: 0, wa: 1, raise: 0, hy: 0, say: 0, txt: "", puff: 0 }];
-    let bahiaT = 22 + Math.random() * 10, bahiaOn = false;
+    let bahiaT = 9 + Math.random() * 5, bahiaOn = false;
     const step = (dt, T) => {
-      const lim = cam.half - .25;
+      const halfAt = z => (W / H) / (2 * cam.fo) * Math.abs(cam.ro[2] - z) * .98; cam.half = halfAt(.75);
       C.slice(0, 2).forEach((c, i) => {
-        c.tm -= dt;
+        const lim = Math.max(.2, halfAt(c.z) - (i === 1 ? .42 : .36)); c.tm -= dt; if (Math.abs(c.x) > lim) c.x = Math.sign(c.x) * lim;
         if (c.mode === "walk") { c.x += c.dir * c.sp * dt; c.w += dt * c.sp * 15; c.wa += (1 - c.wa) * Math.min(1, dt * 4); if (Math.abs(c.x) > lim) { c.x = Math.sign(c.x) * lim; c.dir *= -1; }
           if (c.tm <= 0) { if (bahiaOn) { c.mode = "look"; c.tm = 2.5; } else if (i === 0) { c.mode = "say"; c.tm = 3.2; c.txt = SAYS[(Math.random() * SAYS.length) | 0]; } else { c.mode = "shout"; c.tm = 3.6; c.txt = "KKKKDDDD VC BAHIAAAA!!"; } } }
         else { c.wa += (0 - c.wa) * Math.min(1, dt * 5); if (c.tm <= 0) { c.mode = "walk"; c.tm = i === 0 ? 6 + Math.random() * 5 : 10 + Math.random() * 7; if (Math.random() < .4) c.dir *= -1; } }
@@ -5600,7 +5600,7 @@ window.addEventListener("hashchange", route);
       const b = C[2]; bahiaT -= dt;
       if (!bahiaOn && bahiaT <= 0) { bahiaOn = true; b.dir = Math.random() < .5 ? -1 : 1; b.x = -b.dir * (cam.half + 1); b.mode = "walk"; b.tm = 3; }
       if (bahiaOn) { b.x += b.dir * b.sp * dt; b.w += dt * b.sp * 14; b.yaw += (b.dir * .95 - b.yaw) * Math.min(1, dt * 4); b.tm -= dt; const cyc = (T % 4.2) / 4.2; b.raise = cyc < .35 ? Math.sin(cyc / .35 * Math.PI) : 0; if (cyc > .3 && cyc < .32) b.puff = 1; b.puff *= Math.pow(.4, dt); b.say = 0;
-        if (Math.abs(b.x) > cam.half + 1.2) { bahiaOn = false; bahiaT = 28 + Math.random() * 14; } }
+        if (Math.abs(b.x) > cam.half + 1.2) { bahiaOn = false; bahiaT = 16 + Math.random() * 10; } }
     };
     const bubbles = [...lay.children]; let last = performance.now(), lt = 0; const motion = fxOn(), t0 = performance.now();
     const frame = now => {
@@ -5608,7 +5608,7 @@ window.addEventListener("hashchange", route);
       size(); const dt = motion ? Math.min(.1, (now - last) / 1000) : 0; last = now; const T = (now - t0) / 1000; if (motion) step(dt, T);
       gl.viewport(0, 0, W, H); gl.useProgram(PM.p); setCam(PM.u); gl.uniform1f(PM.u.T, T); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(PM.u.S, 0);
       const CA = [], CB = [], BX = []; C.forEach((c, i) => { const vis = i < 2 || bahiaOn ? 1 : 0; CA.push(c.x, c.z, c.yaw, c.w); CB.push(c.raise, c.hy, vis, c.wa);
-        const top = proj([c.x, 1.55, c.z]), l = proj([c.x - .55, 0, c.z + .3]), r = proj([c.x + .55, 0, c.z + .3]), bot = proj([c.x, -.05, c.z + .4]); BX.push(Math.min(l[0], r[0]) - 4, bot[1] - 6, Math.max(l[0], r[0]) + 4, top[1] + 6);
+        const top = proj([c.x, 1.6, c.z]), l = proj([c.x - .6, 0, c.z + .45]), r = proj([c.x + .6, 0, c.z + .45]), bot = proj([c.x, -.1, c.z + .5]); BX.push(Math.min(l[0], r[0]) - 6, bot[1] - 10, Math.max(l[0], r[0]) + 6, top[1] + 8);
         const bb = bubbles[i], hd = proj([c.x, i === 0 ? 1.5 : i === 1 ? 1.32 : 1.5, c.z]); if (c.say && motion) { if (bb.textContent !== c.txt) bb.textContent = c.txt; bb.style.transform = `translate(${(hd[0] / dpr).toFixed(1)}px, ${(innerHeight - hd[1] / dpr).toFixed(1)}px) translate(-50%, -100%)`; bb.classList.add("on"); } else bb.classList.remove("on"); });
       const b = C[2]; const tp = bahiaOn ? proj([b.x + Math.sin(b.yaw) * .14 + Math.cos(b.yaw) * .1, .78 + b.raise * .3, b.z + Math.cos(b.yaw) * .14]) : [-1, -1];
       gl.uniform4fv(PM.u.CA, CA); gl.uniform4fv(PM.u.CB, CB); gl.uniform4fv(PM.u.BX, BX); gl.uniform2f(PM.u.TIP, tp[0], tp[1]); gl.drawArrays(gl.TRIANGLES, 0, 3);
