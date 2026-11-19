@@ -1621,11 +1621,11 @@ html:root[data-skin="vialactea"][data-theme] { --bg: #03040a; --bg2: #070914; --
 html:root[data-skin="terra"][data-theme] .col { background: rgb(8 12 24 / .5); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid rgb(255 255 255 / .1); box-shadow: 0 24px 60px -24px #000; }
 html:root[data-skin="terra"][data-theme] .card .face { background: rgb(10 14 28 / .78); border-color: rgb(255 255 255 / .1); }
 html:root[data-skin="terra"][data-theme] .card:hover .face { border-color: #4da3ff; box-shadow: 0 0 0 1px #4da3ff55, 0 12px 30px -12px #4da3ff88; }
-html:root[data-skin="terra"][data-theme] .col-name { letter-spacing: .04em; } html:root[data-skin="terra"][data-theme] .top, html:root[data-skin="terra"][data-theme] .bnav { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+html:root[data-skin="terra"][data-theme] .col-name { letter-spacing: .04em; } html:root[data-skin="terra"][data-theme] .bnav { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 html:root[data-skin="vialactea"][data-theme] .col { background: rgb(8 12 24 / .5); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3); border: 1px solid rgb(255 255 255 / .1); box-shadow: 0 24px 60px -24px #000; }
 html:root[data-skin="vialactea"][data-theme] .card .face { background: rgb(10 14 28 / .78); border-color: rgb(255 255 255 / .1); }
 html:root[data-skin="vialactea"][data-theme] .card:hover .face { border-color: #a98bff; box-shadow: 0 0 0 1px #a98bff55, 0 12px 30px -12px #a98bff88; }
-html:root[data-skin="vialactea"][data-theme] .col-name { letter-spacing: .04em; } html:root[data-skin="vialactea"][data-theme] .top, html:root[data-skin="vialactea"][data-theme] .bnav { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+html:root[data-skin="vialactea"][data-theme] .col-name { letter-spacing: .04em; } html:root[data-skin="vialactea"][data-theme] .bnav { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 /* ===== Metrópole (cidade viva) ===== */
 html:root[data-skin="metropole"][data-theme] { --bg: #07030d; --bg2: #0c0618; --surface: rgb(18 10 34 / .88); --surface2: rgb(26 15 48 / .9); --ink: #f4ecff; --ink2: #c3b4dc; --ink3: #8a7aa8; --line: rgb(5 217 232 / .2); --edge: #000;
   --accent: #ff2a6d; --accent-ink: #ffffff; --accent-soft: rgb(255 42 109 / .2); --sel: #05d9e8; --sel-ink: #001a1d; --p0: #ff2a6d; --p1: #ff9f1c; --p2: #f5f749; --p3: #05d9e8;
@@ -1638,7 +1638,7 @@ html:root[data-skin="metropole"][data-theme] .card:hover .face { border-color: v
 html:root[data-skin="metropole"][data-theme] .count { background: rgb(5 217 232 / .15); color: var(--sel); border-radius: 2px; }
 html:root[data-skin="metropole"][data-theme] h1, html:root[data-skin="metropole"][data-theme] h2 { text-shadow: -1.5px 0 rgb(5 217 232 / .6), 1.5px 0 rgb(255 42 109 / .6); }
 html:root[data-skin="metropole"][data-theme] .btn.main { box-shadow: 0 0 18px -4px rgb(255 42 109 / .8); }
-html:root[data-skin="metropole"][data-theme] .top, html:root[data-skin="metropole"][data-theme] .bnav { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+html:root[data-skin="metropole"][data-theme] .bnav { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 /* ===== Netrunner (escuro): tela de invasão ===== */
 html:root[data-skin="netrunner"][data-theme] { --bg: #04070a; --bg2: #070c10; --surface: #0a1014; --surface2: #0f171c; --ink: #d9f0ea; --ink2: #9fbdb3; --ink3: #64807a; --line: rgb(209 238 90 / .22); --edge: #000;
   --accent: #d1ee5a; --accent-ink: #0b1000; --accent-soft: rgb(209 238 90 / .14); --sel: #5ef6ff; --sel-ink: #021417; --p0: #ff4f5e; --p1: #ffa63d; --p2: #d1ee5a; --p3: #5ef6ff;
@@ -1980,7 +1980,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261118.2054";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261118.2101";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -5451,7 +5451,7 @@ window.addEventListener("hashchange", route);
     + " float x = uv.x; float rg = -.36 + .1 * fbm4(vec3(x * 1.3, 0., 3.)) + .035 * fbm4(vec3(x * 6., 0., 8.)) + .012 * n3(vec3(x * 30., 1., 1.)); if (asp < 1.) rg -= .08;"
     + " float hy = uv.y - rg; col += (vec3(.1, .3, .16) * exp(-max(hy, 0.) * 7.) * .45 + vec3(.45, .2, .08) * exp(-max(hy, 0.) * 18.) * .35) * step(0., hy);"
     + " col = mix(col, vec3(.006, .008, .014) + vec3(.02, .03, .05) * smoothstep(-.12, 0., hy), smoothstep(1.5 / R.y, -1.5 / R.y, hy));"
-    + " vec2 oc = uv - vec2(asp * .32, rg + .012); float ob = max(step(abs(oc.x), .015) * step(oc.y, .01), step(length(oc - vec2(0., .01)), .012) * step(0., oc.y - .01)); col = mix(col, vec3(.004, .005, .01), ob * step(-.03, oc.y)); col += vec3(1., .3, .2) * smoothstep(2.5 / R.y, 0., length(uv - vec2(asp * .32, rg + .036))) * (.4 + .6 * step(.5, fract(T * .5)));"
+    + ""
     + " col = 1. - exp(-col * 1.35); gl_FragColor = vec4(col, 1.); }";
   const SCN = { terra: { bake: [[EARTH_A, 2048, 1024], [EARTH_B, 2048, 1024]], main: EARTH }, vialactea: { bake: [[MW_A, 2048, 2048]], main: MW } };
   let cv = null, gl = null, raf = 0, on = "";
