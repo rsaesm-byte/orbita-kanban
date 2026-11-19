@@ -1996,7 +1996,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261118.2132";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261118.2137";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -5582,7 +5582,7 @@ window.addEventListener("hashchange", route);
     let PB, PM; try { PB = prog(FS_BAKE); PM = prog(FS_MAIN); } catch (e) { console.warn("Cadê o Bahia WebGL", e); cv.classList.add("nogl"); st = { cv, lay, gl: null, raf: 0 }; return; }
     const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     const tex = gl.createTexture(), fb = gl.createFramebuffer(); let W = 0, H = 0, dpr = 1, cam = null;
-    const camFor = (w, h) => { const asp = w / h; if (asp < 1) return { ro: [0, 1.45, 12.5], ta: [0, 2.15, 0], fo: 1.75 }; return { ro: [0, 1.2, 7.4], ta: [0, 1.85, 0], fo: 1.7 }; };
+    const camFor = (w, h) => { const asp = w / h; if (asp < 1) return { ro: [0, 1.7, 18], ta: [0, 4.05, 0], fo: 1.75, hov: 1.45 }; return { ro: [0, 1.2, 7.4], ta: [0, 1.85, 0], fo: 1.7, hov: 1.75 }; };
     const size = () => { const big = innerWidth * innerHeight > 1.6e6; dpr = Math.min(devicePixelRatio || 1, big ? 1.25 : 1.75); const w = Math.round(innerWidth * dpr), h = Math.round(innerHeight * dpr); if (w === W && h === H) return; W = w; H = h; cv.width = W; cv.height = H; cam = camFor(W, H);
       gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.NEAREST)); [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(k => gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE));
       gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0); gl.viewport(0, 0, W, H); gl.useProgram(PB.p); setCam(PB.u); gl.uniform1f(PB.u.T, 0); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.bindFramebuffer(gl.FRAMEBUFFER, null); };
@@ -5596,13 +5596,13 @@ window.addEventListener("hashchange", route);
     const step = (dt, T) => {
       const halfAt = z => (W / H) / (2 * cam.fo) * Math.abs(cam.ro[2] - z) * .98; cam.half = halfAt(.75); const S = SHP, b = C[2]; S.t += dt; S.spin += dt * 2.2;
       const go = ph => { S.ph = ph; S.t = 0; };
-      if (S.ph === "search" && S.t > DUR.search && C[0].mode !== "say" && C[1].mode !== "shout") { const cand = [-1, 1].map(sd => sd * Math.min(cam.half * .6, 1.6)), far = x => Math.min(Math.abs(x - C[0].x), Math.abs(x - C[1].x)); S.hx = far(cand[0]) > far(cand[1]) ? cand[0] : cand[1]; S.side = Math.sign(S.hx) || 1; S.sx = S.side * (cam.half + 2.6); S.sy = 3.8; S.vis = 1; go("arrive"); }
-      if (S.ph === "arrive") { const u = ease(S.t / DUR.arrive); S.x = S.sx + (S.hx - S.sx) * u; S.y = S.sy + (1.75 - S.sy) * u + Math.sin(T * 2) * .03; S.lights = 1; if (S.t > DUR.arrive) { go("down"); bahiaOn = true; b.x = S.hx; b.z = .55; b.tp = 0; b.w = 0; b.wa = 0; b.yaw = 0; } }
-      if (S.ph === "down") { S.y = 1.75 + Math.sin(T * 2) * .03; S.beam = Math.min(1, S.t / .4); b.tp = ease((S.t - .6) / 1.7); if (S.t > DUR.down) { const nr = Math.abs(C[0].x - b.x) < Math.abs(C[1].x - b.x) ? C[0] : C[1]; S.mx = Math.max(-cam.half + .4, Math.min(cam.half - .4, nr.x + (b.x >= nr.x ? .62 : -.62))); go("walkIn"); } }
-      if (S.ph === "walkIn") { S.y = 1.75 + Math.sin(T * 2) * .03; S.beam = Math.max(0, S.beam - dt * 2); const d = S.mx - b.x; b.dir = Math.sign(d) || 1; if (Math.abs(d) < .05) go("meet"); else { b.x += b.dir * b.sp * dt; b.w += dt * b.sp * 14; b.wa += (1 - b.wa) * Math.min(1, dt * 4); } }
-      if (S.ph === "meet") { S.y = 1.75 + Math.sin(T * 2) * .03; b.wa += (0 - b.wa) * Math.min(1, dt * 5); if (S.t > DUR.meet) go("walkOut"); }
-      if (S.ph === "walkOut") { S.y = 1.75 + Math.sin(T * 2) * .03; const d = S.hx - b.x; b.dir = Math.sign(d) || 1; if (Math.abs(d) < .05) go("up"); else { b.x += b.dir * b.sp * dt; b.w += dt * b.sp * 14; b.wa += (1 - b.wa) * Math.min(1, dt * 4); } }
-      if (S.ph === "up") { S.y = 1.75 + Math.sin(T * 2) * .03; b.wa += (0 - b.wa) * Math.min(1, dt * 5); S.beam = Math.min(1, S.t / .3); b.tp = 1 - ease((S.t - .4) / 1.6); if (S.t > DUR.up) { bahiaOn = false; S.sx = S.x; S.sy = S.y; go("leave"); } }
+      if (S.ph === "search" && S.t > DUR.search && C[0].mode !== "say" && C[1].mode !== "shout") { const cand = [-1, 1].map(sd => sd * Math.min(cam.half * .6, 1.6, Math.max(.3, cam.half - .95))), far = x => Math.min(Math.abs(x - C[0].x), Math.abs(x - C[1].x)); S.hx = far(cand[0]) > far(cand[1]) ? cand[0] : cand[1]; S.side = Math.sign(S.hx) || 1; S.sx = S.side * (cam.half + 2.6); S.sy = 3.8; S.vis = 1; go("arrive"); }
+      if (S.ph === "arrive") { const u = ease(S.t / DUR.arrive); S.x = S.sx + (S.hx - S.sx) * u; S.y = S.sy + (cam.hov - S.sy) * u + Math.sin(T * 2) * .03; S.lights = 1; if (S.t > DUR.arrive) { go("down"); bahiaOn = true; b.x = S.hx; b.z = .55; b.tp = 0; b.w = 0; b.wa = 0; b.yaw = 0; } }
+      if (S.ph === "down") { S.y = cam.hov + Math.sin(T * 2) * .03; S.beam = Math.min(1, S.t / .4); b.tp = ease((S.t - .6) / 1.7); if (S.t > DUR.down) { const nr = Math.abs(C[0].x - b.x) < Math.abs(C[1].x - b.x) ? C[0] : C[1]; S.mx = Math.max(-cam.half + .4, Math.min(cam.half - .4, nr.x + (b.x >= nr.x ? .62 : -.62))); go("walkIn"); } }
+      if (S.ph === "walkIn") { S.y = cam.hov + Math.sin(T * 2) * .03; S.beam = Math.max(0, S.beam - dt * 2); const d = S.mx - b.x; b.dir = Math.sign(d) || 1; if (Math.abs(d) < .05) go("meet"); else { b.x += b.dir * b.sp * dt; b.w += dt * b.sp * 14; b.wa += (1 - b.wa) * Math.min(1, dt * 4); } }
+      if (S.ph === "meet") { S.y = cam.hov + Math.sin(T * 2) * .03; b.wa += (0 - b.wa) * Math.min(1, dt * 5); if (S.t > DUR.meet) go("walkOut"); }
+      if (S.ph === "walkOut") { S.y = cam.hov + Math.sin(T * 2) * .03; const d = S.hx - b.x; b.dir = Math.sign(d) || 1; if (Math.abs(d) < .05) go("up"); else { b.x += b.dir * b.sp * dt; b.w += dt * b.sp * 14; b.wa += (1 - b.wa) * Math.min(1, dt * 4); } }
+      if (S.ph === "up") { S.y = cam.hov + Math.sin(T * 2) * .03; b.wa += (0 - b.wa) * Math.min(1, dt * 5); S.beam = Math.min(1, S.t / .3); b.tp = 1 - ease((S.t - .4) / 1.6); if (S.t > DUR.up) { bahiaOn = false; S.sx = S.x; S.sy = S.y; go("leave"); } }
       if (S.ph === "leave") { S.beam = Math.max(0, S.beam - dt * 3); const u = S.t / DUR.leave, e = u * u; S.x = S.sx - S.side * e * (cam.half * 2 + 4); S.y = S.sy + e * 2.6; if (S.t > DUR.leave) { S.vis = 0; S.lights = 0; go("pause"); } }
       if (S.ph === "pause" && S.t > DUR.pause) go("search");
       const visiting = !["search", "pause"].includes(S.ph), lookX = ["arrive", "down", "up", "leave"].includes(S.ph) ? S.x : b.x;
@@ -5634,6 +5634,7 @@ window.addEventListener("hashchange", route);
       const b = C[2]; const tp = bahiaOn && b.tp > .9 ? proj([b.x + Math.sin(b.yaw) * .14 + Math.cos(b.yaw) * .1, .78 + b.raise * .3, b.z + Math.cos(b.yaw) * .14]) : [-1, -1];
       gl.uniform4fv(PM.u.CA, CA); gl.uniform4fv(PM.u.CB, CB); gl.uniform4fv(PM.u.BX, BX); gl.uniform2f(PM.u.TIP, tp[0], tp[1]); gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
+    if (location.search.includes("etsdebug")) window.etsTest = { C, S: SHP };
     st = { cv, lay, gl, raf: requestAnimationFrame(frame) };
     cv.addEventListener("webglcontextlost", e => { e.preventDefault(); stop(); setTimeout(sync, 600); });
   };
