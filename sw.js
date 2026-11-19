@@ -1,5 +1,5 @@
 /* Órbita Kanban — funciona sem internet: tenta a rede e guarda cópia; sem rede, usa a cópia */
-const C = "orbita-20261118.2137";
+const C = "orbita-20261118.2208";
 self.addEventListener("install", e => { self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "./orbita-kanban.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"])).catch(() => {})); });
 self.addEventListener("activate", e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C && k !== "orbita-fonts").map(k => caches.delete(k)))).then(() => clients.claim())));
 self.addEventListener("fetch", e => {
