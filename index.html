@@ -2005,7 +2005,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261119.0728";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261119.0733";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -5690,7 +5690,7 @@ window.addEventListener("hashchange", route);
       size(); const dt = motion ? Math.max(0, Math.min(.1, (now - last) / 1000)) : 0; last = now; const T = (now - t0) / 1000; if (motion) step(dt, T);
       gl.viewport(0, 0, W, H); gl.useProgram(PM.p); setCam(PM.u); gl.uniform1f(PM.u.T, T); gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, bagTex); gl.uniform1i(PM.u.BG, 1); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(PM.u.S, 0);
       const CA = [], CB = [], BX = [], S = SHP; C.forEach((c, i) => { const vis = i !== 2 || bahiaOn ? 1 : 0; CA.push(c.x, c.z, c.yaw, c.w); CB.push(c.raise, c.hy, vis, c.wa);
-        const tall = i === 3, top = proj([c.x, tall ? 3.75 : 1.6, c.z]), l = proj([c.x - (tall ? 1.25 : .6), 0, c.z + .8]), r = proj([c.x + (tall ? 1.25 : .6), 0, c.z + .8]), bot = proj([c.x, -.1, c.z + .5]); BX.push(Math.min(l[0], r[0]) - 6, bot[1] - 10, Math.max(l[0], r[0]) + 6, top[1] + 8);
+        const tall = i === 3, ex = tall ? 1.35 : .8, ht = tall ? 3.8 : 1.7; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const dx of [-ex, ex]) for (const dz of [-ex, ex]) for (const yy of [-.15, ht]) { const pp = proj([c.x + dx, yy, c.z + dz]); x0 = Math.min(x0, pp[0]); x1 = Math.max(x1, pp[0]); y0 = Math.min(y0, pp[1]); y1 = Math.max(y1, pp[1]); } BX.push(x0 - 8, y0 - 8, x1 + 8, y1 + 8);
         const bb = bubbles[i], hd = proj([c.x, i === 0 ? 1.5 : i === 1 ? 1.32 : i === 2 ? 1.5 : 3.7, c.z]); if (c.say && motion) { if (bb.textContent !== c.txt) bb.textContent = c.txt; bb.style.transform = `translate(${(hd[0] / dpr).toFixed(1)}px, ${(innerHeight - hd[1] / dpr).toFixed(1)}px) translate(-50%, -100%)`; bb.classList.add("on"); } else bb.classList.remove("on"); });
       const sb0 = proj([S.x, S.y + .45, S.z]), sbl = proj([S.x - .95, S.y - .2, S.z + .9]), sbr = proj([S.x + .95, S.y - .2, S.z + .9]); BX.push(Math.min(sbl[0], sbr[0]), sbl[1] - 10, Math.max(sbl[0], sbr[0]), sb0[1] + 10);
       const bt = proj([S.x, S.y - .12, S.z]), bg0 = proj([S.x, 0, .55]), bwT = Math.abs(proj([S.x + .35, S.y - .12, S.z])[0] - bt[0]), bwB = Math.abs(proj([S.x + .5, 0, .55])[0] - bg0[0]);
