@@ -797,6 +797,13 @@ html:root[data-depth="2"] .board.cine.enter .card { animation: bdDeal .72s cubic
 /* ===== modo calmo: sem animações, sem sons, sem 3D ===== */
 :root[data-calm="on"] *, :root[data-calm="on"] *::before, :root[data-calm="on"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 :root[data-calm="on"] .motes, :root[data-calm="on"] .aurora, :root[data-calm="on"] .floor, :root[data-calm="on"] .spot { display: none !important; }
+/* modo cena: colunas recolhidas e quase transparentes para ver o fundo animado */
+.btn.scene-btn.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.scene-btn .ic { width: 16px; height: 16px; } @media (max-width: 720px) { .top .scene-btn { width: 34px; padding: 0; justify-content: center; } }
+html[data-scene] .col { background: rgb(0 0 0 / .06) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; border-color: rgb(255 255 255 / .14) !important; align-self: flex-start; height: auto !important; max-height: none !important; transition: background .3s, border-color .3s; }
+html[data-scene] .col > :not(.col-h) { display: none !important; }
+html[data-scene] .col .col-h { border-bottom: 0 !important; background: transparent !important; box-shadow: none !important; opacity: .75; }
+html[data-scene] .col:hover .col-h { opacity: 1; }
 .btn.calm-btn.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 /* ===== Manual do Usuário ===== */
 body[data-view="manual"] #strip { display: none; }
@@ -1859,6 +1866,7 @@ body:has(.modal.lk-modal) .toasts { display: none; }
   <button class="btn search-btn" data-act="palette" id="btn-search"></button>
   <button class="btn main" data-act="newTask" id="btn-new"></button>
   <button class="btn calm-btn" data-act="calm" id="btn-calm" aria-label="Modo calmo" aria-pressed="false"></button>
+  <button class="btn scene-btn" data-act="scene" id="btn-scene" aria-label="Modo cena" aria-pressed="false"></button>
   <button class="btn lay-btn" data-act="layout" id="btn-lay" aria-label="Layout"></button>
   <button class="btn bell" data-act="bell" id="btn-bell" aria-label="Pendências"></button>
   <button class="btn lock-btn" data-act="lock" id="btn-lock" aria-label="Bloquear o app" title="Bloquear o app (Alt+L)"></button>
@@ -1911,6 +1919,7 @@ function fmtDur(ms) { const m = Math.round(ms / 6e4); if (m < 1) return "0min"; 
 function fmtClock(ms) { const s = Math.floor(ms / 1000); return pad2(Math.floor(s / 3600)) + ":" + pad2(Math.floor(s / 60) % 60) + ":" + pad2(s % 60); }
 const ICONS = {
   mob: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.7"/><path d="M7 12.3h2"/>', mon: '<rect x="1.8" y="2.8" width="12.4" height="8.4" rx="1.5"/><path d="M5.5 14h5M8 11.2V14"/>', ref: '<path d="M13.2 8a5.2 5.2 0 1 1-1.7-3.8M13.2 2.4v3.2H10"/>',
+  scene: '<rect x="2.2" y="3.2" width="11.6" height="9.6" rx="2"/><path d="M3.2 11.6l3.1-3.3 2.2 2.2 1.7-1.7 2.6 2.6"/><circle cx="10.4" cy="6.3" r="1.1"/>',
   lock: '<rect x="3.2" y="7" width="9.6" height="6.8" rx="1.8"/><path d="M5.3 7V5.2a2.7 2.7 0 0 1 5.4 0V7"/>',
   tick: '<path d="m3.5 8.5 3 3 6-7"/>', pin: '<path d="M6 2.2h4l-.7 3.6 2.1 2.2H4.6l2.1-2.2zM8 8.2v5.6"/>', phone: '<path d="M3.2 2.2h2.4l1.1 3-1.6 1.2a8.2 8.2 0 0 0 3.8 3.8l1.2-1.6 3 1.1v2.4a1.3 1.3 0 0 1-1.4 1.3C6.5 13.1 2.9 9.5 1.9 3.6A1.3 1.3 0 0 1 3.2 2.2z"/>',
   leaf: '<path d="M3 13c0-6 3-9.5 10-10 0 6.5-3 10-9 10zM3 13l5-5"/>', book: '<path d="M3 3.5h4.3a1.7 1.7 0 0 1 1.7 1.7V13a1.5 1.5 0 0 0-1.5-1.5H3zM13 3.5H9.7A1.7 1.7 0 0 0 8 5.2V13a1.5 1.5 0 0 1 1.5-1.5H13z"/>',
@@ -1996,7 +2005,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261118.2239";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261119.0646";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2519,7 +2528,7 @@ function addTask(colId, props) {
 
 /* ================= renderização ================= */
 function applySettings() {
-  const r = document.documentElement, s = state.settings; lkMirror();
+  const r = document.documentElement, s = state.settings; lkMirror(); r.toggleAttribute("data-scene", !!s.scene);
   if (applySettings.host === undefined) applySettings.host = r.getAttribute("data-theme") || "";
   if (s.skin && SKIN_DEF[s.skin]) skinApply(s.skin);
   else { r.removeAttribute("data-skin"); { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", "#000000"); }
@@ -2546,6 +2555,7 @@ function renderChrome() {
   $("#btn-search").innerHTML = `${ic("search")}<span>Buscar ou executar…</span><kbd>Ctrl K</kbd>`;
   $("#btn-new").innerHTML = `${ic("plus")}Nova tarefa`;
   const n = pending().length;
+  { const sb = $("#btn-scene"), so = !!state.settings.scene; if (sb) { sb.innerHTML = ic("scene"); sb.classList.toggle("on", so); sb.setAttribute("aria-pressed", so); sb.title = so ? "Modo cena ligado: colunas recolhidas e transparentes para ver o fundo. Clique para voltar" : "Modo cena: recolhe as colunas e deixa quase transparentes para ver a animação do fundo (Alt+V)"; } }
   { const cb = $("#btn-calm"), on = !!state.settings.calm; cb.innerHTML = ic("leaf"); cb.classList.toggle("on", on); cb.setAttribute("aria-pressed", on); cb.title = on ? "Modo calmo ligado: sem animações e sem sons. Clique para desligar" : "Modo calmo: tira todas as animações e todos os sons"; }
   $("#btn-bell").innerHTML = ic("bell") + (n ? `<span class="badge">${n}</span>` : "");
   $("#btn-set").innerHTML = ic("gear"); $("#btn-lock").innerHTML = ic("lock");
@@ -3395,6 +3405,7 @@ const MANUAL = () => {
     grid(["Tema e cor", "Automático, claro ou escuro, e cor de destaque (muda botões, barras e planetas). Veja também os <b>Temas</b> prontos logo abaixo."], ["Efeito 3D", "Desligado, Suave ou Total. Menos efeito = mais rápido em computadores simples."], ["Vidro e luz", "O brilho e a transparência dos cartões."], ["Cartões", "Confortável ou compacto (mais cartões por tela)."],
       ["Aberturas", "As animações de entrada do Quadro e da Órbita: sempre, só na 1ª vez ou desligadas. Clique em qualquer lugar ou Esc para pular."], ["Sons", "Liga, desliga, volume e botões para ouvir cada som."])
     + `<div class="man-hero-note"><div class="man-ico">${ic("leaf")}</div><div><h4>Modo calmo</h4><p>O botão de folha na barra do topo <b>desliga todas as animações e todos os sons</b> de uma vez, e achata o 3D. Ideal para concentração, computadores lentos ou quem se distrai com movimento. Clique de novo para voltar.</p>${go("Ligar ou desligar o modo calmo", "calm")}</div></div>`
+    + `<div class="man-hero-note"><div class="man-ico">${ic("scene")}</div><div><h4>Modo cena</h4><p>O botão de <b>imagem</b> na barra do topo (ou <b>Alt+V</b>) recolhe todas as colunas, deixando só o título e a contagem, e as deixa <b>quase transparentes</b>. Assim dá para ver a animação de fundo dos temas (como <i>Cadê o Bahia?</i>, <i>Metrópole</i> ou <i>Terra</i>). Toque de novo para as tarefas voltarem.</p></div></div>`
     + `<h4 class="man-h4">🎨 Temas</h4><p>Em <b>Configurações → Temas</b> (ou Ctrl K → <i>Escolher tema</i>) há 40 temas completos, separados em <b>Escuros</b> e <b>Claros</b>. Cada um troca cores, fundo, fonte, arredondamento dos cartões e a cor do item selecionado. Toque no cartão do tema para aplicar na hora, sem fechar, e experimente à vontade.</p>`
     + grid(["Fliperama (escuro)", "Synthwave anos 80: sol listrado no horizonte, grade neon que corre e letras de fliperama."], ["Neo-Tóquio (escuro)", "Cyberpunk amarelo-elétrico, cartões com cantos cortados e listras de alerta."], ["Terminal (escuro)", "Monitor antigo de fósforo verde: fonte de código, letras com brilho e linhas de varredura."], ["Gatsby (escuro)", "Art déco: preto quente, leques dourados no fundo e filetes de ouro nos cartões."], ["Abissal (escuro)", "Fundo do mar: plâncton brilhante subindo devagar e cartões com brilho verde-água."], ["Bauhaus (claro)", "Formas primárias, contornos pretos grossos e sombras chapadas, estilo pôster."], ["Zen (claro)", "Papel de arroz, tinta sumi, carimbo vermelho e um ensō pincelado no canto."], ["Gelato (claro)", "Pastel de sorveteria: cada coluna ganha um sabor (cor) próprio."], ["Caderno (claro)", "Folha quadriculada com margem vermelha, fita adesiva nas colunas e marca-texto amarelo."], ["Pérola (claro)", "Holográfico: fundo iridescente, cartões de vidro fosco e botões que mudam de cor."], ["Matrix (escuro)", "Chuva de código verde caindo de verdade atrás do quadro, fonte de terminal e prioridades em pílula vermelha (crítica) e azul (baixa)."], ["Matrix Claro", "O Construto do filme: sala branca infinita com chuva de código suave e cartões flutuando."], ["Cyberpunk (escuro)", "No estilo da interface do jogo: HUD vermelho-coral no preto, linhas de interface nos cantos, molduras de canto cortado, destaque ciano e títulos com glitch."], ["Cyberpunk Claro", "A tela amarela do menu do jogo: fundo amarelo-elétrico, colunas com rótulo preto e faixa vermelha, cartões que ficam pretos ao passar o mouse."], ["Cadê o Bahia? (escuro)", "Cena 3D animada numa rua de pedras com neblina, carro antigo e homens de casaco ao fundo. O ET de casaco e o ET gordinho andam de um lado para o outro procurando o amigo: de vez em quando aparece o balão <i>“Cadê o Bahia?!”</i> e o gordinho pega o megafone e grita <i>“KKKKDDDD VC BAHIAAAA!!”</i>. De tempos em tempos chega um disco voador: ele para no ar, um raio de luz teleporta o Bahia para a rua e ele vai andando até os dois, fumando seu cigarrinho. Depois de bater um papo, volta para o raio, é teleportado de volta e a nave vai embora. Uns 4 segundos depois, a procura recomeça. Ao fundo, um ET bem alto, de cabelo black power, óculos esportivos espelhados e camiseta preta com a estampa de um ET gamer de headset jogando no PC, fica empinando pipa. Quando a nave do Bahia chega, ela passa pela linha e corta a pipa, que sai voando para longe (<i>“Ei!! Minha pipaaa!”</i>); depois ele manda um <i>“Salve Bahia...”</i>. A cada novo ciclo ele solta outra pipa. Os olhos do Bahia são avermelhados."], ["Terra (escuro)", "A Terra vista da órbita em alta resolução, desenhada pela placa de vídeo: continentes, oceanos com reflexo do sol, nuvens que se movem, luzes das cidades no lado da noite, atmosfera azul e o sol nascendo atrás do horizonte com raios e reflexos de lente. Um satélite passa de vez em quando."], ["Via Láctea (escuro)", "O céu de uma noite bem escura: núcleo dourado da galáxia, faixas de poeira, nebulosas rosa e azuis, milhares de estrelas cintilando, estrelas cadentes e silhueta de montanhas com um observatório. O céu gira devagar."], ["Metrópole (escuro)", "Cidade cyberpunk viva no fundo: prédios com janelas acesas, letreiros neon que piscam, carros na avenida, carros voadores e naves cruzando o céu, uma nave grande com telão e chuva."], ["Netrunner (escuro)", "Tela de invasão de sistema: códigos hexadecimais verde-limão no fundo, molduras tracejadas e cartões que acendem ao passar o mouse."], ["Corporação (escuro)", "Torre de megacorporação: preto polido, vermelho-sangue, faixas de luz verticais e títulos condensados."], ["Nômade (claro)", "Terras áridas: areia queimada de sol, ferrugem, poeira no horizonte e cartões de carga listrados."], ["Braindance (claro)", "Editor de memórias: trilhas de linha do tempo vermelha, ciana e amarela, ponto de gravação piscando e cartões com efeito RGB."], ["Sonoma (escuro)", "Estilo macOS: colinas ao anoitecer, cada coluna é uma janela com os três botões coloridos e vidro translúcido."], ["Big Sur (escuro)", "macOS com as ondas do Big Sur em azul, magenta e coral, e destaque laranja."], ["Sequoia (claro)", "macOS claro atual: ondas pastel, janelas de vidro e o azul da Apple."], ["Aqua (claro)", "O Mac OS X de 2001: fundo listrado, botões de gel azul brilhante e semáforo de bolinhas."])
     + tip("Os temas novos aparecem com a etiqueta <b>Novo</b> no seletor. Se o computador for simples, prefira os temas sem vidro (Bauhaus, Zen, Caderno, Terminal), que são os mais leves.")
@@ -3481,7 +3492,7 @@ const MANUAL = () => {
 const GLOSS = [["Alfinete", "Marca um campo para aparecer no cartão do quadro."], ["Arquivar", "Tira do quadro sem apagar; continua na busca e nos relatórios."], ["Atrasada", "Tarefa com prazo vencido e ainda aberta."],
   ["Chamado", "Número do ticket (ex.: #CH-48213), usado na busca e no cartão."], ["Checklist", "Lista de passos da tarefa com progresso."], ["Coluna de concluídas", "Coluna cujo conteúdo conta como feito."], ["Cronômetro", "Mede o tempo real gasto em uma tarefa."],
   ["Diário", "Anotações por tema e dia dentro do cartão."], ["Gaveta", "Painel lateral com todos os detalhes da tarefa."], ["Gist", "Arquivo privado no GitHub usado para sincronizar seus dados."], ["Limite (WIP)", "Máximo de tarefas simultâneas numa coluna."],
-  ["Modelo", "Conjunto de campos de um tipo de cartão (Trabalho JBS, Faculdade…)."], ["Modo calmo", "Desliga animações e sons."], ["Órbita", "Visão em formato de sistema solar."], ["Prioridade", "Crítica, alta, média ou baixa; define cor e tamanho."],
+  ["Modelo", "Conjunto de campos de um tipo de cartão (Trabalho JBS, Faculdade…)."], ["Modo calmo", "Desliga animações e sons."], ["Modo cena", "Recolhe as colunas e deixa quase transparentes para ver o fundo animado (Alt+V)."], ["Órbita", "Visão em formato de sistema solar."], ["Prioridade", "Crítica, alta, média ou baixa; define cor e tamanho."],
   ["Quadro", "Espaço de trabalho com colunas e tarefas próprias."], ["Tag", "Etiqueta colorida para agrupar tarefas."], ["Token", "Código que autoriza o app a usar seu Gist no GitHub."], ["Verso", "Lado de trás do cartão, com o checklist."]];
 
 function renderManual() {
@@ -4908,6 +4919,7 @@ const acts = {
   manJump: el => { const q = $("#man_q"); if (q && q.value) { q.value = ""; ins.manQ(q); } const t = $("#m-" + el.dataset.v); if (!t) return; t.classList.add("in"); t.scrollIntoView({ behavior: state.settings.calm || calm.matches ? "auto" : "smooth", block: "start" }); },
   manLetter: el => { const t = $(`.man-gl[data-l="${el.dataset.v}"]`); if (!t) return; t.scrollIntoView({ behavior: state.settings.calm || calm.matches ? "auto" : "smooth", block: "center" }); t.classList.add("flash"); setTimeout(() => t.classList.remove("flash"), 1400); },
   manDo: el => { const v = el.dataset.v; if (v.startsWith("view:")) location.hash = v.slice(5); else if (v === "settings") openSettings(); else if (v === "help") openHelp(); else if (v === "palette") openPalette(); else if (v === "newTask") acts.newTask(); else if (v === "calm") acts.calm(); else if (v === "boards") { scrollTo(0, 0); $("#board-menu").open = true; } },
+  scene: () => { state.settings.scene = !state.settings.scene; save(); applySettings(); renderChrome(); toast(state.settings.scene ? "Modo cena ligado: colunas recolhidas" : "Modo cena desligado"); },
   calm: () => { state.settings.calm = !state.settings.calm; save(); applySettings(); renderChrome(); if (ui.overlay === "set") openSettings(); toast(state.settings.calm ? "Modo calmo ligado: sem animações e sem sons" : "Modo calmo desligado"); if (ui.view === "quadro" || ui.view === "orbita") renderView(); },
   qaOpen: el => { const f = el.closest(".quick"); f.classList.add("open"); const i = $("input", f); i.focus(); },
   qaClose: el => { const f = el.closest(".quick"); $("input", f).value = ""; f.classList.remove("open"); },
@@ -5022,6 +5034,7 @@ document.addEventListener("keydown", e => {
   const tg = e.target, typing = /INPUT|TEXTAREA|SELECT/.test(tg.tagName) || tg.isContentEditable;
   if (e.ctrlKey && e.shiftKey && !e.altKey && e.code === "KeyD") { e.preventDefault(); const m = localStorage.getItem("orbita_layout") || "auto", eff = m === "auto" ? (matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop") : m; return layoutSet(eff === "mobile" ? "desktop" : "mobile"); }
   if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.code === "KeyL") { e.preventDefault(); return acts.lock(); }
+  if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.code === "KeyV") { e.preventDefault(); return acts.scene(); }
   if (e.ctrlKey && e.altKey && !e.shiftKey && e.code === "KeyR") { e.preventDefault(); return acts.appUpdate($("#btn-upd")); }
   if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && (e.code === "KeyN" || e.code === "KeyQ")) { e.preventDefault(); if (ui.overlay) closeLayer(); return e.code === "KeyN" ? acts.newTask() : acts.boardAdd(); }
   if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && e.code === "KeyC") { e.preventDefault(); return ui.overlay === "set" ? closeLayer() : openSettings(); }
