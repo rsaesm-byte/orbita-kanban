@@ -1890,6 +1890,11 @@ body.crt-on { animation: crtOnBody .8s cubic-bezier(.2, .8, .3, 1) both; transfo
 @keyframes crtLineOff { 0%, 45% { opacity: 0; transform: scaleX(1); } 62% { opacity: 1; transform: scaleX(1); } 92% { opacity: 1; transform: scaleX(.012); } 100% { opacity: 0; transform: scaleX(.012); } }
 @keyframes crtLineOn { 0% { opacity: 1; transform: scaleX(.012); } 28% { opacity: 1; transform: scaleX(1); } 55% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1); } }
 @media (max-width: 720px) { .top .lock-btn { width: 34px; padding: 0; } }
+/* modo descanso: dois toques na área vazia desligam a tela como uma TV e deixam só a animação do fundo */
+html[data-rest] body > :not(#gl-bg):not(.motes):not(.aurora):not(.floor):not(.spot):not(#crtfx):not(#lockscreen):not(#rest-hint):not(script) { visibility: hidden !important; pointer-events: none !important; }
+html[data-rest], html[data-rest] body { cursor: none; }
+#rest-hint { position: fixed; left: 50%; bottom: max(28px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 100000; padding: 8px 16px; border-radius: 99px; font: 500 13px/1.2 system-ui, sans-serif; color: #fff; background: rgb(0 0 0 / .45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; opacity: 0; transition: opacity .8s; }
+#rest-hint.on { opacity: 1; }
 body:has(.modal.lk-modal) .toasts { display: none; }
 #lockscreen .ls-form .inp { background: #0c1518; color: #e6eef0; border: 1px solid #2c4348; border-radius: 12px; } #lockscreen .ls-form .inp:focus { outline: 2px solid #5fd6cb; } #lockscreen .ls-form .btn { justify-content: center; text-align: center; color: #02201d; background: #5fd6cb; border: 0; font-weight: 700; }
 </style>
@@ -2045,7 +2050,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261121.0827";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261121.0836";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -3477,7 +3482,7 @@ const MANUAL = () => {
 
   add("Ajustes", "bloqueio", "lock", "Bloqueio com senha ou padrão", "Deixe o app trancado para quem pegar seu computador ou celular.",
     step(`Abra <b>Configurações → 🔒 Bloqueio do app</b> e escolha <b>Definir senha</b> ou <b>Definir padrão</b> (ligar pontos, como no Android).`, `Digite ou desenhe duas vezes para confirmar. O padrão precisa de pelo menos 4 pontos; a senha, de 4 caracteres.`, `Pronto: o cadeado aparece na barra do topo. Toque nele (ou aperte ${k("Alt")} + ${k("L")}) para bloquear na hora.`)
-    + grid(["Ao bloquear", "A tela desliga como uma TV de tubo e aparece um cadeado se fechando."], ["Ao abrir", "A TV liga na tela do cadeado. Com o código certo o cadeado abre e o app liga."], ["Bloqueio automático", "Só manual, ao sair do app ou depois de 1, 5 ou 15 minutos fora."], ["Tentativas", "Depois de 5 erros seguidos, espera 30 segundos."])
+    + grid(["Dois toques na tela", "Toque duas vezes (ou dê dois cliques) numa área vazia do quadro: a tela desliga como uma TV e o app é bloqueado. Sem bloqueio ativado, ele entra no <b>modo descanso</b>: some tudo e fica só a animação do tema. Um toque, clique ou tecla volta."], ["Ao bloquear", "A tela desliga como uma TV de tubo e aparece um cadeado se fechando."], ["Ao abrir", "A TV liga na tela do cadeado. Com o código certo o cadeado abre e o app liga."], ["Bloqueio automático", "Só manual, ao sair do app ou depois de 1, 5 ou 15 minutos fora."], ["Tentativas", "Depois de 5 erros seguidos, espera 30 segundos."])
     + warn("É uma trava de privacidade na tela. Ela não criptografa os dados guardados no navegador, e não há como recuperar o código: se esquecer, é preciso limpar os dados do site. Mantenha a sincronização com o GitHub ou um arquivo de backup em dia.")
     + tip("Com o <b>modo calmo</b> ligado, ou se o aparelho pedir menos movimento, as animações de TV e cadeado são puladas, mas o bloqueio funciona igual.")
     + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
@@ -4266,6 +4271,25 @@ function lkLock(animate) {
     const el = $("#lockscreen"), pl = $(".padlock", el); if (pl && lkAnim() && animate) { el.classList.add("closing"); pl.classList.add("open"); setTimeout(() => pl.classList.remove("open"), 260); setTimeout(() => pl.classList.add("clack"), 760); } LK.busy2 = false; };
   if (animate && lkAnim()) { LK.busy2 = true; r.classList.add("crt"); b.classList.add("crt-off"); fx.className = "off"; setTimeout(go, 760); } else go();
 }
+/* ===== dois toques na tela: bloqueia (se houver bloqueio) ou entra no modo descanso ===== */
+const REST = { busy: false, hintT: 0 };
+const restOn = () => document.documentElement.hasAttribute("data-rest");
+function restTv(mid, done) { const r = document.documentElement, b = document.body, fx = $("#crtfx"); if (!lkAnim()) { mid(); done && done(); return; } REST.busy = true; r.classList.add("crt"); b.classList.add("crt-off"); fx.className = "off";
+  setTimeout(() => { b.classList.remove("crt-off"); mid(); b.classList.add("crt-on"); fx.className = "on"; setTimeout(() => { b.classList.remove("crt-on"); r.classList.remove("crt"); fx.className = ""; REST.busy = false; done && done(); }, 850); }, 760); }
+function restEnter() { if (restOn() || REST.busy || lkLocked()) return; if (ui.overlay || ui.drawer) closeLayer(); { const m = $("#board-menu"); if (m) m.open = false; } try { document.activeElement && document.activeElement.blur(); } catch {}
+  restTv(() => { document.documentElement.setAttribute("data-rest", ""); let h = $("#rest-hint"); if (!h) { h = document.createElement("div"); h.id = "rest-hint"; document.body.appendChild(h); } h.textContent = matchMedia("(pointer: coarse)").matches ? "Toque para voltar" : "Clique ou aperte uma tecla para voltar"; }, () => { const h = $("#rest-hint"); if (!h) return; h.classList.add("on"); clearTimeout(REST.hintT); REST.hintT = setTimeout(() => h.classList.remove("on"), 2600); }); }
+function restExit() { if (!restOn() || REST.busy) return; const h = $("#rest-hint"); if (h) h.classList.remove("on"); restTv(() => document.documentElement.removeAttribute("data-rest")); }
+function screenOff() { if (lkOn()) lkLock(true); else restEnter(); }
+(function () {
+  const NO = "button, a, input, textarea, select, option, label, summary, details, [contenteditable], [data-act], [data-in], .card, .modal, .drawer, #layer *, .ctx, .lb, .top, .bnav, .colnav, .strip, .orbit, .menu, .toasts, #tip, .col-h, svg, img, canvas:not(#gl-bg):not(.motes), .fab";
+  const empty = t => t instanceof Element && !t.closest(NO);
+  let last = 0, lx = 0, ly = 0;
+  const wake = e => { if (!restOn()) return; e.preventDefault(); e.stopPropagation(); if (e.type !== "keydown" || !["Shift", "Control", "Alt", "Meta"].includes(e.key)) restExit(); };
+  ["pointerdown", "keydown", "wheel"].forEach(ev => addEventListener(ev, wake, { capture: true, passive: false }));
+  ["click", "pointerup", "dblclick", "contextmenu"].forEach(ev => addEventListener(ev, e => { if (restOn() || REST.busy) { e.preventDefault(); e.stopPropagation(); } }, { capture: true }));
+  addEventListener("dblclick", e => { if (e.pointerType === "touch" || lkLocked() || !empty(e.target)) return; if (getSelection) try { getSelection().removeAllRanges(); } catch {} screenOff(); });
+  addEventListener("pointerup", e => { if (e.pointerType !== "touch" || lkLocked() || restOn() || !empty(e.target)) { last = 0; return; } const now = Date.now(); if (now - last < 330 && Math.hypot(e.clientX - lx, e.clientY - ly) < 36) { last = 0; e.preventDefault(); screenOff(); return; } last = now; lx = e.clientX; ly = e.clientY; });
+})();
 /* ===== biometria (WebAuthn, autenticador do aparelho) ===== */
 const b64 = u => btoa(String.fromCharCode(...new Uint8Array(u))), unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
 const bioId = () => { try { return localStorage.getItem("orbita_bio") || ""; } catch { return ""; } };
@@ -4293,7 +4317,7 @@ function lkSection() {
     <div class="set-row"><span class="lbl" style="width:110px">Bloquear sozinho</span>${seg("auto", [["manual", "Só manual"], ["hide", "Ao sair do app"], ["1", "Após 1 min"], ["5", "Após 5 min"], ["15", "Após 15 min"]])}</div>
     ${bioOk() ? `<div class="set-row"><span class="lbl" style="width:110px">Biometria</span><button class="btn ${bioId() ? "on" : ""}" data-act="bioToggle">${bioId() ? "Ligada neste aparelho · desligar" : "Ligar impressão digital / rosto"}</button></div>` : ""}
     <div class="set-row"><button class="btn" data-act="lkSetup" data-v="pwd">Trocar por senha</button><button class="btn" data-act="lkSetup" data-v="pat">Trocar por padrão</button><button class="btn danger" data-act="lkSetup" data-v="off">Remover bloqueio</button></div>
-    <p class="meta" style="margin:6px 0 0">Ao abrir o app ele sempre pede o código. Atalho para bloquear: <kbd>Alt</kbd> + <kbd>L</kbd>.</p>`;
+    <p class="meta" style="margin:6px 0 0">Ao abrir o app ele sempre pede o código. Atalho para bloquear: <kbd>Alt</kbd> + <kbd>L</kbd>, ou dois toques numa área vazia da tela.</p>`;
 }
 function lkFlow(goal) {
   const cur = state.settings.lock && state.settings.lock.h ? state.settings.lock : null, steps = [];
