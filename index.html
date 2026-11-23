@@ -1948,7 +1948,7 @@ body.crt-on { animation: crtOnBody .8s cubic-bezier(.2, .8, .3, 1) both; transfo
 /* modo fundo: o botão do olho desliga a tela como uma TV e deixa só a animação do fundo */
 html[data-rest] body > :not(#gl-bg):not(.motes):not(.aurora):not(.floor):not(.spot):not(#crtfx):not(#lockscreen):not(#rest-exit):not(script) { visibility: hidden !important; pointer-events: none !important; }
 #rest-exit { display: none; }
-html[data-rest] #rest-exit { display: inline-flex; align-items: center; gap: 8px; position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); z-index: 100001; padding: 10px 16px; border: 0; border-radius: 999px; font: 700 14px/1 var(--body, system-ui); color: #fff; background: linear-gradient(135deg, #7c5cff, #19c3b4 85%); box-shadow: 0 8px 24px -6px rgb(0 0 0 / .6), 0 0 0 1px rgb(255 255 255 / .15) inset; cursor: pointer; opacity: .6; transition: opacity .3s, transform .2s; }
+html[data-rest] #rest-exit { display: inline-flex; align-items: center; justify-content: center; position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); z-index: 100001; width: 38px; height: 38px; padding: 0; border: 1px solid rgb(255 255 255 / .25); border-radius: 12px; color: #fff; background: rgb(0 0 0 / .35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer; opacity: .7; transition: opacity .3s, transform .2s; }
 html[data-rest] #rest-exit:hover, html[data-rest] #rest-exit:focus-visible { opacity: 1; } html[data-rest] #rest-exit:active { transform: scale(.95); }
 #rest-exit .ic { width: 17px; height: 17px; }
 body:has(.modal.lk-modal) .toasts { display: none; }
@@ -1972,7 +1972,7 @@ body:has(.modal.lk-modal) .toasts { display: none; }
   <button class="btn bell" data-act="bell" id="btn-bell" aria-label="Pendências"></button>
   <button class="btn lock-btn" data-act="lock" id="btn-lock" aria-label="Bloquear o app" title="Bloquear o app (Alt+L)"></button>
   <button class="btn" data-act="settings" id="btn-set" aria-label="Configurações"></button>
-  <button class="btn rest-btn" data-act="rest" id="btn-rest" aria-label="Ver o fundo" title="Ver só o fundo animado (esconde o quadro). Para voltar, toque em Voltar ao quadro ou aperte Esc."></button>
+  <button class="btn rest-btn" data-act="rest" id="btn-rest" aria-label="Ver o fundo" title="Ver só o fundo animado (esconde o quadro). Toque no olho de novo ou aperte Esc para voltar."></button>
   <button class="btn upd-btn" data-act="appUpdate" id="btn-upd" aria-label="Atualizar app" title="Atualizar app: busca a versão mais nova e recarrega. Seus dados ficam como estão."></button>
 </header>
 <canvas class="motes" id="motes" aria-hidden="true"></canvas>
@@ -2108,7 +2108,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261123.0858";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261123.1134";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -3540,7 +3540,7 @@ const MANUAL = () => {
 
   add("Ajustes", "bloqueio", "lock", "Bloqueio com senha ou padrão", "Deixe o app trancado para quem pegar seu computador ou celular.",
     step(`Abra <b>Configurações → 🔒 Bloqueio do app</b> e escolha <b>Definir senha</b> ou <b>Definir padrão</b> (ligar pontos, como no Android).`, `Digite ou desenhe duas vezes para confirmar. O padrão precisa de pelo menos 4 pontos; a senha, de 4 caracteres.`, `Pronto: o cadeado aparece na barra do topo. Toque nele (ou aperte ${k("Alt")} + ${k("L")}) para bloquear na hora.`)
-    + grid(["Ver o fundo (botão do olho)", "O botão com o <b>olho</b>, ao lado de <b>Atualizar</b>, desliga a tela como uma TV e esconde o quadro, deixando só a animação do tema. Para voltar, toque em <b>Voltar ao quadro</b> (no canto de cima) ou aperte <kbd>Esc</kbd>. Toques no fundo são ignorados, então ele não volta sozinho."], ["Ao bloquear", "A tela desliga como uma TV de tubo e aparece um cadeado se fechando."], ["Ao abrir", "A TV liga na tela do cadeado. Com o código certo o cadeado abre e o app liga."], ["Bloqueio automático", "Só manual, ao sair do app ou depois de 1, 5 ou 15 minutos fora."], ["Tentativas", "Depois de 5 erros seguidos, espera 30 segundos."])
+    + grid(["Ver o fundo (botão do olho)", "O botão com o <b>olho</b>, ao lado de <b>Atualizar</b>, desliga a tela como uma TV e esconde o quadro, deixando só a animação do tema. Para voltar, toque de novo no <b>olho</b> (ele continua no mesmo lugar) ou aperte <kbd>Esc</kbd>. Toques no fundo são ignorados, então ele não volta sozinho."], ["Ao bloquear", "A tela desliga como uma TV de tubo e aparece um cadeado se fechando."], ["Ao abrir", "A TV liga na tela do cadeado. Com o código certo o cadeado abre e o app liga."], ["Bloqueio automático", "Só manual, ao sair do app ou depois de 1, 5 ou 15 minutos fora."], ["Tentativas", "Depois de 5 erros seguidos, espera 30 segundos."])
     + warn("É uma trava de privacidade na tela. Ela não criptografa os dados guardados no navegador, e não há como recuperar o código: se esquecer, é preciso limpar os dados do site. Mantenha a sincronização com o GitHub ou um arquivo de backup em dia.")
     + tip("Com o <b>modo calmo</b> ligado, ou se o aparelho pedir menos movimento, as animações de TV e cadeado são puladas, mas o bloqueio funciona igual.")
     + `<p class="man-try-row">${go("Abrir as configurações", "settings")}</p>`,
@@ -4335,7 +4335,7 @@ const restOn = () => document.documentElement.hasAttribute("data-rest");
 function restTv(mid, done) { const r = document.documentElement, b = document.body, fx = $("#crtfx"); if (!lkAnim()) { mid(); done && done(); return; } REST.busy = true; r.classList.add("crt"); b.classList.add("crt-off"); fx.className = "off";
   setTimeout(() => { b.classList.remove("crt-off"); mid(); b.classList.add("crt-on"); fx.className = "on"; setTimeout(() => { b.classList.remove("crt-on"); r.classList.remove("crt"); fx.className = ""; REST.busy = false; done && done(); }, 850); }, 760); }
 function restEnter() { if (restOn() || REST.busy || lkLocked()) return; if (ui.overlay || ui.drawer) closeLayer(); { const m = $("#board-menu"); if (m) m.open = false; } try { document.activeElement && document.activeElement.blur(); } catch {}
-  restTv(() => { document.documentElement.setAttribute("data-rest", ""); let b = $("#rest-exit"); if (!b) { b = document.createElement("button"); b.id = "rest-exit"; b.type = "button"; b.setAttribute("aria-label", "Sair do modo fundo"); b.innerHTML = `${ic("eyeoff")}<span>Voltar ao quadro</span>`; document.body.appendChild(b); } }); }
+  restTv(() => { document.documentElement.setAttribute("data-rest", ""); let b = $("#rest-exit"); if (!b) { b = document.createElement("button"); b.id = "rest-exit"; b.type = "button"; b.setAttribute("aria-label", "Sair do modo fundo"); b.innerHTML = ic("eye"); b.title = "Voltar ao quadro"; document.body.appendChild(b); } const r = $("#btn-rest") && $("#btn-rest").getBoundingClientRect(); if (r && r.width) { b.style.top = r.top + "px"; b.style.left = r.left + "px"; b.style.right = "auto"; b.style.width = r.width + "px"; b.style.height = r.height + "px"; } }); }
 function restExit() { if (!restOn() || REST.busy) return; restTv(() => document.documentElement.removeAttribute("data-rest")); }
 (function () {
   addEventListener("keydown", e => { if (!restOn()) return; e.preventDefault(); e.stopPropagation(); if (!REST.busy && e.key === "Escape") restExit(); }, true);
