@@ -1475,7 +1475,7 @@ html:root[data-skin="terminal"][data-theme] { --bg: #030803; --bg2: #050d06; --s
   --accent: #39ff6a; --accent-ink: #001a07; --accent-soft: color-mix(in oklab, #39ff6a 16%, #08130a); --sel: #39ff6a; --sel-ink: #001a07; --body: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; --display: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; --r-card: 3px;
   --p0: #ff5f56; --p1: #ffbd2e; --p2: #d7ff5f; --p3: #5fd7ff;
   --bg-img: radial-gradient(80% 70% at 50% 45%, rgb(57 255 106 / .07), transparent 75%), radial-gradient(120% 100% at 50% 50%, transparent 60%, rgb(0 0 0 / .65) 100%); }
-html:root[data-skin="terminal"][data-theme] body { font-size: 13.5px; text-shadow: 0 0 5px rgb(57 255 106 / .35); }
+html:root[data-skin="terminal"][data-theme] body { font-size: 15px; text-shadow: 0 0 5px rgb(57 255 106 / .35); }
 html:root[data-skin="terminal"][data-theme] body::after { content: ""; position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; background: repeating-linear-gradient(180deg, rgb(0 0 0 / .2) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }
 html:root[data-skin="terminal"][data-theme] .card .face, html:root[data-skin="terminal"][data-theme] .col { box-shadow: none; border-style: dashed; }
 html:root[data-skin="terminal"][data-theme] .card:hover .face { border-style: solid; border-color: var(--accent); box-shadow: 0 0 14px -4px rgb(57 255 106 / .5); }
@@ -1570,7 +1570,7 @@ html:root[data-skin="matrixrgb"][data-theme] { --bg: #000; --bg2: #05030a; --sur
   --body: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; --display: "Share Tech Mono", ui-monospace, Menlo, Consolas, monospace; --r-card: 5px; --bg-img: #000; --rgb: linear-gradient(90deg, #ff3b3b, #ffb23b, #f5ff3b, #3bff7a, #3bf0ff, #3b7bff, #b43bff, #ff3bd4, #ff3b3b); }
 @keyframes rgbflow { to { background-position: 200% 0; } }
 @keyframes rgbhue { to { filter: hue-rotate(360deg); } }
-html:root[data-skin="matrixrgb"][data-theme] body { font-size: 13.5px; }
+html:root[data-skin="matrixrgb"][data-theme] body { font-size: 15px; }
 html:root[data-skin="matrixrgb"][data-theme] .col { position: relative; background: rgb(0 0 0 / .6); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); border: 1px solid transparent; }
 html:root[data-skin="matrixrgb"][data-theme] .col::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: var(--rgb); background-size: 200% 100%; animation: rgbflow 6s linear infinite; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); pointer-events: none; opacity: .75; }
 html:root[data-skin="matrixrgb"][data-theme] .col-name, html:root[data-skin="matrixrgb"][data-theme] h1, html:root[data-skin="matrixrgb"][data-theme] h2 { background: var(--rgb); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rgbflow 5s linear infinite; letter-spacing: .08em; text-transform: uppercase; }
@@ -1583,7 +1583,7 @@ html:root[data-skin="matrixrgb"][data-theme] .btn.main { background: var(--rgb);
 html:root[data-skin="matrix"][data-theme] { --bg: #000; --bg2: #010803; --surface: rgb(2 14 6 / .9); --surface2: rgb(4 22 10 / .92); --ink: #c9ffd8; --ink2: #7fd99a; --ink3: #3f9a5c; --line: #0f3a1c; --edge: #000;
   --accent: #00ff41; --accent-ink: #001a08; --accent-soft: color-mix(in oklab, #00ff41 16%, #020e06); --sel: #00ff41; --sel-ink: #001a08; --p0: #ff3b3b; --p1: #ffb020; --p2: #d6ff4a; --p3: #3b8bff;
   --body: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; --display: "Share Tech Mono", ui-monospace, Menlo, Consolas, monospace; --r-card: 3px; --bg-img: #000; }
-html:root[data-skin="matrix"][data-theme] body { font-size: 13.5px; }
+html:root[data-skin="matrix"][data-theme] body { font-size: 15px; }
 html:root[data-skin="matrix"][data-theme] .col { background: rgb(0 0 0 / .62); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); border: 1px solid rgb(0 255 65 / .18); }
 html:root[data-skin="matrix"][data-theme] .col-name { text-shadow: 0 0 8px rgb(0 255 65 / .8); letter-spacing: .08em; text-transform: uppercase; color: #b5ffc8; }
 html:root[data-skin="matrix"][data-theme] .col-name::before { content: "> "; color: var(--accent); }
@@ -1597,7 +1597,7 @@ html:root[data-skin="matrix"][data-theme] ::selection { background: #00ff41; col
 html:root[data-skin="matrixclaro"][data-theme] { --bg: #f6f7f5; --bg2: #eef0ec; --surface: #ffffff; --surface2: #fbfcfa; --ink: #0b1a10; --ink2: #3c5243; --ink3: #7a8c7f; --line: #dfe5df; --edge: #cfd8d0;
   --accent: #0a7d34; --accent-ink: #ffffff; --accent-soft: #dcefe2; --sel: #0b1a10; --sel-ink: #f6f7f5; --shadow: 20 40 25; --p0: #d62828; --p3: #2a62d6;
   --body: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; --display: "Share Tech Mono", ui-monospace, Menlo, Consolas, monospace; --r-card: 3px; --bg-img: #f6f7f5; }
-html:root[data-skin="matrixclaro"][data-theme] body { font-size: 13.5px; }
+html:root[data-skin="matrixclaro"][data-theme] body { font-size: 15px; }
 html:root[data-skin="matrixclaro"][data-theme] .col { background: rgb(255 255 255 / .55); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); border: 1px solid #e3e8e3; box-shadow: 0 30px 50px -36px rgb(20 40 25 / .35); }
 html:root[data-skin="matrixclaro"][data-theme] .col-name { letter-spacing: .08em; text-transform: uppercase; } html:root[data-skin="matrixclaro"][data-theme] .col-name::before { content: "> "; color: var(--accent); }
 html:root[data-skin="matrixclaro"][data-theme] .card .face { border-color: #e3e8e3; box-shadow: 0 12px 22px -16px rgb(20 40 25 / .4); }
@@ -1690,6 +1690,8 @@ html:root[data-skin="dados"][data-theme] .col { background: rgb(255 255 255 / .5
 html:root[data-skin="dados"][data-theme] .card .face { background: rgb(255 255 255 / .9); } html:root[data-skin="dados"][data-theme] .card:hover .face { border-color: #3a6fe0; box-shadow: 0 0 0 1px #3a6fe055, 0 12px 26px -12px #3a6fe077; }
 html:root[data-skin="dados"][data-theme] .bnav { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 html:root[data-skin="fliperama"][data-theme] body::after, html:root[data-skin="abissal"][data-theme] body::after, html:root[data-skin="abissal"][data-theme] body::before { display: none; }
+@media (max-width: 720px) { html:root:is([data-skin="matrixrgb"], [data-skin="matrix"], [data-skin="matrixclaro"], [data-skin="terminal"])[data-theme] body { font-size: 16px; } }
+html:root[data-layout="mobile"]:is([data-skin="matrixrgb"], [data-skin="matrix"], [data-skin="matrixclaro"], [data-skin="terminal"])[data-theme] body { font-size: 16px; }
 /* ===== Terra e Via Láctea (WebGL) ===== */
 #gl-bg { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; } #gl-bg.nogl { background: radial-gradient(120% 70% at 60% 125%, #0b2a55 0 58%, #4da3ff 59.5%, transparent 62%), #02040b; }
 html:root[data-skin="vialactea"] #gl-bg.nogl { background: linear-gradient(152deg, transparent 35%, #8c96d033 45%, #ffffff18 50%, #8c96d033 55%, transparent 65%), #03040a; }
@@ -2066,7 +2068,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261122.2307";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261122.2312";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
