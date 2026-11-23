@@ -1291,6 +1291,7 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 .upd-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; border: 0 !important; color: #fff !important; font-weight: 700; background: linear-gradient(135deg, #7c5cff, #19c3b4 85%) !important; box-shadow: 0 6px 18px -6px rgb(124 92 255 / .75), inset 0 1px 0 rgb(255 255 255 / .35); border-radius: 999px !important; }
 .upd-btn::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .38) 50%, transparent 70%); transform: translateX(-120%); animation: updShine 4.5s ease-in-out infinite; }
 @keyframes updShine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.top .upd-btn { padding: 0; width: 38px; min-width: 38px; justify-content: center; } .top .upd-btn span { display: none; }
 .upd-btn:hover { filter: brightness(1.08); } .upd-btn:active { transform: scale(.95); }
 .upd-btn .ic { width: 16px; height: 16px; transition: transform .5s; } .upd-btn:hover .ic { transform: rotate(180deg); }
 .upd-btn.busy .ic { animation: updSpin .8s linear infinite; } @keyframes updSpin { to { transform: rotate(360deg); } }
@@ -2108,7 +2109,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261123.1134";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261123.1958";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
