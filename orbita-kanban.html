@@ -490,7 +490,9 @@ details.data table { margin-top: 6px; }
 .d-tabs { position: sticky; top: -14px; z-index: 6; display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: 10px; box-shadow: 0 6px 10px -8px rgb(var(--shadow) / .4); }
 .d-tabs button { flex: 1 1 0; min-width: 0; border: 0; background: transparent; color: var(--ink2); font: inherit; font-weight: 600; font-size: 13px; padding: 8px 4px; border-radius: 8px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .d-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(var(--shadow) / .18); }
-html:root .d-tabs { border: 1px solid var(--line); }
+html:root .d-tabs { border: 1px solid var(--line); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; flex: 0 0 auto !important; min-height: 46px; } html:root .d-tabs::-webkit-scrollbar { display: none; }
+html:root .d-tabs button:not(.d-tabs-ord) { flex: 1 0 auto !important; padding: 8px 10px !important; letter-spacing: normal !important; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+html:root .d-tabs .d-tabs-ord { flex: 0 0 34px !important; }
 /* gaveta e janelas sempre opacas: o fundo animado não atrapalha a leitura */
 html:root .drawer, html:root .modal { background: linear-gradient(var(--surface), var(--surface)), linear-gradient(var(--bg), var(--bg)) !important; background-color: var(--bg) !important; }
 html:root .d-tabs button.on, html:root[data-theme] .d-tabs button.on { background: color-mix(in oklab, var(--accent) 18%, var(--surface)) !important; color: var(--ink) !important; box-shadow: inset 0 0 0 1.5px var(--accent), 0 2px 8px -3px color-mix(in oklab, var(--accent) 60%, transparent) !important; }
@@ -2113,7 +2115,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261124.0913";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261124.1113";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
