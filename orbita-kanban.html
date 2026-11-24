@@ -490,6 +490,8 @@ details.data table { margin-top: 6px; }
 .d-tabs { position: sticky; top: -14px; z-index: 6; display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: 10px; box-shadow: 0 6px 10px -8px rgb(var(--shadow) / .4); }
 .d-tabs button { flex: 1 1 0; min-width: 0; border: 0; background: transparent; color: var(--ink2); font: inherit; font-weight: 600; font-size: 13px; padding: 8px 4px; border-radius: 8px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .d-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(var(--shadow) / .18); }
+html:root .d-tabs { border: 1px solid var(--line); }
+html:root .d-tabs button.on, html:root[data-theme] .d-tabs button.on { background: color-mix(in oklab, var(--accent) 18%, var(--surface)) !important; color: var(--ink) !important; box-shadow: inset 0 0 0 1.5px var(--accent), 0 2px 8px -3px color-mix(in oklab, var(--accent) 60%, transparent) !important; }
 .d-tabs button i { font-style: normal; font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 99px; background: var(--bg); color: var(--ink2); }
 .d-tabs .d-tabs-ord { flex: 0 0 34px; font-size: 15px; }
 .d-tabs-edit { display: grid; gap: 6px; background: var(--bg2); padding: 10px; border-radius: 10px; position: sticky; top: -14px; z-index: 6; }
@@ -1288,10 +1290,10 @@ body:has(.top details.menu[open]) .toasts { opacity: 0; pointer-events: none; }
 @media (max-width: 380px) { .top > .btn, .top > .icon-btn, .top > button { width: 36px; height: 36px; } .top .brand .logo { width: 34px; height: 34px; } }
 
 /* ===== botão Atualizar (único, diferente dos demais) e botão de layout ===== */
-.upd-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; border: 0 !important; color: #fff !important; font-weight: 700; background: linear-gradient(135deg, #7c5cff, #19c3b4 85%) !important; box-shadow: 0 6px 18px -6px rgb(124 92 255 / .75), inset 0 1px 0 rgb(255 255 255 / .35); border-radius: 999px !important; }
+.upd-btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 7px; border: 0 !important; color: var(--accent-ink, #fff) !important; font-weight: 700; background: linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent) 60%, var(--sel, var(--accent)))) !important; box-shadow: 0 6px 18px -6px color-mix(in oklab, var(--accent) 75%, transparent), inset 0 1px 0 rgb(255 255 255 / .3); border-radius: 12px !important; }
 .upd-btn::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .38) 50%, transparent 70%); transform: translateX(-120%); animation: updShine 4.5s ease-in-out infinite; }
 @keyframes updShine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
-.top .upd-btn { padding: 0; width: 38px; min-width: 38px; justify-content: center; } .top .upd-btn span { display: none; }
+.top .upd-btn { padding: 0 !important; width: 38px !important; min-width: 38px; max-width: 38px; flex: 0 0 38px !important; justify-content: center; } .top .upd-btn span { display: none; }
 .upd-btn:hover { filter: brightness(1.08); } .upd-btn:active { transform: scale(.95); }
 .upd-btn .ic { width: 16px; height: 16px; transition: transform .5s; } .upd-btn:hover .ic { transform: rotate(180deg); }
 .upd-btn.busy .ic { animation: updSpin .8s linear infinite; } @keyframes updSpin { to { transform: rotate(360deg); } }
@@ -1949,7 +1951,7 @@ body.crt-on { animation: crtOnBody .8s cubic-bezier(.2, .8, .3, 1) both; transfo
 /* modo fundo: o botão do olho desliga a tela como uma TV e deixa só a animação do fundo */
 html[data-rest] body > :not(#gl-bg):not(.motes):not(.aurora):not(.floor):not(.spot):not(#crtfx):not(#lockscreen):not(#rest-exit):not(script) { visibility: hidden !important; pointer-events: none !important; }
 #rest-exit { display: none; }
-html[data-rest] #rest-exit { display: inline-flex; align-items: center; justify-content: center; position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); z-index: 100001; width: 38px; height: 38px; padding: 0; border: 1px solid rgb(255 255 255 / .25); border-radius: 12px; color: #fff; background: rgb(0 0 0 / .35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer; opacity: .7; transition: opacity .3s, transform .2s; }
+html[data-rest] #rest-exit { display: inline-flex; align-items: center; justify-content: center; position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); z-index: 100001; width: 38px; height: 38px; padding: 0; border: 1px solid rgb(255 255 255 / .25); border-radius: 12px; color: var(--accent-ink, #fff); background: color-mix(in oklab, var(--accent) 70%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer; opacity: .7; transition: opacity .3s, transform .2s; }
 html[data-rest] #rest-exit:hover, html[data-rest] #rest-exit:focus-visible { opacity: 1; } html[data-rest] #rest-exit:active { transform: scale(.95); }
 #rest-exit .ic { width: 17px; height: 17px; }
 body:has(.modal.lk-modal) .toasts { display: none; }
@@ -2109,7 +2111,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261123.1958";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261124.0857";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
