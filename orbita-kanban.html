@@ -490,6 +490,19 @@ details.data table { margin-top: 6px; }
 .d-tabs { position: sticky; top: -14px; z-index: 6; display: flex; gap: 2px; background: var(--bg2); padding: 3px; border-radius: 10px; box-shadow: 0 6px 10px -8px rgb(var(--shadow) / .4); }
 .d-tabs button { flex: 1 1 0; min-width: 0; border: 0; background: transparent; color: var(--ink2); font: inherit; font-weight: 600; font-size: 13px; padding: 8px 4px; border-radius: 8px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .d-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(var(--shadow) / .18); }
+
+/* calendário próprio (semana começa na segunda) */
+.dp-pop { position: fixed; z-index: 100050; width: 288px; padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: linear-gradient(var(--surface), var(--surface)), linear-gradient(var(--bg), var(--bg)); background-color: var(--bg); color: var(--ink); box-shadow: 0 18px 48px -12px rgb(0 0 0 / .55); font: 500 13px/1.2 var(--body); }
+.dp-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; } .dp-h b { text-transform: capitalize; font-size: 14px; }
+.dp-h button, .dp-f button { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 9px; min-width: 34px; height: 32px; font: inherit; cursor: pointer; } .dp-h button { font-size: 18px; }
+.dp-g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; } .dp-g i { font-style: normal; text-align: center; font-size: 11px; color: var(--ink3); padding: 2px 0 4px; text-transform: uppercase; }
+.dp-d { height: 34px; border: 0; border-radius: 9px; background: transparent; color: var(--ink); font: inherit; cursor: pointer; } .dp-d.we { color: var(--ink2); } .dp-d:hover { background: var(--accent-soft); }
+.dp-d.td { box-shadow: inset 0 0 0 1.5px var(--accent); font-weight: 700; } .dp-d.on { background: var(--accent); color: var(--upd-ink, var(--accent-ink, #fff)); font-weight: 700; }
+.dp-f { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; } .dp-f button { padding: 0 12px; }
+/* tamanho ajustável dos cartões */
+.col { width: calc(292px * var(--cs, 1)); } .card:not(.dragging) { zoom: var(--cs, 1); }
+@media (max-width: 720px) { .col { width: min(calc(86vw * var(--cs, 1)), 96vw); } }
+.tp-fields { margin-top: 8px; border-radius: 10px; transition: box-shadow .6s; } .tp-fields.flash { box-shadow: 0 0 0 2px var(--accent); } .tp-fields .chips { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 6px 0; } .tp-fc { font-size: 13px; }
 html:root .d-tabs { border: 1px solid var(--line); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; flex: 0 0 auto !important; min-height: 46px; } html:root .d-tabs::-webkit-scrollbar { display: none; }
 html:root .d-tabs button:not(.d-tabs-ord) { flex: 1 0 auto !important; padding: 8px 10px !important; letter-spacing: normal !important; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
 html:root .d-tabs .d-tabs-ord { flex: 0 0 34px !important; }
@@ -2115,7 +2128,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261124.1113";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261125.1829";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2645,7 +2658,7 @@ function applySettings() {
     if (s.theme === "auto") { if (applySettings.host) r.setAttribute("data-theme", applySettings.host); else r.removeAttribute("data-theme"); } else r.setAttribute("data-theme", s.theme); }
   try { localStorage.setItem("orbita_skin", s.skin && SKIN_DEF[s.skin] ? s.skin : ""); } catch {}
   if (applySettings.icon !== (s.appIcon || "orbita")) { applySettings.icon = s.appIcon || "orbita"; applyIcon(); }
-  r.style.setProperty("--ah", s.accent); r.dataset.density = s.density; r.dataset.depth = s.calm ? 0 : s.depth; r.dataset.calm = s.calm ? "on" : "off"; r.dataset.glass = s.glass === "off" ? "off" : "on";
+  r.style.setProperty("--ah", s.accent); r.dataset.density = s.density; r.style.setProperty("--cs", ((+s.cardSize || 100) / 100).toFixed(2)); r.dataset.depth = s.calm ? 0 : s.depth; r.dataset.calm = s.calm ? "on" : "off"; r.dataset.glass = s.glass === "off" ? "off" : "on";
 }
 function pending() {
   const h = (state.settings.notifyHours || 24) * 36e5, out = [];
@@ -2764,15 +2777,17 @@ function ckRow(t, c) {
   return `<div class="chk-wrap" data-ck="${c.id}"><div class="chk-row ${c.d ? "dn" : ""}${st ? " hasc" : ""}" data-ck="${c.id}" style="${st}"><span class="grip" title="Arraste para mudar a ordem" aria-label="Arrastar item">⋮⋮</span><input type="checkbox" data-in="ck" data-id="${t.id}" data-ck="${c.id}" ${c.d ? "checked" : ""} aria-label="Concluir item"><button type="button" class="ck-ic ${c.icon ? "has" : ""}" data-act="ckStyle" data-v="${c.id}" aria-expanded="${open}" title="Cor e ícone deste item">${c.icon || "◍"}</button><input type="text" id="ck_${c.id}" value="${esc(c.t)}" data-in="ckText" data-ck="${c.id}" aria-label="Item"><button class="icon-btn" data-act="ckDel" data-v="${c.id}" aria-label="Apagar item">${ic("x")}</button></div>${open ? `<div class="ck-style"><div class="ck-sw" role="group" aria-label="Cor do item"><button type="button" class="none ${c.color == null || c.color === "" ? "on" : ""}" data-act="ckColor" data-id="${c.id}" data-v="" title="Sem cor" aria-label="Sem cor">∅</button>${HUES.map(h => `<button type="button" class="${c.color === h ? "on" : ""}" style="--h:${h}" data-act="ckColor" data-id="${c.id}" data-v="${h}" aria-label="Cor ${h}"></button>`).join("")}</div><div class="ck-icons" role="group" aria-label="Ícone do item"><div class="ck-ih"><button type="button" class="none ${c.icon ? "" : "on"}" data-act="ckIcon" data-id="${c.id}" data-v="" title="Sem ícone" aria-label="Sem ícone">∅</button><input class="inp" maxlength="12" placeholder="Outro emoji: cole ou digite aqui" data-in="ckIconCustom" data-id="${c.id}" aria-label="Outro emoji" value="${c.icon && !CK_ICONS.includes(c.icon) ? esc(c.icon) : ""}"></div><div class="ck-scroll">${CK_GROUPS.map(([g, l]) => `<div class="ck-gl">${g}</div><div class="ck-gi">${l.map(i => `<button type="button" class="${c.icon === i ? "on" : ""}" data-act="ckIcon" data-id="${c.id}" data-v="${i}">${i}</button>`).join("")}</div>`).join("")}</div></div></div>` : ""}</div>`;
 }
 function modelBlock(t) {
-  const m = modelOf(t);
+  const m = modelOf(t), tp = t.tplId && state.templates.find(x => x.id === t.tplId), lim = tp && Array.isArray(tp.fields) && tpModel(tp).id === m.id ? new Set(tp.fields) : null, inf = t.info || {};
+  const vis = lim && !ui.allFields ? m.fields.filter(f => lim.has(f.id) || fieldText(f, inf[f.id]) !== "") : m.fields, hid = m.fields.length - vis.length;
   return `<div class="field info-grp"><div class="model-head"><span class="lbl">Modelo</span><select class="inp" id="d_model" data-in="tModel" aria-label="Modelo do cartão">${state.models.map(x => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><button class="btn sm" data-act="modelPanel" aria-expanded="${!!ui.modelPanel}">⚙ Modelo</button></div>
     ${ui.modelPanel ? `<div class="model-panel"><label>Nome do modelo<input class="inp" id="m_name" data-in="mName" value="${esc(m.name)}"></label>
       <label class="chk"><input type="checkbox" data-in="mDiary" ${m.diary ? "checked" : ""}> Diário de anotações (por tema e dia) neste modelo</label>
       <label class="chk"><input type="checkbox" data-in="mDefault" ${board().model === m.id ? "checked" : ""}> Usar como padrão nas novas tarefas deste quadro</label>
       <div class="set-row"><button class="btn sm" data-act="modelAdd">+ Modelo em branco</button><button class="btn sm" data-act="modelDup">Duplicar</button><button class="btn sm danger" data-act="modelDel" ${state.models.length < 2 ? "disabled" : ""}>Apagar modelo</button></div>
       <p class="meta" style="margin:0">Alterar os campos vale para todos os cartões deste modelo.</p></div>` : ""}
-    ${foldHead("campos", "Campos", m.fields.length, "toque no nome para renomear · ⋮⋮ ordena · alfinete mostra no cartão")}
-    <div class="fold-body" ${FOLD.campos ? "hidden" : ""}><div class="info-list">${m.fields.map(f => infoField(t, f)).join("") || `<p class="meta" style="margin:0">Modelo sem campos. Adicione abaixo.</p>`}</div>
+    ${foldHead("campos", tp && lim ? `Campos · ${esc(tp.name)}` : "Campos", vis.length, "toque no nome para renomear · ⋮⋮ ordena · alfinete mostra no cartão")}
+    <div class="fold-body" ${FOLD.campos ? "hidden" : ""}><div class="info-list">${vis.map(f => infoField(t, f)).join("") || `<p class="meta" style="margin:0">${lim ? "Nenhum campo escolhido para este tipo." : "Modelo sem campos. Adicione abaixo."}</p>`}</div>
+    ${tp ? `<div class="set-row" style="flex-wrap:wrap">${lim && (hid || ui.allFields) ? `<button class="btn sm ghost" data-act="allFields">${ui.allFields ? `Mostrar só os campos de “${esc(tp.name)}”` : `Mostrar todos os campos (${hid} ocultos)`}</button>` : ""}<button class="btn sm ghost" data-act="tpFieldsEdit">✎ Campos do tipo “${esc(tp.name)}”</button></div>` : ""}
     <div class="add-field"><select class="inp" id="nf_type" aria-label="Tipo do novo campo">${FTYPES.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select><button class="btn sm" data-act="infoAdd">+ Novo campo</button></div></div></div>`;
 }
 function entryHTML(e) {
@@ -3191,8 +3206,8 @@ ui.cal = { mode: "month", ref: ymd(new Date()) };
 function renderAgenda() {
   const c = ui.cal, ref = new Date(c.ref + "T12:00:00"), today = ymd(new Date()), week = c.mode === "week";
   let a, n;
-  if (week) { a = new Date(ref); a.setDate(a.getDate() - a.getDay()); n = 7; }
-  else { const f = new Date(ref.getFullYear(), ref.getMonth(), 1); a = new Date(f); a.setDate(1 - f.getDay()); const last = new Date(ref.getFullYear(), ref.getMonth() + 1, 0); n = Math.ceil((f.getDay() + last.getDate()) / 7) * 7; }
+  if (week) { a = new Date(ref); a.setDate(a.getDate() - (a.getDay() + 6) % 7); n = 7; }
+  else { const f = new Date(ref.getFullYear(), ref.getMonth(), 1); a = new Date(f); const f0 = (f.getDay() + 6) % 7; a.setDate(1 - f0); const last = new Date(ref.getFullYear(), ref.getMonth() + 1, 0); n = Math.ceil((f0 + last.getDate()) / 7) * 7; }
   const by = {}; live().filter(passes).forEach(t => { if (t.due) (by[t.due.slice(0, 10)] = by[t.due.slice(0, 10)] || []).push(t); });
   Object.values(by).forEach(l => l.sort((x, y) => (x.due.slice(11) || "99").localeCompare(y.due.slice(11) || "99") || x.priority - y.priority));
   const title = week ? `${dm(a)} a ${dm(new Date(+a + 6 * DAY))}` : `${MESES[ref.getMonth()][0].toUpperCase() + MESES[ref.getMonth()].slice(1)} de ${ref.getFullYear()}`;
@@ -3203,7 +3218,7 @@ function renderAgenda() {
       + (l.length > max ? `<button class="ag-more" data-act="agWeek" data-day="${k}">+${l.length - max} mais</button>` : "") + `</div>`; }
   const nod = live().filter(t => !t.due && !isDone(t)).length;
   $("#view").innerHTML = `<div class="pad${ui.en}"><div class="ag-bar"><button class="btn sm" data-act="agNav" data-v="-1" aria-label="Anterior">‹</button><h2 class="ag-title">${title}</h2><button class="btn sm" data-act="agNav" data-v="1" aria-label="Próximo">›</button><button class="btn sm" data-act="agNav" data-v="0">Hoje</button><span class="spacer"></span><div class="seg"><button class="${week ? "" : "on"}" data-act="agMode" data-v="month">Mês</button><button class="${week ? "on" : ""}" data-act="agMode" data-v="week">Semana</button></div></div>
-  <div class="ag-wd">${DSEM.map(x => `<span>${x}</span>`).join("")}</div><div class="ag-grid ${week ? "wk" : ""}">${cells}</div>
+  <div class="ag-wd">${[...DSEM.slice(1), DSEM[0]].map(x => `<span>${x}</span>`).join("")}</div><div class="ag-grid ${week ? "wk" : ""}">${cells}</div>
   <p class="meta" style="margin:8px 2px 0">Arraste uma tarefa para outro dia para mudar o prazo (no celular, segure e arraste). ${nod ? nod + " tarefa(s) abertas sem prazo não aparecem aqui." : ""}</p></div>`;
 }
 (function agDrag() {
@@ -3389,7 +3404,7 @@ const MANUAL = () => {
 
   add("O dia a dia", "checklist", "check", "Checklist e modelos de checklist", "Quebre a tarefa em passos pequenos e acompanhe o progresso sem esforço.",
     step(`Na gaveta, em <b>Checklist</b>, digite um passo e aperte Enter. Repita para os outros.`, `Marque cada item ao concluir: a barra e o percentual do cartão atualizam na hora.`, `Ou marque direto no cartão, clicando no item da faixa que passa.`)
-    + grid(["Modelo de checklist", "Um <b>Tipo de tarefa</b> (Formatação, Descarte, Certificado digital…) com os passos prontos. Na gaveta, escolha o tipo em <b>Tipo de tarefa</b> e o checklist vem junto; se o tipo tiver <b>mensagem de finalização</b>, o botão para copiá-la aparece logo abaixo (e ao concluir a tarefa o app oferece copiá-la). As <b>tags</b> ficam só para busca e referência."], ["Como criar", "Monte um checklist na gaveta e use <b>Salvar como modelo</b>. Crie, edite e apague tipos em <b>Configurações → Tipos de tarefa</b> (ou pela própria lista <b>Tipo de tarefa</b> na gaveta, com “Inserir novo tipo” e “Editar, renomear ou apagar”): ao criar, o app pede o nome, os itens do checklist e a mensagem de finalização (escolha da lista ou crie uma nova)."])
+    + grid(["Campos por tipo de tarefa", "Em <b>Tipos de tarefa</b>, cada tipo tem a lista <b>Campos que aparecem em Dados</b>: marque só os que aquele tipo usa (ex.: Formatação → máquina antiga, máquina nova, patrimônio; Certificado digital → usuário, e-mail, ramal). Ao escolher o tipo na tarefa, a aba Dados mostra só esses campos; <b>Mostrar todos os campos</b> revela o resto. Campos já preenchidos nunca ficam escondidos. Na própria aba Dados, <b>✎ Campos do tipo</b> abre a edição."], ["Calendário", "Ao escolher uma data, o calendário abre com a semana começando na <b>segunda-feira</b>. A Agenda e o calendário do Notebook também começam na segunda."], ["Tamanho dos cartões", "Em <b>Configurações → Aparência → Tamanho</b>, arraste de 70% a 160% para deixar os cartões e as colunas menores ou maiores. Atalhos: <kbd>Alt</kbd> + <kbd>+</kbd> e <kbd>Alt</kbd> + <kbd>−</kbd>."], ["Modelo de checklist", "Um <b>Tipo de tarefa</b> (Formatação, Descarte, Certificado digital…) com os passos prontos. Na gaveta, escolha o tipo em <b>Tipo de tarefa</b> e o checklist vem junto; se o tipo tiver <b>mensagem de finalização</b>, o botão para copiá-la aparece logo abaixo (e ao concluir a tarefa o app oferece copiá-la). As <b>tags</b> ficam só para busca e referência."], ["Como criar", "Monte um checklist na gaveta e use <b>Salvar como modelo</b>. Crie, edite e apague tipos em <b>Configurações → Tipos de tarefa</b> (ou pela própria lista <b>Tipo de tarefa</b> na gaveta, com “Inserir novo tipo” e “Editar, renomear ou apagar”): ao criar, o app pede o nome, os itens do checklist e a mensagem de finalização (escolha da lista ou crie uma nova)."])
     + tip("Ótimo para rotinas repetidas, como o preventivo de uma sala ou a instalação de um equipamento: monte uma vez, reaproveite sempre."),
     "Se cada tipo de tarefa pede campos diferentes, use os modelos de cartão.");
 
@@ -3894,12 +3909,12 @@ function nbItems() {
     return `<div role="button" tabindex="0" draggable="${n.trashed ? "false" : "true"}" class="nb-item${n.id === NB.sel ? " on" : ""}" data-act="nbSel" data-id="${n.id}" style="--ch:${b ? b.hue : 190}"><span class="nb-ico">${n.icon || (b ? b.icon : "📝")}</span><span class="nb-it"><b>${n.pin ? "📌 " : ""}${esc(nbTitle(n))}${n.fav ? ' <span class="nb-star">★</span>' : ""}</b><small>${esc(nbSnip(n))}</small><span class="nb-im"><span>${nbWhen(n.updated)}</span>${b ? `<span class="nb-bk">${esc(b.name)}${nbSecOf(n) ? " › " + esc(nbSecOf(n).name) : ""}</span>` : ""}${tk ? `<span>☑ ${dn}/${tk}</span>` : ""}${tg.map(t => `<span class="nb-tg2">#${esc(t)}</span>`).join("")}</span></span></div>`; }).join("") || `<div class="nb-none">${NB.q || NB.tag ? "Nenhuma nota encontrada." : NB.nb === "trash" ? "Lixeira vazia." : "Nenhuma nota aqui ainda."}${NB.nb !== "trash" ? `<br><button class="btn sm" data-act="nbNew">${ic("plus")}Criar nota</button>` : ""}</div>`;
 }
 function nbCal() {
-  const base = new Date(NB.cal || Date.now()); base.setDate(1); const y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), days = new Date(y, mo + 1, 0).getDate(), has = {}, dn = {}, tk = dkey(Date.now());
+  const base = new Date(NB.cal || Date.now()); base.setDate(1); const y = base.getFullYear(), mo = base.getMonth(), first = (base.getDay() + 6) % 7, days = new Date(y, mo + 1, 0).getDate(), has = {}, dn = {}, tk = dkey(Date.now());
   nbLive().forEach(n => { const k = dkey(n.created); has[k] = (has[k] || 0) + 1; if (n.date) dn[n.date] = 1; });
   let cells = ""; for (let i = 0; i < first; i++) cells += "<span></span>";
   for (let d = 1; d <= days; d++) { const k = y + "-" + pad2(mo + 1) + "-" + pad2(d), c = has[k] || 0; cells += `<button type="button" class="nb-cd${dn[k] ? " dn" : ""}${k === tk ? " today" : ""}" data-n="${Math.min(c, 3)}" data-act="nbDaily" data-v="${k}" title="${c ? c + " nota(s)" : "Abrir diário deste dia"}">${d}</button>`; }
   const lb = base.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  return `<div class="nb-calh"><button data-act="nbCalNav" data-v="-1" aria-label="Mês anterior">‹</button><b>${lb}</b><button data-act="nbCalNav" data-v="1" aria-label="Próximo mês">›</button></div><div class="nb-calg">${"DSTQQSS".split("").map(c => `<i>${c}</i>`).join("")}${cells}</div>`;
+  return `<div class="nb-calh"><button data-act="nbCalNav" data-v="-1" aria-label="Mês anterior">‹</button><b>${lb}</b><button data-act="nbCalNav" data-v="1" aria-label="Próximo mês">›</button></div><div class="nb-calg">${"STQQSSD".split("").map(c => `<i>${c}</i>`).join("")}${cells}</div>`;
 }
 function nbSide() {
   const live = nbLive(), cnt = id => live.filter(n => n.nb === id).length, tags = {}; live.forEach(n => nbTagsOf(n).forEach(t => tags[t] = (tags[t] || 0) + 1));
@@ -4351,6 +4366,24 @@ function restExit() { if (!restOn() || REST.busy) return; restTv(() => document.
   addEventListener("keydown", e => { if (!restOn()) return; e.preventDefault(); e.stopPropagation(); if (!REST.busy && e.key === "Escape") restExit(); }, true);
   ["pointerdown", "pointerup", "click", "dblclick", "contextmenu", "wheel"].forEach(ev => addEventListener(ev, e => { if (!restOn() && !REST.busy) return; if (e.target instanceof Element && e.target.closest("#rest-exit")) { if (ev === "click" && !REST.busy) restExit(); return; } e.preventDefault(); e.stopPropagation(); }, { capture: true, passive: false }));
 })();
+
+/* ===== calendário próprio para os campos de data: a semana começa na segunda-feira ===== */
+const DP = { el: null, inp: null, y: 0, m: 0 };
+function dpClose() { if (DP.el) DP.el.remove(); DP.el = null; DP.inp = null; }
+function dpSet(v) { const i = DP.inp; if (!i) return; i.value = v; i.dispatchEvent(new Event("input", { bubbles: true })); i.dispatchEvent(new Event("change", { bubbles: true })); dpClose(); }
+function dpRender() {
+  const { y, m } = DP, f = new Date(y, m, 1), off = (f.getDay() + 6) % 7, days = new Date(y, m + 1, 0).getDate(), today = ymd(new Date()), sel = (DP.inp.value || "").slice(0, 10);
+  let c = ""; for (let i = 0; i < off; i++) c += "<span></span>";
+  for (let d = 1; d <= days; d++) { const k = `${y}-${pad2(m + 1)}-${pad2(d)}`, wd = (off + d - 1) % 7; c += `<button type="button" class="dp-d${k === today ? " td" : ""}${k === sel ? " on" : ""}${wd > 4 ? " we" : ""}" data-dp="${k}" aria-label="${d} de ${MESES[m]}">${d}</button>`; }
+  DP.el.innerHTML = `<div class="dp-h"><button type="button" data-dpn="-1" aria-label="Mês anterior">‹</button><b>${MESES[m]} ${y}</b><button type="button" data-dpn="1" aria-label="Próximo mês">›</button></div><div class="dp-g">${["seg", "ter", "qua", "qui", "sex", "sáb", "dom"].map(x => `<i>${x}</i>`).join("")}${c}</div><div class="dp-f"><button type="button" data-dp="${today}">Hoje</button><button type="button" data-dp="">Limpar</button></div>`;
+}
+function dpOpen(inp) { dpClose(); DP.inp = inp; const v = /^\d{4}-\d{2}-\d{2}/.test(inp.value || "") ? new Date(inp.value.slice(0, 10) + "T12:00:00") : new Date(); DP.y = v.getFullYear(); DP.m = v.getMonth(); DP.el = document.createElement("div"); DP.el.className = "dp-pop"; DP.el.setAttribute("role", "dialog"); DP.el.setAttribute("aria-label", "Escolher data"); document.body.appendChild(DP.el); dpRender();
+  const r = inp.getBoundingClientRect(), W = DP.el.offsetWidth, H = DP.el.offsetHeight; let x = Math.min(Math.max(8, r.left), innerWidth - W - 8), y = r.bottom + 6; if (y + H > innerHeight - 8) y = Math.max(8, r.top - H - 6); DP.el.style.left = x + "px"; DP.el.style.top = y + "px"; }
+const isDateInp = t => t instanceof HTMLInputElement && t.type === "date" && !t.disabled && !t.readOnly;
+["pointerdown", "mousedown", "touchstart"].forEach(ev => document.addEventListener(ev, e => { const t = e.target; if (DP.el && DP.el.contains(t)) { if (ev !== "touchstart") e.preventDefault(); return; } if (isDateInp(t)) { if (e.cancelable) e.preventDefault(); if (ev === "pointerdown") { if (DP.inp === t) dpClose(); else dpOpen(t); } return; } if (DP.el && ev === "pointerdown") dpClose(); }, { capture: true, passive: false }));
+document.addEventListener("click", e => { if (isDateInp(e.target)) { e.preventDefault(); return; } if (!DP.el) return; const b = e.target.closest && e.target.closest("[data-dp],[data-dpn]"); if (b && DP.el.contains(b)) { e.preventDefault(); e.stopPropagation(); if (b.dataset.dpn) { DP.m += +b.dataset.dpn; if (DP.m < 0) { DP.m = 11; DP.y--; } if (DP.m > 11) { DP.m = 0; DP.y++; } dpRender(); } else dpSet(b.dataset.dp); } }, true);
+document.addEventListener("keydown", e => { if (DP.el && e.key === "Escape") { e.stopPropagation(); e.preventDefault(); dpClose(); } }, true);
+addEventListener("resize", dpClose); document.addEventListener("scroll", e => { if (DP.el && !DP.el.contains(e.target)) dpClose(); }, true);
 /* ===== biometria (WebAuthn, autenticador do aparelho) ===== */
 const b64 = u => btoa(String.fromCharCode(...new Uint8Array(u))), unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
 const bioId = () => { try { return localStorage.getItem("orbita_bio") || ""; } catch { return ""; } };
@@ -4487,7 +4520,7 @@ function openSettings() {
     <div class="set-row"><span class="lbl" style="width:110px">Vidro e luz</span>${seg("glass", [["on", "Ligado"], ["off", "Desligado"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Abertura da Órbita</span>${seg("orbIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}</div>
     <div class="set-row"><span class="lbl" style="width:110px">Abertura do Quadro</span>${seg("boardIntro", [["always", "Sempre"], ["first", "Só na 1ª vez"], ["off", "Desligada"]])}<button class="btn sm" data-act="bdReplay">Rever</button></div>
-    <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div></section>
+    <div class="set-row"><span class="lbl" style="width:110px">Cartões</span>${seg("density", [["normal", "Confortável"], ["compact", "Compacto"]])}</div><div class="set-row"><span class="lbl" style="width:110px">Tamanho</span><input type="range" min="70" max="160" step="5" value="${+state.settings.cardSize || 100}" data-in="cardSize" aria-label="Tamanho dos cartões" style="flex:1;max-width:260px"><b id="cs_v" style="min-width:44px">${+state.settings.cardSize || 100}%</b><button class="btn sm ghost" data-act="cardSizeReset">Padrão</button></div></section>
   ${state.boards.map(bd => { const sl = bSla(bd), cur = bd.id === ui.board, fl = s.savedF.filter(x => !x.board || x.board === bd.id); return `<section ${cur ? 'id="sec-desk" ' : ""}data-stab="b:${bd.id}"><h3>📋 ${esc(bd.name)}</h3>
     <p class="meta" style="margin:0 0 6px">Ajustes só deste quadro. ${cur ? "É o quadro aberto agora." : ""}</p>
     <div class="set-row"><span class="lbl" style="width:110px">Nome do quadro</span><input class="inp" value="${esc(bd.name)}" data-in="bdName" data-id="${bd.id}" id="bdn_${bd.id}" aria-label="Nome do quadro"></div>
@@ -4661,11 +4694,17 @@ function tplRow(t) {
 const tpName = tp => tp.name.replace(/^Exemplo:\s*/i, "");
 const repOpts = sel => `<option value="">Sem mensagem de finalização</option>` + state.replies.map(r => `<option value="${r.id}" ${sel === r.id ? "selected" : ""}>${esc(r.name)}</option>`).join("");
 function tiposClose() { const f = ui.tiposFrom; ui.tipoWiz = null; ui.tiposFrom = null; ui.tiposAuto = false; closeLayer(); if (f && task(f)) openTask(f); }
+
+/* campos de Dados que cada tipo de tarefa usa (vazio = todos os campos do modelo) */
+const tpModel = tp => state.models.find(m => m.id === tp.model) || state.models[0];
+function tpFieldsHTML(tp) { const m = tpModel(tp), on = f => !Array.isArray(tp.fields) || tp.fields.includes(f.id);
+  return `<div class="tp-fields" id="tpf_${tp.id}"><span class="meta">Campos que aparecem em <b>Dados</b> neste tipo</span><div class="set-row"><span class="meta">Modelo</span><select class="inp" data-in="tplModel" data-id="${tp.id}" aria-label="Modelo de campos deste tipo">${state.models.map(x => `<option value="${x.id}" ${x.id === m.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><button class="btn sm ghost" data-act="tplFieldsAll" data-id="${tp.id}">Todos</button><button class="btn sm ghost" data-act="tplFieldsNone" data-id="${tp.id}">Nenhum</button></div>
+    <div class="chips">${m.fields.map(f => `<label class="chk tp-fc"><input type="checkbox" data-in="tplField" data-id="${tp.id}" data-v="${f.id}" ${on(f) ? "checked" : ""}> ${esc(f.name)}</label>`).join("") || `<span class="meta">Esse modelo não tem campos.</span>`}</div></div>`; }
 function openTipos(from) {
   if (from !== undefined) ui.tiposFrom = from || null;
   ui.overlay = "tipos"; ui.drawer = null; const w = ui.tipoWiz;
   const card = tp => `<div class="tpl-box"><div class="set-row"><input class="inp" id="tpn_${tp.id}" value="${esc(tp.name)}" data-in="tplName" data-id="${tp.id}" aria-label="Nome do tipo de tarefa"><button class="btn sm ghost" data-act="tipoDel" data-id="${tp.id}" title="Apagar este tipo">${ic("trash")}</button></div>
-    <label class="meta" for="tpi_${tp.id}">Itens do checklist (um por linha)</label><textarea class="inp" id="tpi_${tp.id}" rows="${Math.min(8, Math.max(3, tp.items.length))}" data-in="tplItems" data-id="${tp.id}" style="width:100%" placeholder="Um item por linha">${esc(tp.items.join("\n"))}</textarea>
+    <label class="meta" for="tpi_${tp.id}">Itens do checklist (um por linha)</label><textarea class="inp" id="tpi_${tp.id}" rows="${Math.min(8, Math.max(3, tp.items.length))}" data-in="tplItems" data-id="${tp.id}" style="width:100%" placeholder="Um item por linha">${esc(tp.items.join("\n"))}</textarea>${tpFieldsHTML(tp)}
     <label class="meta" for="tpr_${tp.id}">Mensagem de finalização (para enviar ao cliente)</label><select class="inp" id="tpr_${tp.id}" data-in="tplReply" data-id="${tp.id}" aria-label="Mensagem de finalização">${repOpts(tp.reply || "")}</select></div>`;
   const wiz = !w ? "" : `<div class="tpl-box tipo-wiz"><b>Novo tipo de tarefa · passo ${w.step} de 3</b>` + (w.step === 1
       ? `<label class="meta" for="tw_name">Nome do tipo (ex.: Formatação, Descarte, Certificado digital)</label><input class="inp" id="tw_name" data-in="twName" value="${esc(w.name)}" placeholder="Nome do tipo de tarefa">`
@@ -4682,7 +4721,7 @@ function openTipos(from) {
     ${state.replies.map(rcard).join("")}<div class="set-row"><button class="btn sm" data-act="rpAdd2">${ic("plus")}Nova mensagem</button></div></div></div>`;
 }
 function twRead() { const w = ui.tipoWiz; if (!w) return; const g = id => { const e = $("#" + id); return e ? e.value : null; }; const v = { name: g("tw_name"), items: g("tw_items"), rn: g("tw_rn"), rt: g("tw_rt") }; Object.keys(v).forEach(k => { if (v[k] !== null) w[k] = v[k]; }); }
-function applyTpl(t, tp) { if (!t || !tp) return; const have = new Set(t.check.map(c => norm(c.t))); let n = 0; tp.items.forEach(x => { if (x.trim() && !have.has(norm(x))) { t.check.push({ id: uid(), t: x.trim(), d: false }); n++; } }); t.tplId = tp.id; if (!t.title.trim() || /^nova tarefa$/i.test(t.title.trim())) t.title = tp.name.replace(/^Exemplo:\s*/i, ""); t.tplBase = ckList(t); save(); render(); if (ui.drawer === t.id) renderDrawer(); toast(n ? `${n} itens do modelo “${tp.name}” adicionados` : "Esta tarefa já tem todos os itens desse modelo"); }
+function applyTpl(t, tp) { if (!t || !tp) return; const have = new Set(t.check.map(c => norm(c.t))); let n = 0; tp.items.forEach(x => { if (x.trim() && !have.has(norm(x))) { t.check.push({ id: uid(), t: x.trim(), d: false }); n++; } }); if (tp.model && state.models.some(m => m.id === tp.model)) t.model = tp.model; t.tplId = tp.id; if (!t.title.trim() || /^nova tarefa$/i.test(t.title.trim())) t.title = tp.name.replace(/^Exemplo:\s*/i, ""); t.tplBase = ckList(t); save(); render(); if (ui.drawer === t.id) renderDrawer(); toast(n ? `${n} itens do modelo “${tp.name}” adicionados` : "Esta tarefa já tem todos os itens desse modelo"); }
 
 /* ---------- anexos: os arquivos ficam no IndexedDB deste navegador; a tarefa guarda só nome, tipo e tamanho ---------- */
 const attUrls = new Map(), fmtSize = n => n < 1024 ? n + " B" : n < 1048576 ? Math.round(n / 1024) + " KB" : (n / 1048576).toFixed(1).replace(".", ",") + " MB", isImg = f => /^image\//.test(f.type);
@@ -4895,6 +4934,13 @@ const acts = {
   fApply: el => { const x = state.settings.savedF.find(y => y.id === el.dataset.id); if (!x) return; ui.f = { pri: new Set(x.pri), tags: new Set(x.tags.filter(id => tag(id))), due: x.due || "" }; render(); },
   fsDel: el => { snapshotUndo("Filtro apagado"); state.settings.savedF = state.settings.savedF.filter(x => x.id !== el.dataset.id); save(); openSettings(); render(); },
   rest: () => restEnter(),
+  tplFieldsAll: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (!tp) return; delete tp.fields; save(); const box = $("#tpf_" + tp.id); if (box) box.outerHTML = tpFieldsHTML(tp); },
+  tplFieldsNone: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (!tp) return; tp.fields = []; save(); const box = $("#tpf_" + tp.id); if (box) box.outerHTML = tpFieldsHTML(tp); },
+  cardSizeReset: () => { state.settings.cardSize = 100; save(); applySettings(); const i = $("[data-in=cardSize]"); if (i) i.value = 100; const b = $("#cs_v"); if (b) b.textContent = "100%"; },
+  csUp: () => { state.settings.cardSize = Math.min(160, (+state.settings.cardSize || 100) + 10); save(); applySettings(); toast(`Cartões em ${state.settings.cardSize}%`); },
+  csDown: () => { state.settings.cardSize = Math.max(70, (+state.settings.cardSize || 100) - 10); save(); applySettings(); toast(`Cartões em ${state.settings.cardSize}%`); },
+  allFields: () => { ui.allFields = !ui.allFields; renderDrawer(); },
+  tpFieldsEdit: () => { const t = cur(); if (!t) return; const id = t.tplId; openTipos(t.id); setTimeout(() => { const e = $("#tpf_" + id); if (e) { e.scrollIntoView({ block: "center" }); e.classList.add("flash"); } }, 60); },
   updNow: () => { updHide(); acts.appUpdate($("#btn-upd")); },
   updLater: () => { try { localStorage.setItem("orbita_upd_snooze", JSON.stringify({ v: UPD.v, until: Date.now() + 4 * 36e5 })); } catch {} const e = $("#upd-bar"); if (e) e.remove(); toast("Aviso adiado por 4 horas. O botão de atualizar continua piscando no topo."); },
   nbNew: el => { NB.tpl = false; nbNew(el.dataset.v); },
@@ -5012,7 +5058,7 @@ const acts = {
   tagAdd: () => { const g = { id: uid(), name: "Nova tag", hue: HUES[state.tags.length % HUES.length] }; state.tags.push(g); save(); render(); openSettings(); const i = $("#tg_" + g.id); if (i) { i.focus(); i.select(); } },
   tagHue: el => { tag(el.dataset.id).hue = +el.dataset.v; save(); render(); openSettings(); },
   tagDel: el => { const id = el.dataset.id; snapshotUndo("Tag apagada"); tomb(id); state.tags = state.tags.filter(g => g.id !== id); state.tasks.forEach(t => t.tags = t.tags.filter(x => x !== id)); ui.f.tags.delete(id); save(); render(); openSettings(); },
-  infoAdd: () => { const t = cur(); if (!t) return; const ty = ($("#nf_type") || {}).value || "text", f = { id: "i_" + uid(), name: "Novo campo", type: ty, pin: false }; if (ty === "select") f.opts = ["Opção 1", "Opção 2"]; modelOf(t).fields.push(f); save(); renderDrawer(); const i = $(`.info-row[data-k="${f.id}"] .lbl-inp`); if (i) { i.scrollIntoView({ block: "center" }); i.focus(); i.select(); } },
+  infoAdd: () => { const t = cur(); if (!t) return; const ty = ($("#nf_type") || {}).value || "text", f = { id: "i_" + uid(), name: "Novo campo", type: ty, pin: false }; if (ty === "select") f.opts = ["Opção 1", "Opção 2"]; modelOf(t).fields.push(f); { const tp = t.tplId && state.templates.find(x => x.id === t.tplId); if (tp && Array.isArray(tp.fields) && tpModel(tp).id === modelOf(t).id) tp.fields.push(f.id); } save(); renderDrawer(); const i = $(`.info-row[data-k="${f.id}"] .lbl-inp`); if (i) { i.scrollIntoView({ block: "center" }); i.focus(); i.select(); } },
   infoPin: el => { const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (!f) return; f.pin = !f.pin; save(); render(); renderDrawer(); },
   starSet: el => { const t = cur(), k = el.dataset.f, n = +el.dataset.v; t.info = t.info || {}; t.info[k] = +t.info[k] === n ? 0 : n; save(); render(); renderDrawer(); },
   modelPanel: () => { ui.modelPanel = !ui.modelPanel; renderDrawer(); if (ui.modelPanel) { const i = $("#m_name"); if (i) i.focus(); } },
@@ -5069,6 +5115,7 @@ document.addEventListener("click", e => {
 });
 /* entradas */
 const ins = {
+  cardSize: el => { const v = Math.max(70, Math.min(160, +el.value || 100)); state.settings.cardSize = v; document.documentElement.style.setProperty("--cs", (v / 100).toFixed(2)); const b = $("#cs_v"); if (b) b.textContent = v + "%"; clearTimeout(ins.csT); ins.csT = setTimeout(save, 300); },
   tagPopQ: () => tagPopFill(),
   manQ: el => { const q = norm(el.value.trim()), man = $(".man"); if (!man) return; let n = 0; $$(".man-sec", man).forEach(s => { const hit = !q || norm(s.textContent).includes(q); s.hidden = !hit; if (hit) { n++; s.classList.add("in"); } }); $$(".man-toc a[data-sec]", man).forEach(a => { const s = $("#m-" + a.dataset.sec, man); a.hidden = !!s && s.hidden; }); $(".man-empty", man).hidden = n > 0; $(".man-hero", man).hidden = !!q; },
   infoName: el => { el.value = el.value.replace(/\n/g, " "); fitName(el); el.title = (el.value || "Campo") + " (toque para renomear)"; const f = modelOf(cur()).fields.find(x => x.id === el.dataset.v); if (f) { f.name = el.value.trim() || "Campo"; save(); } },
@@ -5111,6 +5158,8 @@ const ins = {
   pal: el => { ui.pal.q = el.value; ui.pal.i = 0; renderPal(); }
 };
 const chg = {
+  tplModel: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (!tp) return; tp.model = el.value; delete tp.fields; save(); const box = $("#tpf_" + tp.id); if (box) box.outerHTML = tpFieldsHTML(tp); },
+  tplField: el => { const tp = state.templates.find(x => x.id === el.dataset.id); if (!tp) return; const m = tpModel(tp), cur0 = Array.isArray(tp.fields) ? tp.fields.filter(id => m.fields.some(f => f.id === id)) : m.fields.map(f => f.id); const set = new Set(cur0); if (el.checked) set.add(el.dataset.v); else set.delete(el.dataset.v); const list = m.fields.map(f => f.id).filter(id => set.has(id)); if (list.length === m.fields.length) delete tp.fields; else tp.fields = list; save(); },
   tRep: el => { const t = cur(), o = t.rep || {}; if (!el.value) t.rep = null; else { t.rep = { k: el.value, days: o.days || (el.value === "days" ? [1, 3, 5] : []), n: o.n || (el.value === "custom" ? 1 : 2), u: o.u || "w", dates: o.dates || [], end: o.end || "" }; if (!t.due) t.due = dkey(Date.now()); } save(); render(); renderDrawer(); },
   repCn: el => { const t = cur(); if (t && t.rep) { t.rep.n = clamp(parseInt(el.value) || 1, 1, 365); save(); render(); const h = $(".rep-hint"); if (h) { renderDrawerRepHint(t); } } },
   repU: el => { const t = cur(); if (t && t.rep) { t.rep.u = el.value; save(); render(); renderDrawer(); } },
@@ -5160,6 +5209,8 @@ document.addEventListener("keydown", e => {
   const tg = e.target, typing = /INPUT|TEXTAREA|SELECT/.test(tg.tagName) || tg.isContentEditable;
   if (e.ctrlKey && e.shiftKey && !e.altKey && e.code === "KeyD") { e.preventDefault(); const m = localStorage.getItem("orbita_layout") || "auto", eff = m === "auto" ? (matchMedia("(max-width: 720px)").matches ? "mobile" : "desktop") : m; return layoutSet(eff === "mobile" ? "desktop" : "mobile"); }
   if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.code === "KeyL") { e.preventDefault(); return acts.lock(); }
+  if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === "Equal" || e.code === "NumpadAdd")) { e.preventDefault(); return acts.csUp(); }
+  if (e.altKey && !e.ctrlKey && !e.metaKey && (e.code === "Minus" || e.code === "NumpadSubtract")) { e.preventDefault(); return acts.csDown(); }
   if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && (e.code === "KeyV" || e.code === "KeyS")) { e.preventDefault(); return acts.scene(); }
   if (e.ctrlKey && e.altKey && !e.shiftKey && e.code === "KeyR") { e.preventDefault(); return acts.appUpdate($("#btn-upd")); }
   if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && (e.code === "KeyN" || e.code === "KeyQ")) { e.preventDefault(); if (ui.overlay) closeLayer(); return e.code === "KeyN" ? acts.newTask() : acts.boardAdd(); }
@@ -6083,7 +6134,7 @@ iniciarSalvamento();
     if (!d || (e && e.pointerId !== d.id)) return;
     const { row, list } = d; d = null; row.classList.remove("dragging"); row.style.transform = "";
     if (row.classList.contains("chk-wrap")) { const t = cur(), by = Object.fromEntries(t.check.map(c => [c.id, c])); t.check = [...list.children].map(x => by[x.dataset.ck]).filter(Boolean); }
-    else { const m = modelOf(cur()), by = Object.fromEntries(m.fields.map(f => [f.id, f])); m.fields = [...list.children].map(x => by[x.dataset.k]).filter(Boolean); } save(); render(); renderDrawer();
+    else { const m = modelOf(cur()), by = Object.fromEntries(m.fields.map(f => [f.id, f])), nv = [...list.children].map(x => by[x.dataset.k]).filter(Boolean), shown = new Set(nv.map(f => f.id)); let k = 0; m.fields = m.fields.map(f => shown.has(f.id) ? nv[k++] : f); } save(); render(); renderDrawer();
   };
   document.addEventListener("mousedown", e => { if (e.target.closest && e.target.closest(".info-row .grip, .chk-row .grip")) e.preventDefault(); });
   document.addEventListener("selectstart", e => { if (d) e.preventDefault(); });
