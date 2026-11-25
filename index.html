@@ -492,6 +492,12 @@ details.data table { margin-top: 6px; }
 .d-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(var(--shadow) / .18); }
 
 /* calendário próprio (semana começa na segunda) */
+/* gaveta da tarefa com largura ajustável: arraste a borda esquerda */
+@media (min-width: 721px) { html:not([data-layout="mobile"]) .drawer { width: min(var(--dw, 480px), 96vw) !important; }
+  html:not([data-layout="mobile"]) .drawer::before { content: ""; position: absolute; left: -4px; top: 0; bottom: 0; width: 10px; cursor: ew-resize; z-index: 5; }
+  html:not([data-layout="mobile"]) .drawer::after { content: ""; position: absolute; left: 1px; top: 50%; width: 4px; height: 46px; margin-top: -23px; border-radius: 4px; background: var(--line); opacity: .8; pointer-events: none; transition: background .2s; }
+  html:not([data-layout="mobile"]) .drawer:hover::after, html.dw-drag .drawer::after { background: var(--accent); }
+  html.dw-drag, html.dw-drag * { cursor: ew-resize !important; user-select: none !important; } }
 .dp-pop { position: fixed; z-index: 100050; width: 288px; padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: linear-gradient(var(--surface), var(--surface)), linear-gradient(var(--bg), var(--bg)); background-color: var(--bg); color: var(--ink); box-shadow: 0 18px 48px -12px rgb(0 0 0 / .55); font: 500 13px/1.2 var(--body); }
 .dp-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; } .dp-h b { text-transform: capitalize; font-size: 14px; }
 .dp-h button, .dp-f button { border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 9px; min-width: 34px; height: 32px; font: inherit; cursor: pointer; } .dp-h button { font-size: 18px; }
@@ -2128,7 +2134,7 @@ try { notified = JSON.parse(localStorage.getItem(LSN)) || {}; } catch {}
 const ui = { board: (() => { try { return localStorage.getItem(LSB); } catch { return null; } })(), view: "quadro", drawer: null, overlay: null, flipped: new Set(), f: { pri: new Set(), tags: new Set(), due: "" }, sort: { k: "due", dir: 1 }, period: 14, pal: { q: "", i: 0, items: [] }, undo: null, refocus: null, sync: "local", armed: null };
 
 /* ---------- salvamento automático em 3 camadas (+ nuvem quando aberto pelo Claude) ---------- */
-const APP_BUILD = "20261125.1829";   /* trocado por release.py a cada publicação */
+const APP_BUILD = "20261125.1833";   /* trocado por release.py a cada publicação */
 const EMBED = (() => { try { return window.self !== window.top; } catch { return true; } })();
 const SAVE_CFG = { appId: "orbita-kanban", lsKey: "orbita_kanban_dados_v1", dbName: "orbita_kanban_db", arquivoSugerido: "orbita-kanban-dados.json",
   listas: ["boards", "tasks", "columns", "tags", "fields", "templates", "trash", "replies", "notes", "notebooks", "nsec"], debounceMs: 1500, conferirArquivoMs: 20000,
@@ -2658,7 +2664,7 @@ function applySettings() {
     if (s.theme === "auto") { if (applySettings.host) r.setAttribute("data-theme", applySettings.host); else r.removeAttribute("data-theme"); } else r.setAttribute("data-theme", s.theme); }
   try { localStorage.setItem("orbita_skin", s.skin && SKIN_DEF[s.skin] ? s.skin : ""); } catch {}
   if (applySettings.icon !== (s.appIcon || "orbita")) { applySettings.icon = s.appIcon || "orbita"; applyIcon(); }
-  r.style.setProperty("--ah", s.accent); r.dataset.density = s.density; r.style.setProperty("--cs", ((+s.cardSize || 100) / 100).toFixed(2)); r.dataset.depth = s.calm ? 0 : s.depth; r.dataset.calm = s.calm ? "on" : "off"; r.dataset.glass = s.glass === "off" ? "off" : "on";
+  r.style.setProperty("--ah", s.accent); r.dataset.density = s.density; if (+s.drawerW) r.style.setProperty("--dw", Math.round(+s.drawerW) + "px"); else r.style.removeProperty("--dw"); r.style.setProperty("--cs", ((+s.cardSize || 100) / 100).toFixed(2)); r.dataset.depth = s.calm ? 0 : s.depth; r.dataset.calm = s.calm ? "on" : "off"; r.dataset.glass = s.glass === "off" ? "off" : "on";
 }
 function pending() {
   const h = (state.settings.notifyHours || 24) * 36e5, out = [];
@@ -3404,7 +3410,7 @@ const MANUAL = () => {
 
   add("O dia a dia", "checklist", "check", "Checklist e modelos de checklist", "Quebre a tarefa em passos pequenos e acompanhe o progresso sem esforço.",
     step(`Na gaveta, em <b>Checklist</b>, digite um passo e aperte Enter. Repita para os outros.`, `Marque cada item ao concluir: a barra e o percentual do cartão atualizam na hora.`, `Ou marque direto no cartão, clicando no item da faixa que passa.`)
-    + grid(["Campos por tipo de tarefa", "Em <b>Tipos de tarefa</b>, cada tipo tem a lista <b>Campos que aparecem em Dados</b>: marque só os que aquele tipo usa (ex.: Formatação → máquina antiga, máquina nova, patrimônio; Certificado digital → usuário, e-mail, ramal). Ao escolher o tipo na tarefa, a aba Dados mostra só esses campos; <b>Mostrar todos os campos</b> revela o resto. Campos já preenchidos nunca ficam escondidos. Na própria aba Dados, <b>✎ Campos do tipo</b> abre a edição."], ["Calendário", "Ao escolher uma data, o calendário abre com a semana começando na <b>segunda-feira</b>. A Agenda e o calendário do Notebook também começam na segunda."], ["Tamanho dos cartões", "Em <b>Configurações → Aparência → Tamanho</b>, arraste de 70% a 160% para deixar os cartões e as colunas menores ou maiores. Atalhos: <kbd>Alt</kbd> + <kbd>+</kbd> e <kbd>Alt</kbd> + <kbd>−</kbd>."], ["Modelo de checklist", "Um <b>Tipo de tarefa</b> (Formatação, Descarte, Certificado digital…) com os passos prontos. Na gaveta, escolha o tipo em <b>Tipo de tarefa</b> e o checklist vem junto; se o tipo tiver <b>mensagem de finalização</b>, o botão para copiá-la aparece logo abaixo (e ao concluir a tarefa o app oferece copiá-la). As <b>tags</b> ficam só para busca e referência."], ["Como criar", "Monte um checklist na gaveta e use <b>Salvar como modelo</b>. Crie, edite e apague tipos em <b>Configurações → Tipos de tarefa</b> (ou pela própria lista <b>Tipo de tarefa</b> na gaveta, com “Inserir novo tipo” e “Editar, renomear ou apagar”): ao criar, o app pede o nome, os itens do checklist e a mensagem de finalização (escolha da lista ou crie uma nova)."])
+    + grid(["Campos por tipo de tarefa", "Em <b>Tipos de tarefa</b>, cada tipo tem a lista <b>Campos que aparecem em Dados</b>: marque só os que aquele tipo usa (ex.: Formatação → máquina antiga, máquina nova, patrimônio; Certificado digital → usuário, e-mail, ramal). Ao escolher o tipo na tarefa, a aba Dados mostra só esses campos; <b>Mostrar todos os campos</b> revela o resto. Campos já preenchidos nunca ficam escondidos. Na própria aba Dados, <b>✎ Campos do tipo</b> abre a edição."], ["Largura do painel da tarefa", "No computador, arraste a <b>borda esquerda</b> do painel da tarefa (a barrinha no meio da borda) para deixá-lo mais largo ou mais estreito. O tamanho fica salvo. Dois cliques na borda voltam ao padrão."], ["Calendário", "Ao escolher uma data, o calendário abre com a semana começando na <b>segunda-feira</b>. A Agenda e o calendário do Notebook também começam na segunda."], ["Tamanho dos cartões", "Em <b>Configurações → Aparência → Tamanho</b>, arraste de 70% a 160% para deixar os cartões e as colunas menores ou maiores. Atalhos: <kbd>Alt</kbd> + <kbd>+</kbd> e <kbd>Alt</kbd> + <kbd>−</kbd>."], ["Modelo de checklist", "Um <b>Tipo de tarefa</b> (Formatação, Descarte, Certificado digital…) com os passos prontos. Na gaveta, escolha o tipo em <b>Tipo de tarefa</b> e o checklist vem junto; se o tipo tiver <b>mensagem de finalização</b>, o botão para copiá-la aparece logo abaixo (e ao concluir a tarefa o app oferece copiá-la). As <b>tags</b> ficam só para busca e referência."], ["Como criar", "Monte um checklist na gaveta e use <b>Salvar como modelo</b>. Crie, edite e apague tipos em <b>Configurações → Tipos de tarefa</b> (ou pela própria lista <b>Tipo de tarefa</b> na gaveta, com “Inserir novo tipo” e “Editar, renomear ou apagar”): ao criar, o app pede o nome, os itens do checklist e a mensagem de finalização (escolha da lista ou crie uma nova)."])
     + tip("Ótimo para rotinas repetidas, como o preventivo de uma sala ou a instalação de um equipamento: monte uma vez, reaproveite sempre."),
     "Se cada tipo de tarefa pede campos diferentes, use os modelos de cartão.");
 
@@ -4384,6 +4390,16 @@ const isDateInp = t => t instanceof HTMLInputElement && t.type === "date" && !t.
 document.addEventListener("click", e => { if (isDateInp(e.target)) { e.preventDefault(); return; } if (!DP.el) return; const b = e.target.closest && e.target.closest("[data-dp],[data-dpn]"); if (b && DP.el.contains(b)) { e.preventDefault(); e.stopPropagation(); if (b.dataset.dpn) { DP.m += +b.dataset.dpn; if (DP.m < 0) { DP.m = 11; DP.y--; } if (DP.m > 11) { DP.m = 0; DP.y++; } dpRender(); } else dpSet(b.dataset.dp); } }, true);
 document.addEventListener("keydown", e => { if (DP.el && e.key === "Escape") { e.stopPropagation(); e.preventDefault(); dpClose(); } }, true);
 addEventListener("resize", dpClose); document.addEventListener("scroll", e => { if (DP.el && !DP.el.contains(e.target)) dpClose(); }, true);
+
+/* ===== gaveta da tarefa: arrastar a borda esquerda muda a largura; dois cliques na borda voltam ao padrão ===== */
+(function () {
+  let d = null; const isMob = () => document.documentElement.dataset.layout === "mobile" || matchMedia("(max-width: 720px)").matches;
+  const edge = e => { const dr = e.target instanceof Element && e.target.closest(".drawer"); if (!dr || isMob()) return null; const r = dr.getBoundingClientRect(); return e.clientX - r.left <= 8 ? dr : null; };
+  document.addEventListener("pointerdown", e => { const dr = edge(e); if (!dr || e.button !== 0) return; e.preventDefault(); e.stopPropagation(); d = { x: e.clientX, w: dr.getBoundingClientRect().width }; document.documentElement.classList.add("dw-drag"); }, true);
+  addEventListener("pointermove", e => { if (!d) return; const w = Math.round(Math.max(360, Math.min(innerWidth * .96, d.w + (d.x - e.clientX)))); document.documentElement.style.setProperty("--dw", w + "px"); d.nw = w; }, true);
+  addEventListener("pointerup", () => { if (!d) return; if (d.nw) { state.settings.drawerW = d.nw; save(); } d = null; document.documentElement.classList.remove("dw-drag"); }, true);
+  document.addEventListener("dblclick", e => { if (!edge(e)) return; e.preventDefault(); delete state.settings.drawerW; save(); document.documentElement.style.removeProperty("--dw"); toast("Painel da tarefa no tamanho padrão"); }, true);
+})();
 /* ===== biometria (WebAuthn, autenticador do aparelho) ===== */
 const b64 = u => btoa(String.fromCharCode(...new Uint8Array(u))), unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
 const bioId = () => { try { return localStorage.getItem("orbita_bio") || ""; } catch { return ""; } };
